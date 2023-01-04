@@ -10,6 +10,141 @@ import java.net.URI
 //import summon.{Decoder => _, _}
 
 object CirceDIDCodec:
+
+  given encodeDIDDoc: Encoder[DIDDoc] =
+    new Encoder[DIDDoc]:
+      final def apply(a: DIDDoc): Json =
+        Json.obj(
+          ("didDocument", Json.obj(
+            ("id", Json.fromString(a.did)),
+            ("controller", Json.fromString(a.controller.getOrElse(""))),
+            ("alsoKnownAs", Json.fromValues(a.alsoKnownAs.getOrElse(Set.empty).map(Json.fromString))),
+            ("verificationMethod", Json.fromValues(a.verificationMethods.getOrElse(Set.empty).map(encodeVerificationMethod.apply))),
+            ("keyAgreement", Json.fromValues(a.keyAgreements.getOrElse(Set.empty).map(encodeKeyAgreement.apply))),
+            ("authentication", Json.fromValues(a.authentications.getOrElse(Set.empty).map(encodeAuthentication.apply))),
+            ("assertionMethod", Json.fromValues(a.assertionMethods.getOrElse(Set.empty).map(encodeAssertion.apply))),
+            ("capabilityInvocation", Json.fromValues(a.capabilityInvocations.getOrElse(Set.empty).map(encodeCapabilityInvocation.apply))),
+            ("capabilityDelegations", Json.fromValues(a.capabilityDelegations.getOrElse(Set.empty).map(encodeCapabilityDelegation.apply))),
+            ("service", Json.fromValues(a.didCommServices.getOrElse(Set.empty).map(encodeDIDCommService.apply)))
+          ))
+        )
+  
+  given encodeVerificationMethod: Encoder[VerificationMethod] =
+    new Encoder[VerificationMethod]:
+      final def apply(a: VerificationMethod): Json =
+        Json.obj(
+          ("id", Json.fromString(a.id)),
+          ("type", Json.fromString(a.`type`)),
+          ("controller", Json.fromString(a.controller)),
+          ("public", encodeVerificationMaterial.apply(a.verificationMaterial)))
+  
+  given encodeVerificationMaterial: Encoder[VerificationMaterial] =
+    new Encoder[VerificationMaterial]:
+      final def apply(a: VerificationMaterial): Json =
+        a match
+          case VerificationMaterialJWK(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case VerificationMaterialMultibase(value) =>
+            Json.fromString(value)
+  
+  given encodeKeyAgreement: Encoder[KeyAgreement] =
+    new Encoder[KeyAgreement]:
+      final def apply(a: KeyAgreement): Json =
+        a match {
+          case KeyAgreementInstance(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case KeyAgreementReference(value) =>
+            Json.fromString(value)
+        }
+  
+  given encoderKeyAgreementInstance : Encoder[KeyAgreementInstance] =
+    new Encoder[KeyAgreementInstance]:
+      final def apply(a: KeyAgreementInstance): Json =
+        Json.obj(
+          ("id", Json.fromString(a.id)),
+          ("type", Json.fromString(a.`type`)),
+          ("controller", Json.fromString(a.controller)),
+          ("publicKeyMultibase", Json.fromString(a.publicKeyMultibase))
+        )
+  
+  given encodeAuthentication: Encoder[Authentication] =
+    new Encoder[Authentication]:
+      final def apply(a: Authentication): Json =
+        a match {
+          case AuthenticationInstance(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case AuthenticationReference(value) =>
+            Json.fromString(value)
+        }
+  
+  given encodeAssertion: Encoder[Assertion] =
+    new Encoder[Assertion]:
+      final def apply(a: Assertion): Json =
+        a match {
+          case AssertionInstance(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case AssertionReference(value) =>
+            Json.fromString(value)
+        } 
+  given encodeCapabilityInvocation: Encoder[CapabilityInvocation] =
+    new Encoder[CapabilityInvocation]:
+      final def apply(a: CapabilityInvocation): Json =
+        a match {
+          case CapabilityInvocationInstance(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case CapabilityInvocationReference(value) =>
+            Json.fromString(value)
+        }
+
+  given encodeCapabilityDelegation: Encoder[CapabilityDelegation] =
+    new Encoder[CapabilityDelegation]:
+      final def apply(a: CapabilityDelegation): Json =
+        a match {
+          case CapabilityDelegationInstance(crv, x, kty, kid) =>
+            Json.obj(
+              ("crv", Json.fromString(crv)),
+              ("x", Json.fromString(x)),
+              ("kty", Json.fromString(kty)),
+              ("kid", Json.fromString(kid))
+            )
+          case CapabilityDelegationReference(value) =>
+            Json.fromString(value)
+        }
+
+  given encodeDIDCommService: Encoder[DIDCommService] =
+    new Encoder[DIDCommService]:
+      final def apply(a: DIDCommService): Json =
+        Json.obj(
+          ("id", Json.fromString(a.id)),
+          ("type", Json.fromString(a.`type`)),
+          ("serviceEndpoint", Json.fromString(a.serviceEndpoint.toString()))
+        )
+
   given decodeDIDDoc: Decoder[DIDDoc] =
     new Decoder[DIDDoc]:
       final def apply(c: HCursor): Decoder.Result[DIDDoc] =

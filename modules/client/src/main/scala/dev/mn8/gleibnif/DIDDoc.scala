@@ -6,6 +6,7 @@ import org.didcommx.didcomm.exceptions.DIDDocException
 import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
 import io.circe.*
 import foundation.identity.did.VerificationRelationships
+import java.net.URI
 
 
 //import foundation.identity.did.VerificationMethod
@@ -33,24 +34,30 @@ import foundation.identity.did.VerificationRelationships
   */
 case class DIDDoc(
     did: String,
-    alsoKnownAs: List[String],
-    keyAgreements: List[String],
-    authentications: List[String],
-    verificationMethods: List[VerificationMethod],
-    didCommServices: List[DIDCommService]) :
+    controller: Option[String],
+    alsoKnownAs: Option[Set[String]],
+    verificationMethods: Option[Set[VerificationMethod]],
+    keyAgreements: Option[Set[VerificationRelationship]],
+    authentications: Option[Set[Authentication]],
+    assertionMethods: Option[Set[VerificationRelationship]],
+    capabilityInvocations: Option[Set[VerificationRelationship]],
+    capabilityDelegations: Option[Set[VerificationRelationship]], 
+    didCommServices: Option[Set[DIDCommService]]) :
 
-  // fun findVerificationMethod(id: String): VerificationMethod = verificationMethods.find { it.id == id } ?: throw DIDUrlNotFoundException(id, did)
-  def findVerificationMethod(
-      id: String
-  ): Either[DIDUrlNotFoundException, VerificationMethod] =
-    verificationMethods.find(_.id == id) match
-      case Some(v: VerificationMethod) => Right(v)
-      case None                        => Left(DIDUrlNotFoundException(id, did))
+  def findVerificationMethod(id: String): Either[DIDUrlNotFoundException, VerificationMethod] =
+    verificationMethods match 
+      case Some(v) => v.find(_.id == id) match
+        case Some(v: VerificationMethod) => Right(v)
+        case None                        => Left(DIDUrlNotFoundException(id, did))
+      case None => Left(DIDUrlNotFoundException(id, did))
 
   def findDIDCommService(id: String): Either[DIDDocException, DIDCommService] =
-    didCommServices.find(_.id == id) match
-      case Some(v: DIDCommService) => Right(v)
+    didCommServices match 
+      case Some(v) => v.find(_.id == id) match
+        case Some(v: DIDCommService) => Right(v)
+        case None => Left(DIDDocException("DIDComm service not found"))
       case None => Left(DIDDocException("DIDComm service not found"))
+
 
 
 
@@ -62,7 +69,7 @@ case class DIDDoc(
   */
 case class VerificationMethod(
     id: String,
-    `type`: VerificationMethodType,
+    `type`: String,
     verificationMaterial: VerificationMaterial,
     controller: String
 )
@@ -86,25 +93,13 @@ case class VerificationMethod(
   */
 case class DIDCommService(
     id: String,
-    serviceEndpoint: String,
-    routingKeys: List[String],
-    accept: List[String]
-)
+    `type`: String,
+    serviceEndpoint: Set[URI],
+    )
 
-sealed trait VerificationRelationship
 
-case class VerificationReference(ref: String) extends VerificationRelationship
-case class VerificationInstance(
-    id: String,
-    `type`: VerificationMethodType,
-    controller: String,
-    publicKeyMultibase: String
-) extends VerificationRelationship
 
-case class VerificationRelationships(
-    authentication: List[VerificationRelationship],
-    keyAgreement: List[VerificationRelationship],
-    assertionMethod: List[VerificationRelationship],
-    capabilityInvocation: List[VerificationRelationship],
-    capabilityDelegation: List[VerificationRelationship]
-)
+
+
+
+ 

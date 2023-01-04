@@ -4,44 +4,63 @@ import io.circe.Decoder.Result
 import io.circe.*
 import io.circe.Decoder
 import cats.Applicative.ops.toAllApplicativeOps
-
+import cats.*
+import java.net.URI
 
 //import summon.{Decoder => _, _}
 
 object CirceDIDCodec:
-
-  given decodeDIDDoc : Decoder[DIDDoc] =
+  given decodeDIDDoc: Decoder[DIDDoc] =
     new Decoder[DIDDoc]:
       final def apply(c: HCursor): Decoder.Result[DIDDoc] =
         for {
           did <- c.downField("didDocument").downField("id").as[Option[String]]
+          controller <- c
+            .downField("didDocument")
+            .downField("controller")
+            .as[Option[String]]
           alsoKnownAs <- c
             .downField("didDocument")
             .downField("alsoKnownAs")
-            .as[Option[List[String]]]
-          keyAgreements <- c
-            .downField("didDocument")
-            .downField("keyAgreement")
-            .as[Option[List[String]]]
-          authentications <- c
-            .downField("didDocument")
-            .downField("authentication")
-            .as[Option[List[String]]]
-          verificationMethods <- c
+            .as[Option[Set[String]]]
+          verificationMethod <- c
             .downField("didDocument")
             .downField("verificationMethod")
-            .as[Option[List[VerificationMethod]]]
+            .as[Option[Set[VerificationMethod]]]
+          keyAgreement: Option[Set[VerificationRelationship]] <- c
+            .downField("didDocument")
+            .downField("keyAgreement")
+            .as[Option[Set[VerificationRelationship]]]
+          authentication: Option[Set[Authentication]] <- c
+            .downField("didDocument")
+            .downField("authentication")
+            .as[Option[Set[Authentication]]]
+          assertionMethod <- c
+            .downField("assertionMethod")
+            .as[Option[Set[VerificationRelationship]]]
+          capabilityInvocation <- c
+            // .downField("didDocument")
+            .downField("capabilityInvocation")
+            .as[Option[Set[VerificationRelationship]]]
+          capabilityDelegations <- c
+            // .downField("didDocument")
+            .downField("capabilityDelegations")
+            .as[Option[Set[VerificationRelationship]]]
           didCommServices <- c
             .downField("didDocument")
-            .downField("didCommService")
-            .as[Option[List[DIDCommService]]]
+            .downField("service")
+            .as[Option[Set[DIDCommService]]]
         } yield DIDDoc(
           did.getOrElse(""),
-          alsoKnownAs.getOrElse(List.empty),
-          keyAgreements.getOrElse(List.empty),
-          authentications.getOrElse(List.empty),
-          verificationMethods.getOrElse(List.empty),
-          didCommServices.getOrElse(List.empty)
+          controller,
+          alsoKnownAs,
+          verificationMethod,
+          keyAgreement,
+          authentication,
+          assertionMethod,
+          capabilityInvocation,
+          capabilityDelegations,
+          didCommServices
         )
 
   given decodeVerificationMethod: Decoder[VerificationMethod] =
@@ -49,42 +68,87 @@ object CirceDIDCodec:
       final def apply(c: HCursor): Decoder.Result[VerificationMethod] =
         for {
           id <- c.downField("id").as[String]
-          controller <- c.downField("controller").as[String]
           `type` <- c.downField("type").as[String]
+          controller <- c.downField("controller").as[String]
           verificationMaterial <- c
-            .downField("publicKeyBase58")
-            .as[Option[VerificationMaterial]]
+            .downField("publicKeyJwk")
+            .as[VerificationMaterialJWK]
+            .orElse(
+              c.downField("publicKeyMultibase")
+                .as[VerificationMaterialMultibase]
+            )
+
         } yield VerificationMethod(
           id,
-          VerificationMethodType.fromString(`type`),
-          verificationMaterial.getOrElse(VerificationMaterialMultibase("")
-
-          ),
+          `type`,
+          verificationMaterial,
           controller
         )
 
-  
   given decodeVerificationMaterialJWK: Decoder[VerificationMaterialJWK] =
-    Decoder.forProduct4("crv","x","ktyy","kid")(VerificationMaterialJWK.apply)
-    
+    Decoder.forProduct4("crv", "x", "kty", "kid")(VerificationMaterialJWK.apply)
 
-  given decodeVerificationMaterialMultibase: Decoder[VerificationMaterialMultibase] =
-    Decoder.forProduct1("value")(VerificationMaterialMultibase.apply)
+  given decodeVerificationMaterialMultibase
+      : Decoder[VerificationMaterialMultibase] =
+    new Decoder[VerificationMaterialMultibase]:
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[VerificationMaterialMultibase] =
+        for {
+          value <- c.value.as[String]
+        } yield VerificationMaterialMultibase(value)
 
   given decodeVerificationMaterial: Decoder[VerificationMaterial] =
-    decodeVerificationMaterialJWK.widen[VerificationMaterial] or decodeVerificationMaterialMultibase.widen[VerificationMaterial]
+    decodeVerificationMaterialJWK
+      .widen[VerificationMaterial] or decodeVerificationMaterialMultibase
+      .widen[VerificationMaterial]
+
+
+  
+    
+  given decodeVerificationReReference: Decoder[KeyAgreementReference] =
+    Decoder.forProduct1("ref")(KeyAgreementReference.apply)
+
+  given decodeVerificationInstance: Decoder[KeyAgreementInstance] =
+    Decoder.forProduct4("id", "type", "controller", "publicKeyMultibase")(
+      KeyAgreementInstance.apply
+    )
+
+  given decodeVerificationRelationship: Decoder[VerificationRelationship] =
+    decodeVerificationReReference
+      .widen[VerificationRelationship] or decodeVerificationInstance
+      .widen[VerificationRelationship]
+
+
+  given decodeAuthenticationReference: Decoder[AuthenticationReference] =
+    new Decoder[AuthenticationReference]:
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[AuthenticationReference] =
+        for {
+          value <- c.value.as[String]
+        } yield AuthenticationReference(value)
+
+  given decodeAuthenticationInstance: Decoder[AuthenticationInstance] =
+    Decoder.forProduct4("id", "type", "controller", "publicKeyMultibase")(
+      AuthenticationInstance.apply
+    )
+
+  given decodeAuthenticationRelationship: Decoder[Authentication] =
+    decodeAuthenticationReference
+      .widen[Authentication] or decodeAuthenticationInstance
+      .widen[Authentication]
+
 
   given decodeDIDCommService: Decoder[DIDCommService] =
     new Decoder[DIDCommService]:
       final def apply(c: HCursor): Result[DIDCommService] =
         for {
           id <- c.downField("id").as[String]
-          serviceEndpoint <- c.downField("serviceEndpoint").as[String]
-          routingKeys <- c.downField("routingKeys").as[List[String]]
-          accept <- c.downField("accept").as[List[String]]
+          `type` <- c.downField("type").as[String]
+          serviceEndpoint <- c.downField("serviceEndpoint").as[Set[URI]]
         } yield DIDCommService(
           id,
-          serviceEndpoint,
-          routingKeys,
-          accept
+          `type`,
+          serviceEndpoint
         )

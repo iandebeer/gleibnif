@@ -96,6 +96,7 @@ lazy val client = project
       "org.typelevel" %% "cats-effect" % ceVersion,
       "io.grpc" % "grpc-netty-shaded" % grpcVersion,
       "io.grpc" % "grpc-core" % grpcVersion,
+      "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.1",
       "io.grpc" % "grpc-protobuf" % grpcVersion,
       "io.grpc" % "grpc-stub" % grpcVersion,
       "decentralized-identity" % "did-common-java" % didCommonVersion,

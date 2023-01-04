@@ -9,6 +9,7 @@ import io.circe.parser.*
 import dev.mn8.gleibnif.DIDDoc
 import dev.mn8.gleibnif.CirceDIDCodec.decodeDIDDoc
 
+
 class DidCommSpec extends FunSuite {
 
   val did = URI.create("did:ex:1234")
@@ -24,6 +25,7 @@ class DidCommSpec extends FunSuite {
     ],
     "id": "did:example:123456789abcdefghi",
     "controller": "did:example:bcehfew7h32f32h7af3",
+    "alsoKnownAs": ["did:example:bcehfew7h32f32h7af3"],
     "verificationMethod": [
       {
         "id": "did:example:123#_Qq0UL2Fq651Q0Fjd6TvnYE-faHiOpRlPVQcY_-tA4A",
@@ -44,7 +46,7 @@ class DidCommSpec extends FunSuite {
       }
     ],
     "authentication": [
-      "did:example:123456789abcdefghi#keys-1",
+      "did:example:@@@@@@@@@@@@@@@@@@@@@@@@#keys-1",
       {
         "id": "did:example:123456789abcdefghi#keys-2",
         "type": "Ed25519VerificationKey2020",
@@ -67,7 +69,7 @@ class DidCommSpec extends FunSuite {
     .`type`("Ed25519VerificationKey2018")
     .publicKeyBase58("FyfKP2HvTKqDZQzvyL38yXH7bExmwofxHf2NR5BrcGf1")
     .build()
-  val didDoc = DIDDocument
+  val didDocBuilder = DIDDocument
     .builder()
     .id(did)
     .service(service)
@@ -80,15 +82,15 @@ class DidCommSpec extends FunSuite {
   val CHARLIE_DID = "did:example:charlie"
   val charlieDID = URI.create(CHARLIE_DID)
 
-  test("build petri net") {
+  test("build diddoc") {
     import dev.mn8.gleibnif.CirceDIDCodec.*
 
-    val didDoc2 = parse(didDocJson) match {
+    val didDocJsonString = parse(didDocJson) match {
       case Left(failure) => 
-        println("Invalid JSON2 :(")
+        println("Invalid JSON String :(")
       case Right(json) => 
-        println("\nJSon2:\n" + json)
-        println("\nJSon2 DIDDoc\n" + json.as[DIDDoc])
+        println("\nJSonString:\n" + json)
+        println("\nJSonString as DIDDoc:\n" + json.as[DIDDoc])
     }
 
     /* val name = "didcomm"
@@ -165,10 +167,21 @@ class DidCommSpec extends FunSuite {
       )
     ) */
 
-    println("\nDIDDoc1:\n" + didDoc.toJson(true))
+    println("\nDIDDocBuilder:\n" + didDocBuilder.toJson(true))
+    val didDocBuilderJson = parse(didDocBuilder.toJson(true)) match {
+      case Left(failure) => 
+        println("Invalid JSON Build :(")
+      case Right(json) => 
+        println("\nJSon Build:\n" + json)
+        println("\nJSonBuilder as DIDDoc:\n" + json.as[DIDDoc])
+    }
+
+
     val didJWT = "did:jwk:eyJraWQiOiJ1cm46aWV0ZjpwYXJhbXM6b2F1dGg6andrLXRodW1icHJpbnQ6c2hhLTI1NjpGZk1iek9qTW1RNGVmVDZrdndUSUpqZWxUcWpsMHhqRUlXUTJxb2JzUk1NIiwia3R5IjoiT0tQIiwiY3J2IjoiRWQyNTUxOSIsImFsZyI6IkVkRFNBIiwieCI6IkFOUmpIX3p4Y0tCeHNqUlBVdHpSYnA3RlNWTEtKWFE5QVBYOU1QMWo3azQifQ"
     val didSov = "did:sov:WRfXPg8dantKVubE3HX8pw"
     val x = ResolverServiceClient.resolve(didJWT)
+
+
   }
 
     // val boxes: Seq[Wallet.Box] = Seq(new Wallet.Box("",None))

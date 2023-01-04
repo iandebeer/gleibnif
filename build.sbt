@@ -1,7 +1,7 @@
 lazy val Scala3 = "3.2.1"
 lazy val Scala213 = "2.13.6"
 lazy val catsVersion = "2.9.0"
-lazy val ceVersion = "3.4.2"
+lazy val ceVersion = "3.4.4"
 lazy val fs2Version = "3.4.0"
 lazy val circeVersion = "0.14.3"
 lazy val grpcVersion = "1.51.1"
@@ -13,7 +13,7 @@ lazy val refinedVersion = "0.9.27"
 lazy val castanetVersion = "0.1.5"
 lazy val didCommonVersion = "1.1.0"
 lazy val didCommVersion = "0.3.2"
-lazy val sttpVersion = "3.8.5"
+lazy val sttpVersion = "3.8.6"
 
 
 lazy val munitVersion = "0.7.29"

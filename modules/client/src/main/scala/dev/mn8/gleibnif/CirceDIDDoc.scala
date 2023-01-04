@@ -27,25 +27,25 @@ object CirceDIDCodec:
             .downField("didDocument")
             .downField("verificationMethod")
             .as[Option[Set[VerificationMethod]]]
-          keyAgreement: Option[Set[VerificationRelationship]] <- c
+          keyAgreement: Option[Set[KeyAgreement]] <- c
             .downField("didDocument")
             .downField("keyAgreement")
-            .as[Option[Set[VerificationRelationship]]]
+            .as[Option[Set[KeyAgreement]]]
           authentication: Option[Set[Authentication]] <- c
             .downField("didDocument")
             .downField("authentication")
             .as[Option[Set[Authentication]]]
           assertionMethod <- c
             .downField("assertionMethod")
-            .as[Option[Set[VerificationRelationship]]]
+            .as[Option[Set[Assertion]]]
           capabilityInvocation <- c
             // .downField("didDocument")
             .downField("capabilityInvocation")
-            .as[Option[Set[VerificationRelationship]]]
+            .as[Option[Set[CapabilityInvocation]]]
           capabilityDelegations <- c
             // .downField("didDocument")
             .downField("capabilityDelegations")
-            .as[Option[Set[VerificationRelationship]]]
+            .as[Option[Set[CapabilityDelegation]]]
           didCommServices <- c
             .downField("didDocument")
             .downField("service")
@@ -104,22 +104,6 @@ object CirceDIDCodec:
       .widen[VerificationMaterial]
 
 
-  
-    
-  given decodeVerificationReReference: Decoder[KeyAgreementReference] =
-    Decoder.forProduct1("ref")(KeyAgreementReference.apply)
-
-  given decodeVerificationInstance: Decoder[KeyAgreementInstance] =
-    Decoder.forProduct4("id", "type", "controller", "publicKeyMultibase")(
-      KeyAgreementInstance.apply
-    )
-
-  given decodeVerificationRelationship: Decoder[VerificationRelationship] =
-    decodeVerificationReReference
-      .widen[VerificationRelationship] or decodeVerificationInstance
-      .widen[VerificationRelationship]
-
-
   given decodeAuthenticationReference: Decoder[AuthenticationReference] =
     new Decoder[AuthenticationReference]:
       final def apply(
@@ -138,6 +122,130 @@ object CirceDIDCodec:
     decodeAuthenticationReference
       .widen[Authentication] or decodeAuthenticationInstance
       .widen[Authentication]
+
+  
+  given decodeAssertionInstance: Decoder[AssertionInstance] =
+    new Decoder[AssertionInstance]:
+      final def apply(c: HCursor): Decoder.Result[AssertionInstance] =
+        for {
+          id <- c.downField("id").as[String]
+          `type` <- c.downField("type").as[String]
+          controller <- c.downField("controller").as[String]
+          publicKeyMultibase <- c
+            .downField("publicKeyMultibase")
+            .as[String]
+        } yield AssertionInstance(
+          id,
+          `type`,
+          controller,
+          publicKeyMultibase
+        )
+
+  given decodeAssertionReference: Decoder[AssertionReference] =
+    new Decoder[AssertionReference]:
+      final def apply(c: HCursor): Decoder.Result[AssertionReference] =
+        for {
+          value <- c.value.as[String]
+        } yield AssertionReference(value) 
+
+  given decodeAssertion: Decoder[Assertion] =
+    decodeAssertionInstance.widen[Assertion] or decodeAssertionReference
+      .widen[Assertion]
+
+
+  given decodeKeyAgreementMethod: Decoder[KeyAgreementInstance] =
+    new Decoder[KeyAgreementInstance]:
+      final def apply(c: HCursor): Decoder.Result[KeyAgreementInstance] =
+        for {
+          id <- c.downField("id").as[String]
+          `type` <- c.downField("type").as[String]
+          controller <- c.downField("controller").as[String]
+          publicKeyMultibase <- c
+            .downField("publicKeyMultibase")
+            .as[String]
+        } yield KeyAgreementInstance(
+          id,
+          `type`,
+          controller,
+          publicKeyMultibase
+        )
+   
+  given decodeKeyAgreementReference: Decoder[KeyAgreementReference] =
+    new Decoder[KeyAgreementReference]:
+      final def apply(c: HCursor): Decoder.Result[KeyAgreementReference] =
+        for {
+          value <- c.value.as[String]
+        } yield KeyAgreementReference(value)
+
+  given decodeKeyAgreement: Decoder[KeyAgreement] =
+    decodeKeyAgreementReference.widen[KeyAgreement] or decodeKeyAgreementMethod
+      .widen[KeyAgreement]
+
+
+  given decodeCapabilityInvocationInstance
+      : Decoder[CapabilityInvocationInstance] =
+    new Decoder[CapabilityInvocationInstance]:
+      final def apply(c: HCursor): Decoder.Result[CapabilityInvocationInstance] =
+        for {
+          id <- c.downField("id").as[String]
+          `type` <- c.downField("type").as[String]
+          controller <- c.downField("controller").as[String]
+          publicKeyMultibase <- c
+            .downField("publicKeyMultibase")
+            .as[String]
+        } yield CapabilityInvocationInstance(
+          id,
+          `type`,
+          controller,
+          publicKeyMultibase
+        )
+
+  given decodeCapabilityInvocationReference
+      : Decoder[CapabilityInvocationReference] =
+    new Decoder[CapabilityInvocationReference]:
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[CapabilityInvocationReference] =
+        for {
+          value <- c.value.as[String]
+        } yield CapabilityInvocationReference(value)
+
+  given decodeCapabilityInvocation : Decoder[CapabilityInvocation] =
+    decodeCapabilityInvocationInstance
+      .widen[CapabilityInvocation] or decodeCapabilityInvocationReference
+      .widen[CapabilityInvocation]
+
+  given decodeCapabilityDelegationInstance : Decoder[CapabilityDelegationInstance]=
+    new Decoder[CapabilityDelegationInstance]:
+      final def apply(c: HCursor): Decoder.Result[CapabilityDelegationInstance] =
+        for {
+          id <- c.downField("id").as[String]
+          `type` <- c.downField("type").as[String]
+          controller <- c.downField("controller").as[String]
+          publicKeyMultibase <- c
+            .downField("publicKeyMultibase")
+            .as[String]
+        } yield CapabilityDelegationInstance(
+          id,
+          `type`,
+          controller,
+          publicKeyMultibase
+        )
+
+  given decodeCapabilityDelegationReference : Decoder[CapabilityDelegationReference] =
+    new Decoder[CapabilityDelegationReference]:
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[CapabilityDelegationReference] =
+        for {
+          value <- c.value.as[String]
+        } yield CapabilityDelegationReference(value)
+
+  given decodeCapabilityDelegation : Decoder[CapabilityDelegation] =
+    decodeCapabilityDelegationInstance
+      .widen[CapabilityDelegation] or decodeCapabilityDelegationReference
+      .widen[CapabilityDelegation]
+      
 
 
   given decodeDIDCommService: Decoder[DIDCommService] =

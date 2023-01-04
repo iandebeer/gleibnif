@@ -37,11 +37,11 @@ case class DIDDoc(
     controller: Option[String],
     alsoKnownAs: Option[Set[String]],
     verificationMethods: Option[Set[VerificationMethod]],
-    keyAgreements: Option[Set[VerificationRelationship]],
+    keyAgreements: Option[Set[KeyAgreement]],
     authentications: Option[Set[Authentication]],
-    assertionMethods: Option[Set[VerificationRelationship]],
-    capabilityInvocations: Option[Set[VerificationRelationship]],
-    capabilityDelegations: Option[Set[VerificationRelationship]], 
+    assertionMethods: Option[Set[Assertion]],
+    capabilityInvocations: Option[Set[CapabilityInvocation]],
+    capabilityDelegations: Option[Set[CapabilityDelegation]], 
     didCommServices: Option[Set[DIDCommService]]) :
 
   def findVerificationMethod(id: String): Either[DIDUrlNotFoundException, VerificationMethod] =

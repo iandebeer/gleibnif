@@ -5,9 +5,13 @@ import munit.*
 
 import java.net.URI
 import io.circe.*
+import io.circe.syntax.*
+
 import io.circe.parser.*
 import dev.mn8.gleibnif.DIDDoc
 import dev.mn8.gleibnif.CirceDIDCodec.decodeDIDDoc
+import dev.mn8.gleibnif.CirceDIDCodec.encodeDIDDoc
+
 
 
 class DidCommSpec extends FunSuite {
@@ -53,12 +57,18 @@ class DidCommSpec extends FunSuite {
         "controller": "did:example:123456789abcdefghi",
         "publicKeyMultibase": "zH3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
       }
+    ],
+    "service" : [ {
+      "id" : "did:example:123456789abcdefghi#did-communication",
+      "type" : "ServiceEndpointProxyService",
+      "serviceEndpoint" : "https://myservice.com/myendpoint"
+    } 
     ]
   }
 }
   """
   
-  val service = Service
+  /* val service = Service
     .builder()
     .`type`("ServiceEndpointProxyService")
     .serviceEndpoint("https://myservice.com/myendpoint")
@@ -74,24 +84,57 @@ class DidCommSpec extends FunSuite {
     .id(did)
     .service(service)
     .verificationMethod(verificationMethod)
-    .build()
-  val ALICE_DID = "did:example:alice"
+    .build() */
+  /* val ALICE_DID = "did:example:alice"
   val aliceDID = URI.create(ALICE_DID)
   val BOB_DID = "did:example:bob"
   val bobDIF = URI.create(BOB_DID)
   val CHARLIE_DID = "did:example:charlie"
-  val charlieDID = URI.create(CHARLIE_DID)
+  val charlieDID = URI.create(CHARLIE_DID) */
 
-  test("build diddoc") {
+  test("DIDDoc should be encoded to JSON") {
     import dev.mn8.gleibnif.CirceDIDCodec.*
 
     val didDocJsonString = parse(didDocJson) match {
       case Left(failure) => 
-        println("Invalid JSON String :(")
+        println(s"Invalid JSON String :( $failure)")
       case Right(json) => 
+        val dDoc = json.as[DIDDoc]
         println("\nJSonString:\n" + json)
-        println("\nJSonString as DIDDoc:\n" + json.as[DIDDoc])
+        dDoc match 
+          case Left(failure) => 
+            println(s"Failed decoding Json :( $failure)")
+          case Right(didDoc) => 
+            println("\nJSonString as DIDDoc:\n" + didDoc)
+            println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2)
     }
+
+   /*  println("\nDIDDocBuilder:\n" + didDocBuilder.toJson(true))
+    val didDocBuilderJson = parse(didDocBuilder.toJson(true)) match {
+      case Left(failure) => 
+        println("Invalid JSON Build :(")
+      case Right(json) => 
+        val dd = json.as[DIDDoc]
+      
+        println("\nJSonBuilder as DIDDoc:\n" + dd)
+        println("\nJSon Build:\n" + json)
+    } */
+   
+
+
+
+   /*  val didJWT = "did:jwk:eyJraWQiOiJ1cm46aWV0ZjpwYXJhbXM6b2F1dGg6andrLXRodW1icHJpbnQ6c2hhLTI1NjpGZk1iek9qTW1RNGVmVDZrdndUSUpqZWxUcWpsMHhqRUlXUTJxb2JzUk1NIiwia3R5IjoiT0tQIiwiY3J2IjoiRWQyNTUxOSIsImFsZyI6IkVkRFNBIiwieCI6IkFOUmpIX3p4Y0tCeHNqUlBVdHpSYnA3RlNWTEtKWFE5QVBYOU1QMWo3azQifQ"
+    val didSov = "did:sov:WRfXPg8dantKVubE3HX8pw"
+    val x = ResolverServiceClient.resolve(didJWT)
+
+    val y = ResolverServiceClient.resolve(didSov)
+ */
+
+
+  }
+
+    // val boxes: Seq[Wallet.Box] = Seq(new Wallet.Box("",None))
+    // FlowSpec(name, parameters, wallets, transactions)
 
     /* val name = "didcomm"
     val parameters: Seq[Param] = Seq(
@@ -166,26 +209,5 @@ class DidCommSpec extends FunSuite {
         )
       )
     ) */
-
-    println("\nDIDDocBuilder:\n" + didDocBuilder.toJson(true))
-    val didDocBuilderJson = parse(didDocBuilder.toJson(true)) match {
-      case Left(failure) => 
-        println("Invalid JSON Build :(")
-      case Right(json) => 
-        println("\nJSon Build:\n" + json)
-        println("\nJSonBuilder as DIDDoc:\n" + json.as[DIDDoc])
-    }
-
-
-    val didJWT = "did:jwk:eyJraWQiOiJ1cm46aWV0ZjpwYXJhbXM6b2F1dGg6andrLXRodW1icHJpbnQ6c2hhLTI1NjpGZk1iek9qTW1RNGVmVDZrdndUSUpqZWxUcWpsMHhqRUlXUTJxb2JzUk1NIiwia3R5IjoiT0tQIiwiY3J2IjoiRWQyNTUxOSIsImFsZyI6IkVkRFNBIiwieCI6IkFOUmpIX3p4Y0tCeHNqUlBVdHpSYnA3RlNWTEtKWFE5QVBYOU1QMWo3azQifQ"
-    val didSov = "did:sov:WRfXPg8dantKVubE3HX8pw"
-    val x = ResolverServiceClient.resolve(didJWT)
-
-
-  }
-
-    // val boxes: Seq[Wallet.Box] = Seq(new Wallet.Box("",None))
-    // FlowSpec(name, parameters, wallets, transactions)
-
   
 }

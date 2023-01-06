@@ -53,13 +53,10 @@ case class DIDDoc(
 
   def findDIDCommService(id: String): Either[DIDDocException, DIDCommService] =
     didCommServices match 
-      case Some(v) => v.find(_.id == id) match
+      case Some(v:DIDCommService) => v.find(_.id == id) match
         case Some(v: DIDCommService) => Right(v)
         case None => Left(DIDDocException("DIDComm service not found"))
       case None => Left(DIDDocException("DIDComm service not found"))
-
-
-
 
 
 
@@ -91,12 +88,12 @@ case class VerificationMethod(
   *   accept A possibly empty ordered array of strings representing accepted
   *   didcomm specification versions.
   */
-case class DIDCommService(
+
+case class DIDCommService (
     id: String,
     `type`: String,
-    serviceEndpoint: Set[URI],
-    )
-
+    serviceEndpoint: Set[URI]
+    ) 
 
 
 

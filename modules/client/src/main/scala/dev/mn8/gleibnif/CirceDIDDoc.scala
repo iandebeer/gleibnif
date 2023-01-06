@@ -106,6 +106,7 @@ object CirceDIDCodec:
           case AssertionReference(value) =>
             Json.fromString(value)
         } 
+
   given encodeCapabilityInvocation: Encoder[CapabilityInvocation] =
     new Encoder[CapabilityInvocation]:
       final def apply(a: CapabilityInvocation): Json =
@@ -389,7 +390,10 @@ object CirceDIDCodec:
         for {
           id <- c.downField("id").as[String]
           `type` <- c.downField("type").as[String]
-          serviceEndpoint <- c.downField("serviceEndpoint").as[Set[URI]]
+          serviceEndpoint <- c.downField("serviceEndpoint").focus match 
+            case Some(value) if value.isArray => value.as[Set[URI]]
+            case Some(value) => Right(Set[URI](new URI(value.asString.get)))
+            case _ => Right(Set.empty[URI])
         } yield DIDCommService(
           id,
           `type`,

@@ -2,7 +2,7 @@ package dev.mn8.gleibnif
 
 import io.circe.Decoder.Result
 import io.circe.*
-import io.circe.Decoder
+import io.circe.{Decoder,Json,Encoder}
 import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
 import java.net.URI
@@ -136,6 +136,11 @@ object CirceDIDCodec:
           case CapabilityDelegationReference(value) =>
             Json.fromString(value)
         }
+  
+  given  encodeURI: Encoder[URI] = 
+    new Encoder[URI]:
+      final def apply(u: URI): Json = Json.fromString(u.toString)
+
 
   given encodeDIDCommService: Encoder[DIDCommService] =
     new Encoder[DIDCommService]:
@@ -143,11 +148,10 @@ object CirceDIDCodec:
         Json.obj(
           ("id", Json.fromString(a.id)),
           ("type", Json.fromString(a.`type`)),
-          ("serviceEndpoint", Json.fromString(a.serviceEndpoint.toString()))
-        )
+          ("serviceEndpoint", Json.arr(a.serviceEndpoint.toSeq.map(uri => encodeURI(uri)): _*)))
 
   given decodeDIDDoc: Decoder[DIDDoc] =
-    new Decoder[DIDDoc]:
+    new Decoder[DIDDoc]:                                        
       final def apply(c: HCursor): Decoder.Result[DIDDoc] =
         for {
           did <- c.downField("didDocument").downField("id").as[Option[String]]

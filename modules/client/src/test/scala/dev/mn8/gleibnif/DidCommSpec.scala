@@ -68,7 +68,19 @@ class DidCommSpec extends FunSuite {
         "id":"did:example:123#linked-domain",
         "type": "LinkedDomains", 
         "serviceEndpoint": "https://bar.example.com"
-      }
+      },
+      {
+        "id": "did:example:123456789abcdefghi#didcomm-1",
+        "type": "DIDCommMessaging",
+        "serviceEndpoint": [{
+            "uri": "https://example.com/path",
+            "accept": [
+                "didcomm/v2",
+                "didcomm/aip2;env=rfc587"
+            ],
+            "routingKeys": ["did:example:somemediator#somekey"]}
+    ]
+}
     ]
   }
 }

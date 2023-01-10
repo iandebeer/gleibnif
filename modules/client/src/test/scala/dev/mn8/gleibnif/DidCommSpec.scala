@@ -58,11 +58,17 @@ class DidCommSpec extends FunSuite {
         "publicKeyMultibase": "zH3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
       }
     ],
-    "service" : [ {
-      "id" : "did:example:123456789abcdefghi#did-communication",
-      "type" : "ServiceEndpointProxyService",
-      "serviceEndpoint" : "https://myservice.com/myendpoint"
-    } 
+    "service" : [ 
+      {
+        "id" : "did:example:123456789abcdefghi#did-communication",
+        "type" : ["ServiceEndpointProxyService"],
+        "serviceEndpoint" : ["https://myservice.com/myendpoint"]
+      },
+      {
+        "id":"did:example:123#linked-domain",
+        "type": "LinkedDomains", 
+        "serviceEndpoint": "https://bar.example.com"
+      }
     ]
   }
 }

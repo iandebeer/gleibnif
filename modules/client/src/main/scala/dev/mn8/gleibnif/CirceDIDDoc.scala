@@ -25,7 +25,7 @@ object CirceDIDCodec:
             ("assertionMethod", Json.fromValues(a.assertionMethods.getOrElse(Set.empty).map(encodeAssertion.apply))),
             ("capabilityInvocation", Json.fromValues(a.capabilityInvocations.getOrElse(Set.empty).map(encodeCapabilityInvocation.apply))),
             ("capabilityDelegations", Json.fromValues(a.capabilityDelegations.getOrElse(Set.empty).map(encodeCapabilityDelegation.apply))),
-            ("service", Json.fromValues(a.didCommServices.getOrElse(Set.empty).map(encodeDIDCommService.apply)))
+            ("service", Json.fromValues(a.services.getOrElse(Set.empty).map(encodeService.apply)))
           ))
         )
   
@@ -142,14 +142,29 @@ object CirceDIDCodec:
       final def apply(u: URI): Json = Json.fromString(u.toString)
 
 
-  given encodeDIDCommService: Encoder[DIDCommService] =
-    new Encoder[DIDCommService]:
-      final def apply(a: DIDCommService): Json =
+  given encodeService: Encoder[Service] =
+    new Encoder[Service]:
+      final def apply(a: Service): Json =
         Json.obj(
-          ("id", Json.fromString(a.id)),
-          ("type", Json.fromString(a.`type`)),
-          ("serviceEndpoint", Json.arr(a.serviceEndpoint.toSeq.map(uri => encodeURI(uri)): _*)))
-
+          ("id", Json.fromString(a.id.toString)),
+          ("type", Json.fromValues(a.`type`.map(_.toString).map(Json.fromString))),
+          ("serviceEndpoint", Json.fromValues(a.serviceEndpoint.map(encodeDIDCommServiceEndpoint.apply))))
+        
+  given encodeDIDCommServiceEndpoint: Encoder[ServiceEndpoint] =
+    new Encoder[ServiceEndpoint]: 
+      final def apply(a: ServiceEndpoint): Json = 
+        a match {
+          case ServiceEndpointURI(value) => Json.fromString(value.toString)
+          case ServiceEndpointDIDURL(did,fragment) => Json.obj(
+            "did" -> Json.fromString(did), 
+            "fragment" -> Json.fromString(fragment))
+          case ServiceEndpointDIDCommService(uri, accept, routingKeys) => Json.obj(
+            "uri" -> Json.fromString(uri.toString),
+            "accept" -> Json.fromValues(accept.map(_.toString).map(Json.fromString)),
+            "routingKeys" -> Json.fromValues(routingKeys.map(_.toString).map(Json.fromString)))
+        }
+      
+  
   given decodeDIDDoc: Decoder[DIDDoc] =
     new Decoder[DIDDoc]:                                        
       final def apply(c: HCursor): Decoder.Result[DIDDoc] =
@@ -189,7 +204,7 @@ object CirceDIDCodec:
           didCommServices <- c
             .downField("didDocument")
             .downField("service")
-            .as[Option[Set[DIDCommService]]]
+            .as[Option[Set[Service]]]
         } yield DIDDoc(
           did.getOrElse(""),
           controller,
@@ -387,19 +402,54 @@ object CirceDIDCodec:
       .widen[CapabilityDelegation]
       
 
+  given decodeServiceEndpointURI: Decoder[ServiceEndpointURI] =
+    new Decoder[ServiceEndpointURI]:
+      final def apply(c: HCursor): Decoder.Result[ServiceEndpointURI] =
+        for {
+          value <- c.value.as[String]
+        } yield ServiceEndpointURI(new URI(value))
 
-  given decodeDIDCommService: Decoder[DIDCommService] =
-    new Decoder[DIDCommService]:
-      final def apply(c: HCursor): Result[DIDCommService] =
+  given decodeServiceEndpointDIDURL: Decoder[ServiceEndpointDIDURL] =
+    new Decoder[ServiceEndpointDIDURL]:
+      final def apply(c: HCursor): Decoder.Result[ServiceEndpointDIDURL] =
+        for {
+          did <- c.downField("did").as[String]
+          fragment <- c.value.as[String]
+        } 
+        yield ServiceEndpointDIDURL(did, fragment)
+  
+  given decodeServiceEndpointDIDCommService: Decoder[ServiceEndpointDIDCommService] =
+    new Decoder[ServiceEndpointDIDCommService]:
+      final def apply(c: HCursor): Decoder.Result[ServiceEndpointDIDCommService] =
+        for {
+          uri <- c.downField("uri").as[URI]
+          accept <- c.downField("accept").as[Option[Set[String]]]
+          routingKeys <- c.downField("routingKeys").as[Option[Set[String]]]
+        } 
+        yield ServiceEndpointDIDCommService(uri, accept, routingKeys)
+
+
+  given decodeServiceEndpoint: Decoder[ServiceEndpoint] =
+    decodeServiceEndpointURI.widen[ServiceEndpoint] or decodeServiceEndpointDIDURL
+      .widen[ServiceEndpoint] or decodeServiceEndpointDIDCommService
+      .widen[ServiceEndpoint]
+
+
+  given decodeService: Decoder[Service] =
+    new Decoder[Service]:
+      final def apply(c: HCursor): Result[Service] =
         for {
           id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
-          serviceEndpoint <- c.downField("serviceEndpoint").focus match 
-            case Some(value) if value.isArray => value.as[Set[URI]]
-            case Some(value) => Right(Set[URI](new URI(value.asString.get)))
-            case _ => Right(Set.empty[URI])
-        } yield DIDCommService(
-          id,
+          `type` <- c.downField("type").focus match 
+            case Some(value) if value.isString => Right(Set[String](value.asString.getOrElse("")))
+            case Some(values) if values.isArray => Right(values.asArray.map(_.map(_.asString.getOrElse("")).toSet).getOrElse(Set.empty[String]))
+            case _ => Right(Set.empty[String])
+          serviceEndpoint <- c.downField("serviceEndpoint").focus match
+            case Some(value) if value.isString => Right(Set(ServiceEndpointURI(new URI(value.asString.getOrElse("")))))
+            case Some(values) if values.isArray => values.as[Set[ServiceEndpoint]]
+            case _ =>  Right(Set.empty[ServiceEndpoint])
+        } yield Service(
+          new URI(id),
           `type`,
           serviceEndpoint
         )

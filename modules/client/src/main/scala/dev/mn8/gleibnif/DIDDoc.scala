@@ -42,7 +42,7 @@ case class DIDDoc(
     assertionMethods: Option[Set[Assertion]],
     capabilityInvocations: Option[Set[CapabilityInvocation]],
     capabilityDelegations: Option[Set[CapabilityDelegation]], 
-    didCommServices: Option[Set[DIDCommService]]) :
+    services: Option[Set[Service]]) :
 
   def findVerificationMethod(id: String): Either[DIDUrlNotFoundException, VerificationMethod] =
     verificationMethods match 
@@ -51,10 +51,10 @@ case class DIDDoc(
         case None                        => Left(DIDUrlNotFoundException(id, did))
       case None => Left(DIDUrlNotFoundException(id, did))
 
-  def findDIDCommService(id: String): Either[DIDDocException, DIDCommService] =
-    didCommServices match 
-      case Some(v:DIDCommService) => v.find(_.id == id) match
-        case Some(v: DIDCommService) => Right(v)
+  def findDIDCommService(id: String): Either[DIDDocException, Service] =
+    services match 
+      case Some(v:Service) => v.find(_.id.toString() == id) match
+        case Some(v: Service) => Right(v)
         case None => Left(DIDDocException("DIDComm service not found"))
       case None => Left(DIDDocException("DIDComm service not found"))
 
@@ -89,11 +89,20 @@ case class VerificationMethod(
   *   didcomm specification versions.
   */
 
-case class DIDCommService (
-    id: String,
-    `type`: String,
-    serviceEndpoint: Set[URI]
+case class Service (
+    id: URI,
+    `type`: Set[String],
+    serviceEndpoint: Set[ServiceEndpoint]
     ) 
+
+sealed trait ServiceEndpoint
+
+case class ServiceEndpointURI(uri: URI) extends ServiceEndpoint
+
+case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint
+
+case class ServiceEndpointDIDCommService(uri: URI, accept: Option[Set[String]], routingKeys: Option[Set[String]]) extends ServiceEndpoint
+
 
 
 

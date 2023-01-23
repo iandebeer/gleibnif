@@ -9,6 +9,16 @@ case class VerificationMaterialJWK(
     x: String,
     kty: String,
     kid: String
-) extends VerificationMaterial
+) extends VerificationMaterial:
+  override def toString(): String = 
+    s"""{
+      |  "crv": "$crv",
+      |  "x": "$x",
+      |  "kty": "$kty",
+      |  "kid": "$kid"
+      """
 
-case class VerificationMaterialMultibase(value: String) extends VerificationMaterial 
+case class VerificationMaterialMultibase(value: String) extends VerificationMaterial:
+  override def toString(): String = s"""{
+    |  "publicKeyMultibase": "$value"
+    |}""".stripMargin

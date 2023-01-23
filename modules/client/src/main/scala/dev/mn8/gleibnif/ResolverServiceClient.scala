@@ -9,35 +9,36 @@ import sttp.client3.circe.*
 import io.circe.*
 import io.circe.parser.*
 import dev.mn8.gleibnif.DIDDoc
-import dev.mn8.gleibnif.CirceDIDCodec.decodeDIDDoc
+import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
 
 
-object ResolverServiceClient { // extends DIDDocResolver {
+case class ResolverServiceClient(resolverURI:String):
 
-
- // given didDecoder: Decoder[DIDDoc] = deriveDecoder[dev.mn8.gleibnif.DIDDoc]
-  def resolve(did: String): Optional[DIDDoc] =
+  def resolve(did: String): Either[ResolverError,DIDDoc] =
     val query = "http language:scala"
     val request =
-      basicRequest.get(uri"https://dev.uniresolver.io/1.0/identifiers/$did")
+      basicRequest.get(uri"$resolverURI$did")
     val backend = HttpClientSyncBackend()
     val response = request.send(backend)
    
     response.body match 
       case Left(e) => 
-        println(e)
-        Optional.empty[DIDDoc]
+        println("Error: " + e)
+        Left(ResolverError("Error: " + e))
 
       case Right(b) => 
         parse(b) match 
         case Left(failure) => 
-          println("Invalid JSON :(")
-          Optional.empty[DIDDoc]
-
+          println("Error: " + failure)
+          Left(ResolverError("Error: " + failure))
         case Right(json) => 
-          println("\nJSON:\n" + json)
-          println("\nDIDDIC\n" + json.as[DIDDoc])
-        
-          Optional.empty[DIDDoc]
+          println("Success: " + json.spaces2)
+          json.as[DIDDoc] match 
+            case Left(e) => 
+              println("Error: " + e)
+              Left(ResolverError("Error: " + e))
+            case Right(d) => 
+              println("Success: " + d)
+              Right(d)  
 
-}
+case class ResolverError(message: String) extends Exception(message)

@@ -5,6 +5,8 @@ package dev.mn8.gleibnif
 import org.didcommx.didcomm.exceptions.DIDDocException
 import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
 import io.circe.*
+import io.circe.syntax._
+
 import foundation.identity.did.VerificationRelationships
 import java.net.URI
 
@@ -48,15 +50,56 @@ case class DIDDoc(
     verificationMethods match 
       case Some(v) => v.find(_.id == id) match
         case Some(v: VerificationMethod) => Right(v)
-        case None                        => Left(DIDUrlNotFoundException(id, did))
-      case None => Left(DIDUrlNotFoundException(id, did))
+        case _                        => Left(DIDUrlNotFoundException(id, did))
+      case _ => Left(DIDUrlNotFoundException(id, did))
 
   def findDIDCommService(id: String): Either[DIDDocException, Service] =
     services match 
       case Some(v:Service) => v.find(_.id.toString() == id) match
         case Some(v: Service) => Right(v)
-        case None => Left(DIDDocException("DIDComm service not found"))
-      case None => Left(DIDDocException("DIDComm service not found"))
+        case _ => Left(DIDDocException("DIDComm service not found"))
+      case _ => Left(DIDDocException("DIDComm service not found"))
+
+
+  override def toString: String =
+    s"""DIDDoc(
+       |  did=$did,
+       |  controller=$controller,
+       |  alsoKnownAs=$alsoKnownAs,
+       |  verificationMethods=$verificationMethods,
+       |  keyAgreements=$keyAgreements,
+       |  authentications=$authentications,
+       |  assertionMethods=$assertionMethods,
+       |  capabilityInvocations=$capabilityInvocations,
+       |  capabilityDelegations=$capabilityDelegations,
+       |  services=$services
+       |)""".stripMargin
+
+object DIDDoc:
+  import DIDCodec.*
+  import DIDCodec.encodeDIDDoc
+  import DIDCodec.decodeDIDDoc
+
+  def apply(did: String, controller: Option[String], alsoKnownAs: Option[Set[String]], verificationMethods: Option[Set[VerificationMethod]], keyAgreements: Option[Set[KeyAgreement]], authentications: Option[Set[Authentication]], assertionMethods: Option[Set[Assertion]], capabilityInvocations: Option[Set[CapabilityInvocation]], capabilityDelegations: Option[Set[CapabilityDelegation]], services: Option[Set[Service]]): DIDDoc = new DIDDoc(did, controller, alsoKnownAs, verificationMethods, keyAgreements, authentications, assertionMethods, capabilityInvocations, capabilityDelegations, services)
+
+  def createDIDKeyDocument(did: String, controller: String, verificationMethod: VerificationMethod, service: Service): DIDDoc =
+    DIDDoc(
+      did,
+      Some(controller),
+      None,
+      Some(Set(verificationMethod)),
+      None,
+      None,
+      None,
+      None,
+      None,
+      Some(Set(service))
+    )
+  def addContext(didDoc: DIDDoc, contexts: List[String]): DIDDoc =
+    val didDocJson = didDoc.asJson
+
+    val didDocJsonWithContext = didDocJson.mapObject(_.add("@context", contexts.asJson))
+    didDocJsonWithContext.as[DIDDoc].getOrElse(didDoc)
 
 
 
@@ -66,10 +109,17 @@ case class DIDDoc(
   */
 case class VerificationMethod(
     id: String,
-    `type`: String,
+    `type`: VerificationMethodType,
     verificationMaterial: VerificationMaterial,
     controller: String
-)
+):
+  override def toString: String =
+    s"""VerificationMethod(
+       |  id=$id,
+       |  type= ${`type`.toString()},
+       |  verificationMaterial=$verificationMaterial,
+       |  controller=$controller
+       |)""".stripMargin
 
 
 /** DID DOC Service of 'DIDCommMessaging' type. see
@@ -93,19 +143,34 @@ case class Service (
     id: URI,
     `type`: Set[String],
     serviceEndpoint: Set[ServiceEndpoint]
-    ) 
+    ):
+  override def toString: String =
+    s"""Service(
+       |  id=$id,
+       |  type= ${`type`},
+       |  serviceEndpoint=$serviceEndpoint
+       |)""".stripMargin
+  
 
 sealed trait ServiceEndpoint
 
-case class ServiceEndpointURI(uri: URI) extends ServiceEndpoint
+case class ServiceEndpointURI(uri: URI) extends ServiceEndpoint:
+  override def toString: String =
+    s"""ServiceEndpointURI(
+       |  uri=$uri
+       |)""".stripMargin
 
-case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint
+case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint:
+  override def toString: String =
+    s"""ServiceEndpointDIDURL(
+       |  did=$did,
+       |  fragment=$fragment
+       |)""".stripMargin
 
-case class ServiceEndpointDIDCommService(uri: URI, accept: Option[Set[String]], routingKeys: Option[Set[String]]) extends ServiceEndpoint
-
-
-
-
-
-
- 
+case class ServiceEndpointDIDCommService(uri: URI, accept: Option[Set[String]], routingKeys: Option[Set[String]]) extends ServiceEndpoint:
+  override def toString: String =
+    s"""ServiceEndpointDIDCommService(
+       |  uri=$uri,
+       |  accept=$accept,
+       |  routingKeys=$routingKeys
+       |)""".stripMargin

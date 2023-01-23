@@ -13,7 +13,8 @@ lazy val refinedVersion = "0.9.27"
 lazy val castanetVersion = "0.1.5"
 lazy val didCommonVersion = "1.1.0"
 lazy val didCommVersion = "0.3.2"
-lazy val sttpVersion = "3.8.6"
+lazy val sttpVersion = "3.8.8"
+lazy val tinkVersion = "1.7.0"
 
 
 lazy val munitVersion = "0.7.29"
@@ -96,14 +97,14 @@ lazy val client = project
       "org.typelevel" %% "cats-effect" % ceVersion,
       "io.grpc" % "grpc-netty-shaded" % grpcVersion,
       "io.grpc" % "grpc-core" % grpcVersion,
-      "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.1",
       "io.grpc" % "grpc-protobuf" % grpcVersion,
       "io.grpc" % "grpc-stub" % grpcVersion,
       "decentralized-identity" % "did-common-java" % didCommonVersion,
       "io.grpc" % "grpc-netty-shaded" % grpcVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
-      "org.didcommx" % "didcomm" % didCommVersion
+      "org.didcommx" % "didcomm" % didCommVersion,
+      "com.google.crypto.tink" % "tink" % tinkVersion
     ),
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
   )

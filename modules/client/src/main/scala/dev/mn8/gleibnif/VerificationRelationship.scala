@@ -19,7 +19,14 @@ sealed trait  VerificationInstance(
     `type`: String,
     controller: String,
     publicKeyMultibase: String
-) extends VerificationRelationship 
+) extends VerificationRelationship:
+  override def toString: String =
+    s"""VerificationInstance(
+       |  id=$id,
+       |  type= ${`type`},
+       |  controller=$controller,
+       |  publicKeyMultibase=$publicKeyMultibase
+       |)""".stripMargin
 
 case class AuthenticationInstance(
     id: String,

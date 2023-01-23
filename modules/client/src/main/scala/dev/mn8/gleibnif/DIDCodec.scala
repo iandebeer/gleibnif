@@ -9,7 +9,7 @@ import java.net.URI
 
 //import summon.{Decoder => _, _}
 
-object CirceDIDCodec:
+object DIDCodec:
 
   given encodeDIDDoc: Encoder[DIDDoc] =
     new Encoder[DIDDoc]:
@@ -34,7 +34,7 @@ object CirceDIDCodec:
       final def apply(a: VerificationMethod): Json =
         Json.obj(
           ("id", Json.fromString(a.id)),
-          ("type", Json.fromString(a.`type`)),
+          ("type", Json.fromString(a.`type`.toString())),
           ("controller", Json.fromString(a.controller)),
           ("public", encodeVerificationMaterial.apply(a.verificationMaterial)))
   
@@ -167,34 +167,32 @@ object CirceDIDCodec:
   
   given decodeDIDDoc: Decoder[DIDDoc] =
     new Decoder[DIDDoc]:                                        
-      final def apply(c: HCursor): Decoder.Result[DIDDoc] =
+      final def apply(cur: HCursor): Decoder.Result[DIDDoc] =
+        val c = cur.downField(("didDocument")).success match 
+          case Some(c) => c
+          case None => cur
+        
         for {
-          did <- c.downField("didDocument").downField("id").as[Option[String]]
+          did <- c.downField("id").as[Option[String]]
           controller <- c
-            .downField("didDocument")
             .downField("controller")
             .as[Option[String]]
           alsoKnownAs <- c
-            .downField("didDocument")
             .downField("alsoKnownAs")
             .as[Option[Set[String]]]
           verificationMethod <- c
-            .downField("didDocument")
             .downField("verificationMethod")
             .as[Option[Set[VerificationMethod]]]
           keyAgreement: Option[Set[KeyAgreement]] <- c
-            .downField("didDocument")
             .downField("keyAgreement")
             .as[Option[Set[KeyAgreement]]]
           authentication: Option[Set[Authentication]] <- c
-            .downField("didDocument")
             .downField("authentication")
             .as[Option[Set[Authentication]]]
           assertionMethod <- c
             .downField("assertionMethod")
             .as[Option[Set[Assertion]]]
           capabilityInvocation <- c
-            // .downField("didDocument")
             .downField("capabilityInvocation")
             .as[Option[Set[CapabilityInvocation]]]
           capabilityDelegations <- c
@@ -202,7 +200,6 @@ object CirceDIDCodec:
             .downField("capabilityDelegations")
             .as[Option[Set[CapabilityDelegation]]]
           didCommServices <- c
-            .downField("didDocument")
             .downField("service")
             .as[Option[Set[Service]]]
         } yield DIDDoc(
@@ -231,11 +228,15 @@ object CirceDIDCodec:
             .orElse(
               c.downField("publicKeyMultibase")
                 .as[VerificationMaterialMultibase]
+                .orElse(
+                  c.downField("publicKeyBase58")
+                    .as[VerificationMaterialMultibase]
+                )
             )
 
         } yield VerificationMethod(
           id,
-          `type`,
+          VerificationMethodType.fromString(`type`),
           verificationMaterial,
           controller
         )
@@ -289,6 +290,9 @@ object CirceDIDCodec:
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
             .as[String]
+            .orElse(
+              c.downField("publicKeyBase58")
+                .as[String])
         } yield AssertionInstance(
           id,
           `type`,
@@ -318,6 +322,9 @@ object CirceDIDCodec:
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
             .as[String]
+            .orElse(
+              c.downField("publicKeyBase58")
+                .as[String])
         } yield KeyAgreementInstance(
           id,
           `type`,
@@ -348,6 +355,9 @@ object CirceDIDCodec:
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
             .as[String]
+            .orElse(
+              c.downField("publicKeyBase58")
+                .as[String])
         } yield CapabilityInvocationInstance(
           id,
           `type`,
@@ -380,6 +390,9 @@ object CirceDIDCodec:
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
             .as[String]
+            .orElse(
+              c.downField("publicKeyBase58")
+                .as[String])
         } yield CapabilityDelegationInstance(
           id,
           `type`,
@@ -439,7 +452,7 @@ object CirceDIDCodec:
     new Decoder[Service]:
       final def apply(c: HCursor): Result[Service] =
         for {
-          id <- c.downField("id").as[String]
+          id <- c.downField("id").as[String].orElse(Right("did:sov:123"))
           `type` <- c.downField("type").focus match 
             case Some(value) if value.isString => Right(Set[String](value.asString.getOrElse("")))
             case Some(values) if values.isArray => Right(values.asArray.map(_.map(_.asString.getOrElse("")).toSet).getOrElse(Set.empty[String]))

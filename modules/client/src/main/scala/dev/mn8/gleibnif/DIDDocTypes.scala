@@ -24,6 +24,7 @@ enum VerificationMethodType(typ:String) :
     case ED25519_VERIFICATION_KEY_2020 extends VerificationMethodType("Ed25519VerificationKey2020")
     case ECDSA_SECP_256K1_VERIFICATION_KEY_2019 extends VerificationMethodType("EcdsaSecp256k1VerificationKey2019") //- not supported now
     case OTHER extends VerificationMethodType("Other")
+    //Ed25519VerificationKey2020
 
 
 object VerificationMethodType:
@@ -33,6 +34,7 @@ object VerificationMethodType:
       case "Ed25519VerificationKey2018" => VerificationMethodType.ED25519_VERIFICATION_KEY_2018
       case "X25519KeyAgreementKey2019" => VerificationMethodType.X25519_KEY_AGREEMENT_KEY_2019
       case "X25519KeyAgreementKey2020" => VerificationMethodType.X25519_KEY_AGREEMENT_KEY_2020
+      case "Ed25519VerificationKey2020" => VerificationMethodType.ED25519_VERIFICATION_KEY_2020
       case "EcdsaSecp256k1VerificationKey2019" => VerificationMethodType.ECDSA_SECP_256K1_VERIFICATION_KEY_2019
       case _ => VerificationMethodType.OTHER
     

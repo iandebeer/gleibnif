@@ -97,7 +97,6 @@ object DIDDoc:
     )
   def addContext(didDoc: DIDDoc, contexts: List[String]): DIDDoc =
     val didDocJson = didDoc.asJson
-
     val didDocJsonWithContext = didDocJson.mapObject(_.add("@context", contexts.asJson))
     didDocJsonWithContext.as[DIDDoc].getOrElse(didDoc)
 

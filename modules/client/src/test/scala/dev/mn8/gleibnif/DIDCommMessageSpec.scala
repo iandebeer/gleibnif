@@ -65,7 +65,7 @@ class DIDCommMessageSpec extends FunSuite {
 }
 """
   
-test("DIDCommMessage should be encoded to JSON") {
+  test("DIDCommMessage should be encoded to JSON") {
     import dev.mn8.gleibnif.DIDCodec.* 
     println("\n\n*******************\nDIDCommMessage as JSON:\n*******************\n")
     testParse(jsonString)

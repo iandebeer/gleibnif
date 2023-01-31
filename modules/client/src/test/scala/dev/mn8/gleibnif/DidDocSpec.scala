@@ -13,9 +13,17 @@ import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
 import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
 
 import sttp.client3.*
+import java.io.StringReader
 
+import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 
-class DidCommSpec extends FunSuite {
+import com.apicatalog.jsonld.JsonLd
+import java.io.Reader
+import com.apicatalog.jsonld.document.JsonDocument
+import dev.mn8.gleibnif.jsonld.JsonLDP
+
+class DidDocSpec extends FunSuite {
 
   val did = uri"did:ex:1234"
   val didString: String = did.toString()
@@ -109,10 +117,15 @@ class DidCommSpec extends FunSuite {
     ]
 }  
   """
-  val didDocJsonLD = """
+
+  val contextLD = """ {"@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/suites/jws-2020/v1",
+      "https://w3id.org/security/suites/ed25519-2020/v1"
+    ]}
+  """
+  val jsonLDString = """
 {
-  "@context": "https://w3id.org/did-resolution/v1",
-  "didDocument": {
     "@context": [
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/jws-2020/v1",
@@ -205,7 +218,7 @@ class DidCommSpec extends FunSuite {
       }
     ]
   }
-}
+
 """
   
   /* val ALICE_DID = "did:example:alice"
@@ -215,122 +228,50 @@ class DidCommSpec extends FunSuite {
   val CHARLIE_DID = "did:example:charlie"
   val charlieDID = URI.create(CHARLIE_DID) */
 
+
+
+
   def testParse(jsonString:String) =
      val didDocJsonString = parse(jsonString) match {
       case Left(failure) => 
         println(s"Invalid JSON String :( $failure)")
       case Right(json) => 
         val dDoc = json.as[DIDDoc]
-        println("\nJSonString:\n" + json)
+       // println("\nJSonString:\n" + json)
         dDoc match 
           case Left(failure) => 
             println(s"Failed decoding Json :( $failure)")
           case Right(didDoc) => 
-            println("\nJSonString as DIDDoc:\n" + didDoc)
+         //   println("\nJSonString as DIDDoc:\n" + didDoc)
             println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2)
     }
 
-  test("DIDDoc should be encoded to JSON") {
+  test("JSONLD should be encoded to JSON") {
     import dev.mn8.gleibnif.DIDCodec.* 
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")
     testParse(didDocJson)
+    println("\n\n******************************************************************\n")
+
     
   }
- 
-  test("DIDDoc should be encoded to JSONLD") {
-    import dev.mn8.gleibnif.DIDCodec.*
-    println("\n\n*******************\nDIDDoc as JSONLD:\n*******************\n")
-    testParse(didDocJsonLD)
+
+  test("Jsonldp must process jsonld docs") {
+    println("\n\n******************* JSONLD Processor: *******************\n")
+
+    parse(jsonLDString) match {
+      case Left(failure) => 
+        println(s"Invalid JSON String :( ${failure.message}")
+      case Right(json) => 
+        JsonLDP(json).expand() match
+          case Left(failure) => 
+            println(s"${failure.message}")
+          case Right(value) =>
+            println(value.json.spaces2)
+            println("\n\n******************************************************************\n")
+
+            value.compact(new URI("https://github.com/iandebeer/gleibnif/blob/master/modules/client/src/test/resources/jsonLdContext.json")) match
+              case Left(value) => println(value)
+              case Right(value) => println(value.json.spaces2) 
+    }
   }
- 
-  test("Resolver results should be encoded to JSON") {
-    import dev.mn8.gleibnif.DIDCodec.*
-    println("\n\n*******************\nResolver as JSONLD:\n*******************\n")
-    val didJWT = "did:jwk:eyJraWQiOiJ1cm46aWV0ZjpwYXJhbXM6b2F1dGg6andrLXRodW1icHJpbnQ6c2hhLTI1NjpGZk1iek9qTW1RNGVmVDZrdndUSUpqZWxUcWpsMHhqRUlXUTJxb2JzUk1NIiwia3R5IjoiT0tQIiwiY3J2IjoiRWQyNTUxOSIsImFsZyI6IkVkRFNBIiwieCI6IkFOUmpIX3p4Y0tCeHNqUlBVdHpSYnA3RlNWTEtKWFE5QVBYOU1QMWo3azQifQ"
-    val didSov = "did:sov:WRfXPg8dantKVubE3HX8pw"
-    val resolver = ResolverServiceClient("https://dev.uniresolver.io/1.0/identifiers/")
-    val x = resolver.resolve(didJWT)
-    val y = resolver.resolve(didSov)
- 
-
-  }
-  
-
-    // val boxes: Seq[Wallet.Box] = Seq(new Wallet.Box("",None))
-    // FlowSpec(name, parameters, wallets, transactions)
-
-    /* val name = "didcomm"
-    val parameters: Seq[Param] = Seq(
-      Param("playCount", "Integer"),
-      Param("p1PK", "String"),
-      Param("p2PK", "String")
-    )
-    val wallets: Seq[Wallet] = Seq(
-      Wallet(
-        "player1",
-        "pk",
-        Seq(Wallet.Box("funds", None))
-      ),
-      Wallet(
-        "player2",
-        "pk",
-        Seq(Wallet.Box("funds", None))
-      ),
-      Wallet(
-        "game",
-        "pk",
-        Seq(
-          Wallet.Box(
-            "game",
-            Some(ErgCondition("targetBoxName", "erg_expression")),
-            Seq(TokenCondition("tokeName", "targetBoxName", "expression")),
-            Seq(Condition("targetBoxName", "expression"))
-          )
-        )
-      ),
-      Wallet(
-        "state",
-        "pk",
-        Seq(Wallet.Box("init", None), Wallet.Box("end", None))
-      )
-    )
-    val transactions = Seq(
-      Transaction(
-        name = "provide funds",
-        inputs = Seq(
-          InputArrow("state", "init", Some(SpendingPath("action", "Condition")))
-        )
-      ),
-      Transaction(
-        name = "play game",
-        inputs = Seq(
-          InputArrow(
-            "p2Choice",
-            "fromBox",
-            Some(SpendingPath("action", "Condition"))
-          )
-        )
-      ),
-      Transaction(
-        name = "create game",
-        inputs = Seq(
-          InputArrow(
-            "p2Choice",
-            "fromBox",
-            Some(SpendingPath("action", "Condition"))
-          )
-        )
-      ),
-      Transaction(
-        name = "withdraw",
-        inputs = Seq(
-          InputArrow(
-            "p2Choice",
-            "fromBox",
-            Some(SpendingPath("action", "Condition"))
-          )
-        )
-      )
-    ) */
-  
 }

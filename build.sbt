@@ -16,9 +16,45 @@ lazy val didCommVersion = "0.3.2"
 lazy val sttpVersion = "3.8.8"
 lazy val tinkVersion = "1.7.0"
 
-
 lazy val munitVersion = "0.7.29"
 lazy val munitCEVersion = "1.0.7"
+
+lazy val commonSettings = Seq(
+   libraryDependencies ++= Seq(
+      "org.scala-lang" %% "scala3-staging" % Scala3,
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "co.fs2" %% "fs2-core" % fs2Version,
+      "co.fs2" %% "fs2-io" % fs2Version,
+      "org.typelevel" %% "cats-effect" % ceVersion,
+      "org.scodec" %% "scodec-bits" % scodecVersion,
+      "org.scala-lang" %% "scala3-staging" % Scala3,
+      "io.circe" %% "circe-yaml" % "0.14.2",
+      "dev.mn8" %% "castanet" % castanetVersion,
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "org.typelevel" %% "cats-effect" % ceVersion,
+      "org.scalameta" %% "munit" % munitVersion % Test,
+      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % munitCEVersion % Test
+      ),
+    libraryDependencies ++= Seq(
+      // "io.circe" %% "circe-yaml",
+      "io.circe" %% "circe-core",
+      "io.circe" %% "circe-generic",
+      "io.circe" %% "circe-parser"
+    ).map(_ % circeVersion)
+ )
+
+
+lazy val grpcSettings = Seq(
+   libraryDependencies ++= Seq(
+      "io.grpc" % "grpc-netty-shaded",
+      "io.grpc" % "grpc-core" ,
+      "io.grpc" % "grpc-protobuf",
+      "io.grpc" % "grpc-stub",
+      "io.grpc" % "grpc-netty-shaded" 
+     ).map(_ % grpcVersion)
+   )
+
 
 ThisBuild / version := "0.0.1"
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -38,31 +74,23 @@ lazy val root = project
       .withOverwrite(true)
   )
 
+
+ 
 lazy val core = project
   .in(file("modules/core"))
+  .settings(commonSettings: _*)
   .settings(
     name := "gleipnifCore",
     crossPaths := false,
     autoScalaLibrary := false,
     // crossScalaVersions := List(scala3, scala212),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % catsVersion,
-      "co.fs2" %% "fs2-core" % fs2Version,
-      "co.fs2" %% "fs2-io" % fs2Version,
-      "org.typelevel" %% "cats-effect" % ceVersion,
-      "org.scodec" %% "scodec-bits" % scodecVersion,
       "org.scala-lang" %% "scala3-staging" % Scala3,
-      "io.circe" %% "circe-yaml" % "0.14.2",
-      "org.scalameta" %% "munit" % munitVersion % Test,
-      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % munitCEVersion % Test
-    ),
-    libraryDependencies ++= Seq(
-      // "io.circe" %% "circe-yaml",
-      "io.circe" %% "circe-core",
-      "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser"
-    ).map(_ % circeVersion)
+      "org.didcommx" % "didcomm" % didCommVersion,
+      "com.apicatalog" % "titanium-json-ld" % "1.3.1",
+      "org.glassfish" % "jakarta.json" % "2.0.1",
+      "com.google.crypto.tink" % "tink" % tinkVersion
+    )
   )
 
 lazy val protocol = project
@@ -87,39 +115,34 @@ lazy val client = project
     description := "Protobuf Client",
     libraryDependencies ++= Seq(
       "org.scala-lang" %% "scala3-staging" % Scala3,
-      "dev.mn8" %% "castanet" % castanetVersion,
-      "org.scalameta" %% "munit" % munitVersion % Test,
-      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % munitCEVersion % Test,
-      "org.typelevel" %% "cats-core" % catsVersion,
-      "co.fs2" %% "fs2-core" % fs2Version,
-      "co.fs2" %% "fs2-io" % fs2Version,
-      "org.typelevel" %% "cats-effect" % ceVersion,
-      "io.grpc" % "grpc-netty-shaded" % grpcVersion,
-      "io.grpc" % "grpc-core" % grpcVersion,
-      "io.grpc" % "grpc-protobuf" % grpcVersion,
-      "io.grpc" % "grpc-stub" % grpcVersion,
       "decentralized-identity" % "did-common-java" % didCommonVersion,
-      "io.grpc" % "grpc-netty-shaded" % grpcVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
       "org.didcommx" % "didcomm" % didCommVersion,
+      "com.apicatalog" % "titanium-json-ld" % "1.3.1",
+      "org.glassfish" % "jakarta.json" % "2.0.1",
       "com.google.crypto.tink" % "tink" % tinkVersion
-    ),
+    ), 
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
   )
+  .settings(commonSettings: _*)
+  .settings(grpcSettings: _*)
   .enablePlugins(Fs2Grpc)
   .dependsOn(protocol)
+  .dependsOn(core)
   .dependsOn(protocol % "protobuf")
 
 lazy val server = project
   .in(file("modules/server"))
+  .settings(commonSettings: _*)
+  .settings(grpcSettings: _*)
   .settings(
     scalaVersion := Scala3,
     name := "gleipnifServer",
     description := "Protobuf Server",
     // nativeImageVersion := "21.2.0",
     Compile / mainClass := Some("dev.mn8.gleipnif.Main"),
+    
     libraryDependencies ++= List(
       "dev.mn8" %% "castanet" % castanetVersion,
       "org.typelevel" %% "cats-core" % catsVersion,

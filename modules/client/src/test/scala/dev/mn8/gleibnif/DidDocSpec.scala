@@ -237,12 +237,10 @@ class DidDocSpec extends FunSuite {
         println(s"Invalid JSON String :( $failure)")
       case Right(json) => 
         val dDoc = json.as[DIDDoc]
-       // println("\nJSonString:\n" + json)
         dDoc match 
           case Left(failure) => 
             println(s"Failed decoding Json :( $failure)")
           case Right(didDoc) => 
-         //   println("\nJSonString as DIDDoc:\n" + didDoc)
             println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2)
     }
 
@@ -269,7 +267,7 @@ class DidDocSpec extends FunSuite {
             println(value.json.spaces2)
             println("\n\n******************************************************************\n")
 
-            value.compact(new URI("https://github.com/iandebeer/gleibnif/blob/master/modules/client/src/test/resources/jsonLdContext.json")) match
+            value.compact(new URI("file:/Users/ian/dev/gleibnif/modules/client/src/test/resources/jsonLdContext.json")) match
               case Left(value) => println(value)
               case Right(value) => println(value.json.spaces2) 
     }

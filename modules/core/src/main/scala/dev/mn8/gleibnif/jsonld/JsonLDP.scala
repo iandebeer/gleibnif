@@ -15,6 +15,31 @@ import scala.io.Codec
 import io.circe.Json
 import io.circe.ParsingFailure
 
+trait JsonLD:
+  def expand(): Either[ParsingFailure, JsonLD]
+  def compact(uri: URI): Either[ParsingFailure, JsonLD]
+  def flatten(): Either[ParsingFailure, JsonLD]
+  def asRDF(): Either[ParsingFailure, JsonLD]
+  
+object JsonLDP:
+  def fromFile(file: String) = 
+    parse(Source.fromFile(file)(Codec.UTF8).mkString) match
+      case Left(failure) => Left(failure)
+      case Right(json) => Right(JsonLDP(json))
+  def fromURL(url: URL) = 
+    parse(Source.fromURL(url)(Codec.UTF8).mkString) match
+      case Left(failure) => Left(failure)
+      case Right(json) => Right(JsonLDP(json))
+  def fromURI(uri: URI) = 
+    parse(Source.fromURI(uri)(Codec.UTF8).mkString) match
+      case Left(failure) => Left(failure)
+      case Right(json) => Right(JsonLDP(json))
+  def fromString(string: String) = 
+    parse(string) match
+      case Left(failure) => Left(failure)
+      case Right(json) => Right(JsonLDP(json))
+  
+
 case class JsonLDP(json: Json):
   val document = JsonDocument.of(StringReader(json.noSpaces))
 
@@ -40,6 +65,11 @@ case class JsonLDP(json: Json):
 
   def asRDF() = 
     parse(JsonLd.toRdf(document).get.toString()) 
+    match
+        case Left(failure) => Left(failure)
+        case Right(json) => Right(JsonLDP(json))
+  def fromRDF() = 
+    parse(JsonLd.fromRdf(document).get.toString()) 
     match
         case Left(failure) => Left(failure)
         case Right(json) => Right(JsonLDP(json))

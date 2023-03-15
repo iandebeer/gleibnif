@@ -15,8 +15,9 @@ final case class PrismClient(prismUrl: String, prismToken: String):
  
   val backend = HttpClientSyncBackend()
 
-  def createDID(): IO[String] = 
-    for 
+  def createDID(): IO[String] = IO.delay("did:example:123")
+
+  /*   for 
       prismRequest <- IO(PrismRequest(text = message.text).asJson.noSpaces)
       _ <- IO.println(s"Request: $prismRequest")
       request <- IO.blocking(basicRequest
@@ -36,5 +37,5 @@ final case class PrismClient(prismUrl: String, prismToken: String):
             val keys = prismResponse.keywords
             println(keys.mkString(","))
             IO(message.copy(keywords = keys))
-    yield result  
+    yield result   */
 

@@ -9,9 +9,17 @@ import io.circe.syntax._
 
 
 object SignalMessageCodec:
+  given memberDecoder: Decoder[Member] = new Decoder[Member]:
+    def apply(c: HCursor): Result[Member] =
+      for
+        name <- c.downField("name").as[String]
+        number <- c.downField("number").as[String]
+      yield Member(name, number)
+      
 // '{"message": "Welcome to D@WNPatrol, the DIDx bot!", "number": "+27659747833", "recipients": [ "+27828870926","+27832582698" ]}
   given signalSendMessage: Encoder[SignalSendMessage] = new Encoder[SignalSendMessage]:
     def apply(a: SignalSendMessage): Json = Json.obj(
+      ("base64_attachments", Json.arr(a.attachments.map(Json.fromString):_*)),
       ("message", Json.fromString(a.message)),
       ("number", Json.fromString(a.number)),
       ("recipients", Json.arr(a.recipients.map(Json.fromString):_*))

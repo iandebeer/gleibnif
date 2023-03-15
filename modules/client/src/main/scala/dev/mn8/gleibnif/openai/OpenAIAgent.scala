@@ -36,25 +36,27 @@ final case class OpenAIAgent():
   val apiConf= getConf() 
 
   def extractKeywords(message: SignalSimpleMessage): IO[SignalSimpleMessage] = 
-    val openAIRequest = OpenAIRequest(prompt = s"Extract keywords from this text: ${message.text}").asJson.noSpaces
-    println(s"Request: $openAIRequest")
-    val request: Request[Either[ResponseException[String, Error], OpenAIResponse], Any] = basicRequest
-     .contentType("application/json")
-     .header("Authorization", s"Bearer ${apiConf.apiKey}",replaceExisting = true)
-     .body(openAIRequest)
-     .response(asJson[OpenAIResponse])
-     .post(uri"https://api.openai.com/v1/completions")
-    println(s"Request: $request")
-    val response = request.send(backend)
+    for 
+      openAIRequest <- IO(OpenAIRequest(prompt = s"Extract keywords from this text: ${message.text}").asJson.noSpaces)
+      _ <- IO.println(s"Request: $openAIRequest")
+      request <- IO.blocking(basicRequest
+        .contentType("application/json")
+        .header("Authorization", s"Bearer ${apiConf.apiKey}",replaceExisting = true)
+        .body(openAIRequest)
+        .response(asJson[OpenAIResponse])
+        .post(uri"https://api.openai.com/v1/completions"))
+      _ <- IO.println(s"Request: $request")
+      response <-  IO.blocking(request.send(backend))
 
-    response.body match
-      case Left(s:ResponseException[String, Error]) => 
-        println(s"Error: ${s.getMessage()}")
-        IO(message)
-      case Right(openAIResponse) =>
-        val keys = openAIResponse.choices.map(choice => choice.text)
-        println(keys.mkString(","))
-        IO(message.copy(keywords = keys))
+      result <-   response.body match
+          case Left(s:ResponseException[String, Error]) => 
+            println(s"Error: ${s.getMessage()}")
+            IO(message)
+          case Right(openAIResponse) =>
+            val keys = openAIResponse.choices.map(choice => choice.text)
+            println(keys.mkString(","))
+            IO(message.copy(keywords = keys))
+    yield result
 
         
  

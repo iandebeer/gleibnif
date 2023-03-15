@@ -23,4 +23,5 @@ build/
 *.ipr
 *.iws
 .idea
+application.conf
 meta.json

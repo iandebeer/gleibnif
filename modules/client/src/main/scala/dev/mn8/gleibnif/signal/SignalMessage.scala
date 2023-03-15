@@ -1,9 +1,11 @@
 package dev.mn8.gleibnif.signal
 
 //'{"message": "Welcome to D@WNPatrol, the DIDx bot!", "number": "+27659747833", "recipients": [ "+27828870926","+27832582698" ]}
-case class SignalSendMessage(message: String, number: String, recipients: List[String]):
+case class Member(name : String, number : String)
+
+case class SignalSendMessage(attachments: List[String],message: String, number: String, recipients: List[String]):
   override def toString(): String =
-    s"""SignalSendMessage(message: $message, number: $number, recipients: $recipients)"""
+    s"""SignalSendMessage(message: $message, number: $number, recipients: $recipients, attachments: ${attachments.mkString(",")})"""
 
 
 case class SignalMessages(messages: List[SignalMessage]):
@@ -123,4 +125,4 @@ case class SignalSimpleMessage(phone:String, name:String, text:String, keywords:
     s"""SignalSimpleMessage(phone: $phone, 
      name: $name, 
      text: $text)
-     keywords: ${keywords.mkString(", ")})"""
+     keywords: ${keywords.mkString(", ")}"""

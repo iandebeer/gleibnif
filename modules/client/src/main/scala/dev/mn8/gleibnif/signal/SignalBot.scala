@@ -33,8 +33,6 @@ case class SignalBot():
         println(s"Error: $error")
         SignalConfig("", "", "" )
       case Right(conf) => conf
-    println(s"Signal Conf: $signalConf")
-    println(s"Phone: ${signalConf.signalPhone}")  
     signalConf
 
   val signalConf= getConf() 
@@ -42,7 +40,7 @@ case class SignalBot():
   def init(): Unit = ()
   def register(voiceMode:Boolean) = 
     val request = basicRequest.contentType("application/json").body(s"""{"use_voice": $voiceMode}""").post(
-      uri"${signalConf.signalUrl}/register/${signalConf.signalPhone}")
+      uri"${signalConf.signalUrl}/v1/register/${signalConf.signalPhone}")
     val response = request.send(backend) 
     response.code.toString match
       case "200" => 
@@ -60,7 +58,7 @@ case class SignalBot():
     
   def verify(pin:String) = 
     val request = basicRequest.contentType("application/json").body(s"""{"pin": $pin""").post(
-      uri"${signalConf.signalUrl}/verify/${signalConf.signalPhone}")
+      uri"${signalConf.signalUrl}/v1/verify/${signalConf.signalPhone}")
     val response = request.send(backend) 
     response.code.toString match
       case "200" => 
@@ -74,44 +72,53 @@ case class SignalBot():
         false
 
   def send(message: SignalSendMessage): IO[Unit] = 
-    val request = basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
-      uri"${signalConf.signalUrl}/send/${signalConf.signalPhone}")
-    val response = request.send(backend)
-    IO(println(response.body))
+    for 
+      request <- IO.blocking(basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
+         uri"${signalConf.signalUrl}/v2/send"))
+      _ <- IO(println(s"Sending message: $message"))
+      _ <- IO(println(s"Sending message: ${message.asJson.noSpaces}"))
+      _ <- IO.blocking(request.send(backend).body match
+        case Left(error) => 
+          IO.println(error)
+        case Right(response) => 
+          IO.println(response))
+    yield ()
 
   def receive(): IO[List[SignalSimpleMessage]] = 
-    val request = basicRequest.contentType("application/json")get(
-      uri"${signalConf.signalUrl}/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}")
-    val response = request.send(backend)
-    println(response.body)
-    val messages = response.body match
-      case Left(error) => 
-        println(error)
-        List[SignalMessage]()
-      case Right(messages) => 
-        //println(messages)
-        parse(messages) match
-          case Left(error) => 
-            println(error)
-            List[SignalMessage]()
-          case Right(json) => 
-            //println(json)
-            json.as[List[SignalMessage]] match
-              case Left(error) => 
-                println(error)
-                List[SignalMessage]()
-              case Right(messages) => 
-                println(messages.mkString("\n"))
-                messages
+    for 
+      request <- IO.blocking(basicRequest.contentType("application/json")get(
+        uri"${signalConf.signalUrl}/v1/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}"))
+      _ <- IO(println("Receiving messages"))
+      response <-  IO.blocking(request.send(backend))
+      _ <- IO.println(response.body)
+      messages <-  IO(response.body match
+        case Left(error) => 
+          IO.println(error)
+          List[SignalMessage]()
+        case Right(messages) => 
+          //println(messages)
+          parse(messages) match
+            case Left(error) => 
+              IO.println(error)
+              List[SignalMessage]()
+            case Right(json) => 
+              //println(json)
+              json.as[List[SignalMessage]] match
+                case Left(error) => 
+                  println(error)
+                  List[SignalMessage]()
+                case Right(messages) => 
+                  IO.println(messages.mkString("\n"))
+                  messages)
 
-    IO(messages.flatMap(m =>
-      List(
-        m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message)),
-        //m.envelope.syncMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.sentMessage.map(snt => snt.message).getOrElse(""))),
-        //m.envelope.sentMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.message))
-      )
-    ).flattenOption)
-    //println(text.mkString("\n"))
+      result <- IO(messages.flatMap(m =>
+        List(
+          m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message)),
+         // m.envelope.syncMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.sentMessage.map(snt => snt.message).getOrElse(""))),
+         // m.envelope.sentMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.message))
+        )
+      ).flattenOption)
+    yield result
 
     
 

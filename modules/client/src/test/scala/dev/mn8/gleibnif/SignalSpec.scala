@@ -16,7 +16,10 @@ class SignalSpec extends FunSuite {
     
   }
 
-  test("extract conf") {
+  test("send message") {
+    val l: IO[Unit] = SignalBot().send(SignalSendMessage(List[String](),"Hello from D@WN Patrol", "+27659747833", List("+27828870926")))
+    l.flatTap(m => IO(println(s"Sent messages"))).unsafeRunSync()
+  
  //   openAIAgent.getConf()
   }  
   test("extract keywords") {

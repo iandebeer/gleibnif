@@ -115,9 +115,18 @@ lazy val client = project
     description := "Protobuf Client",
     resolvers ++= Seq(
       Resolver.mavenLocal,
-      "jitpack" at "https://jitpack.io"
+      "jitpack" at "https://jitpack.io",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "releases" at "https://oss.sonatype.org/content/repositories/releases"
+
     ),
     libraryDependencies ++= Seq(
+      /*
+      <groupId>com.github.kenglxn.QRGen</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.0.1</version>
+      */
+      "com.github.kenglxn.QRGen" % "javase" % "3.0.1",
       "org.scala-lang" %% "scala3-staging" % Scala3,
       "decentralized-identity" % "did-common-java" % didCommonVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
@@ -132,6 +141,9 @@ lazy val client = project
       "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,
       "dev.profunktor" %% "redis4cats-effects" % redis4catsVersion,
       "io.cequence" %% "openai-scala-client" % openAIVersion,
+    
+      "de.brendamour" % "jpasskit" % "0.3.1-SNAPSHOT",
+
       "com.google.crypto.tink" % "tink" % tinkVersion
     ),
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage

@@ -2,7 +2,6 @@ package dev.mn8.gleipnif
 
 import cats.effect.*
 import cats.effect.std.Dispatcher
-import fs2.*
 import java.util.concurrent.Executor
 import Constants.*
 
@@ -22,6 +21,15 @@ import pureconfig.*
 import pureconfig.generic.derivation.default.*
 import dev.mn8.gleibnif.passkit.PasskitAgent
 import dev.mn8.gleibnif.signal.SignalSimpleMessage
+import PasskitAgent.*
+import io.circe.parser.*
+import fs2.Stream
+import dev.mn8.gleibnif.signal.Member
+import dev.mn8.gleibnif.signal.SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.prism.PrismClient
+
+
+
 
 
 case class AppConf( 
@@ -32,11 +40,9 @@ case class AppConf(
   universalResolverTimeout: Int,
   ipfsClusterTimeout: Int,
   pollingInterval: Int,
-  passkitHost: URL,
-  passkitPort: Int,
-  passkitApiPrefix: String,
-  passkitRestKey: String,
-  passkitSecret: String
+  prismUrl: URL,
+  prismToken: String,
+  dawnUrl: URL
 ) derives ConfigReader:
   override def toString(): String = 
     s"""
@@ -47,41 +53,64 @@ case class AppConf(
     |universalResolverTimeout: $universalResolverTimeout
     |ipfsClusterTimeout: $ipfsClusterTimeout
     |pollingInterval: $pollingInterval
-    |passkitHost: $passkitHost
-    |passkitPort: $passkitPort
-    |passkitApiPrefix: $passkitApiPrefix
-    |passkitRestKey: $passkitRestKey
-    |passkitSecret: $passkitSecret
+    |prismUrl: $prismUrl
+    |prismToken: $prismToken
+    |dawnUrl: $dawnUrl
     |""".stripMargin
 
 object Main extends IOApp:
   val pollingInterval: FiniteDuration = 30.seconds
   val signalBot = SignalBot()
   val openAIAgent = OpenAIAgent()
-  import PasskitAgent.*
+
 
   def getConf() = 
-    val appConf: AppConf = ConfigSource.default.at("openai-conf").load[AppConf]  match
+    val appConf: AppConf = ConfigSource.default.at("app-conf").load[AppConf]  match
       case Left(error) => 
         println(s"Error: $error")
-        AppConf(new URL(""), 0, new URL(""), new URL(""), 0, 0, 0, new URL(""), 0, "", "", "")
+        AppConf(new URL("http://localhost:8080"), 0, new URL("http://localhost:8080"), new URL("http://localhost:8080"), 0, 0, 0, new URL("http://localhost:8080"), "", new URL("http://localhost:8080"))
+
       case Right(conf) => conf  
     appConf
 
   val appConf= getConf() 
-  def callEndpoint: IO[Unit] = 
+  def callEndpoints: IO[Unit] = 
     for
       messages: List[SignalSimpleMessage] <- signalBot.receive()
       addMessages: List[SignalSimpleMessage] <- IO.delay(messages.filter(m => m.text.toLowerCase().startsWith("@admin|add") ))
-      a: List[PasskitAgent] <- IO.delay(addMessages.map(m => PasskitAgent(m.name,"did:prism1234567","https://google.com")))
-      p: List[Array[Byte]] <- a.map(s => s.signPass()).sequence  
-      z <- p.map(e => base64Encode(e)).sequence
+      
+      passes <- addMessages.map(m => 
+        for 
+          did <- PrismClient(appConf.prismUrl.toString(),appConf.prismToken).createDID()
+          member <- IO.delay(parse(m.text.split("\\|")(2)) match
+            case Left(error) => 
+              Member("","")
+            case Right(m) => m.as[Member] match
+              case Left(error) => 
+                Member("","")
+              case Right(member) => 
+                IO.println(s"Member: $member")
+                member
+          )
+        yield
+          PasskitAgent(member.name,did,appConf.dawnUrl).signPass()).sequence
+  
+          
+      encPasses <- passes.map(ba => 
+        for 
+          v <- ba
+          w <- base64Encode(v)
+        yield w).sequence
+
+      _ <- addMessages.zip(encPasses).map(m => 
+        signalBot.send(SignalSendMessage(List[String](
+          s"data:application/vnd.apple.pkpass;filename=did.pkpass;base64,${m._2}"),
+          s"${m._1.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
+          "+27659747833",
+          List[String](m._1.phone)))).sequence
  
       convoMessages <- IO.delay(messages.filter(m => !m.text.toLowerCase().startsWith("@admin") ))
-      keywords <- convoMessages.map(m => openAIAgent.extractKeywords(m)).sequence
-      //_ <- IO.println(s"Received keywords: $keywords")
-      _ <- addMessages.map(m => 
-        signalBot.send(SignalSendMessage(List[String](),s"${m.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet","+27659747833",List(m.phone)))).sequence  
+      keywords <- convoMessages.map(m => openAIAgent.extractKeywords(m)).sequence   
       _ <- keywords.map(k => 
           signalBot.send(SignalSendMessage(List[String](),s"${k.name}, I have extracted the following keywords: ${k.keywords.mkString(",")}","+27659747833",List(k.phone)))
         ).sequence
@@ -89,7 +118,7 @@ object Main extends IOApp:
       
   val stream: Stream[IO, Unit] =
     Stream
-    .repeatEval(callEndpoint)
+    .repeatEval(callEndpoints)
     .metered(pollingInterval)
 
   override def run(args: List[String]): IO[ExitCode] = 

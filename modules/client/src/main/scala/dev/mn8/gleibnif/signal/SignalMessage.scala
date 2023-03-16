@@ -1,4 +1,8 @@
 package dev.mn8.gleibnif.signal
+import cats.effect.IO
+import io.circe.parser.*
+
+
 
 //'{"message": "Welcome to D@WNPatrol, the DIDx bot!", "number": "+27659747833", "recipients": [ "+27828870926","+27832582698" ]}
 case class Member(name : String, number : String)
@@ -121,6 +125,7 @@ case class SignalReadMessage(
        timestamp: $timestamp)"""
 
 case class SignalSimpleMessage(phone:String, name:String, text:String, keywords:List[String] = List()):
+
   override def toString(): String =
     s"""SignalSimpleMessage(phone: $phone, 
      name: $name, 

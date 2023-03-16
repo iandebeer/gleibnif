@@ -22,6 +22,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.net.URL
 
 
 case class PasskitConfig(
@@ -41,7 +42,7 @@ case class PasskitConfig(
     |templatePath: $templatePath
     |""".stripMargin
 
-final case class PasskitAgent(name: String, did:String, dawnURL:String):
+final case class PasskitAgent(name: String, did:String, dawnURL:URL):
   val passkitConf = getConf()
   def getConf() = 
     val passkitConf: PasskitConfig = ConfigSource.default.at("passkit-conf").load[PasskitConfig]  match
@@ -52,47 +53,49 @@ final case class PasskitAgent(name: String, did:String, dawnURL:String):
     passkitConf
 
   def getPass: IO[PKPass] = 
-    IO.delay(PKPass
-    .builder()
-    .pass(
-      PKGenericPass
+    for
+      p <-  IO.delay(PKPass
         .builder()
-        .passType(PKPassType.PKGenericPass)
-        .primaryFieldBuilder(
-          PKField
+        .pass(
+          PKGenericPass
             .builder()
-            .key("did")
-            .label("DID:")
-            .value(did)
+            .passType(PKPassType.PKGenericPass)
+            .primaryFieldBuilder(
+              PKField
+                .builder()
+                .key("did")
+                .label("DID:")
+                .value(did)
+            )
+            .secondaryFieldBuilder(
+              PKField
+                .builder()
+                .key("name")
+                .label("AKA:")
+                .value(name)
+            )
         )
-        .secondaryFieldBuilder(
-          PKField
+        .barcodeBuilder(
+          PKBarcode
             .builder()
-            .key("name")
-            .label("AKA:")
-            .value(name)
+            .format(PKBarcodeFormat.PKBarcodeFormatQR)
+            .message(dawnURL.toString + "/?did=" + did )
+            .messageEncoding(Charset.forName("utf-8"))
         )
-    )
-    .barcodeBuilder(
-      PKBarcode
-        .builder()
-        .format(PKBarcodeFormat.PKBarcodeFormatQR)
-        .message(dawnURL + "/?did=" + did )
-        .messageEncoding(Charset.forName("utf-8"))
-    )
-    .formatVersion(1)
-    .passTypeIdentifier("pass.za.co.didx")
-    .serialNumber("000000001")
-    .teamIdentifier("UCR5567E6F")
-    .organizationName("DIDx")
-    .logoText(s"DIDx D@wnPatrol")
-    .description(s"${name}'s D@wnPatrol DID")
-    //.backgroundColor(Color.BLACK)
-    //.appLaunchURL("https://www.google.com?did=did:example:123")
-    //.foregroundColor("rgb(255,255,255 )")
-    
-    // ... and more initializations ...
-    .build())
+        .formatVersion(1)
+        .passTypeIdentifier("pass.za.co.didx")
+        .serialNumber("000000001")
+        .teamIdentifier("UCR5567E6F")
+        .organizationName("DIDx")
+        .logoText(s"DIDx D@wnPatrol")
+        .description(s"${name}'s D@wnPatrol DID")
+        //.backgroundColor(Color.BLACK)
+        //.appLaunchURL("https://www.google.com?did=did:example:123")
+        //.foregroundColor("rgb(255,255,255 )")
+        
+        // ... and more initializations ...
+        .build())
+    yield p
 
 
   def signPass(): IO[Array[Byte]] =

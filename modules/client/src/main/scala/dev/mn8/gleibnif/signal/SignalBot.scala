@@ -75,8 +75,8 @@ case class SignalBot():
     for 
       request <- IO.blocking(basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
          uri"${signalConf.signalUrl}/v2/send"))
-      _ <- IO(println(s"Sending message: $message"))
-      _ <- IO(println(s"Sending message: ${message.asJson.noSpaces}"))
+     /*  _ <- IO(println(s"Sending message: $message"))
+      _ <- IO(println(s"Sending message: ${message.asJson.noSpaces}")) */
       _ <- IO.blocking(request.send(backend).body match
         case Left(error) => 
           IO.println(error)
@@ -102,7 +102,6 @@ case class SignalBot():
               IO.println(error)
               List[SignalMessage]()
             case Right(json) => 
-              //println(json)
               json.as[List[SignalMessage]] match
                 case Left(error) => 
                   println(error)

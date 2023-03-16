@@ -79,7 +79,7 @@ object Main extends IOApp:
       messages: List[SignalSimpleMessage] <- signalBot.receive()
       addMessages: List[SignalSimpleMessage] <- IO.delay(messages.filter(m => m.text.toLowerCase().startsWith("@admin|add") ))
       
-      passes <- addMessages.map(m => 
+      passes: List[(String, Member)] <- addMessages.map(m => 
         for 
           did <- PrismClient(appConf.prismUrl.toString(),appConf.prismToken).createDID()
           member <- IO.delay(parse(m.text.split("\\|")(2)) match
@@ -89,25 +89,27 @@ object Main extends IOApp:
               case Left(error) => 
                 Member("","")
               case Right(member) => 
-                IO.println(s"Member: $member")
+                println(s"Member: $member")
                 member
           )
+          enc <- PasskitAgent(member.name,did,appConf.dawnUrl).signPass()
+          base64Encode <- IO.delay(java.util.Base64.getEncoder().encodeToString(enc))
         yield
-          PasskitAgent(member.name,did,appConf.dawnUrl).signPass()).sequence
+         (base64Encode,member)).sequence
   
           
-      encPasses <- passes.map(ba => 
+     /*  encPasses <- passes.map(ba => 
         for 
           v <- ba
           w <- base64Encode(v)
-        yield w).sequence
+        yield w).sequence */
 
-      _ <- addMessages.zip(encPasses).map(m => 
+      _ <- passes.map(m => 
         signalBot.send(SignalSendMessage(List[String](
-          s"data:application/vnd.apple.pkpass;filename=did.pkpass;base64,${m._2}"),
-          s"${m._1.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
+          s"data:application/vnd.apple.pkpass;filename=did.pkpass;base64,${m._1}"),
+          s"${m._2.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
           "+27659747833",
-          List[String](m._1.phone)))).sequence
+          List[String](m._2.number)))).sequence
  
       convoMessages <- IO.delay(messages.filter(m => !m.text.toLowerCase().startsWith("@admin") ))
       keywords <- convoMessages.map(m => openAIAgent.extractKeywords(m)).sequence   

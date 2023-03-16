@@ -12,7 +12,7 @@ import sttp.client3.circe.*
 
 final case class PrismClient(prismUrl: String, apiKey: String):
   val backend = HttpClientSyncBackend()
-  val exampleDID = "did:example:123"
+  val exampleDID = "did:prism:48e8cec7eaf939e2bcd8d48dfa016dc338a1633289c430fc031c7ffd44738260"
 
   val documentTemplate = DocumentTemplate(
     Seq(

@@ -13,6 +13,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import cats.effect.unsafe.implicits._
+import java.net.URL
 
 
 class PasskitSpec extends FunSuite:
@@ -20,7 +21,7 @@ class PasskitSpec extends FunSuite:
 
   test("create pass ") {
     val u = for {
-      a <- IO.delay(PasskitAgent("Ian de Beer","did:prism1234567","https://google.com"))
+      a <- IO.delay(PasskitAgent("Ian de Beer","did:prism1234567",new URL("https://google.com")))
       p <- a.signPass()    
       x <- copy(QRCode.from("did:prism1234567").file(),new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/qr2.png"))
       y <- write(new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/pass.pkpass"),p)

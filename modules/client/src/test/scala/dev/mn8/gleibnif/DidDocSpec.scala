@@ -1,6 +1,5 @@
 package dev.mn8.gleibnif
 
-import foundation.identity.did.*
 import munit.*
 
 import java.net.URI
@@ -245,7 +244,7 @@ class DidDocSpec extends FunSuite {
     }
 
   test("JSONLD should be encoded to JSON") {
-    import dev.mn8.gleibnif.DIDCodec.* 
+    //import dev.mn8.gleibnif.DIDCodec.* 
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")
     testParse(didDocJson)
     println("\n\n******************************************************************\n")

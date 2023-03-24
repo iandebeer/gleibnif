@@ -12,16 +12,7 @@ import io.circe.parser.decode
 import io.circe.syntax.*
 import io.circe.syntax.*
 import munit.*
-import org.ergoplatform.flow.spec.flowspec.FlowSpec
-import org.ergoplatform.flow.spec.flowspec.FlowSpec.{Parameter => Param}
-import org.ergoplatform.flow.spec.flowspec.PetrinetFs2Grpc
-import org.ergoplatform.flow.spec.flowspec.Transaction
-import org.ergoplatform.flow.spec.flowspec.Transaction.InputArrow
-import org.ergoplatform.flow.spec.flowspec.Transaction.SpendingPath
-import org.ergoplatform.flow.spec.flowspec.Wallet
-import org.ergoplatform.flow.spec.flowspec.Wallet.Box.Condition
-import org.ergoplatform.flow.spec.flowspec.Wallet.Box.ErgCondition
-import org.ergoplatform.flow.spec.flowspec.Wallet.Box.TokenCondition
+
 import scodec.bits.*
 
 import scala.collection.immutable.ListSet
@@ -91,66 +82,8 @@ class PetriSpec extends FunSuite {
     """.stripMargin
 
     val name: String = "Coin Flip Game"
-    val parameters = Seq(
-      Param("playPrice", "Long"),
-      Param("minTxFee", "Long"),
-      Param("playerFunds", "Long"),
-      Param("gameDuration", "Long"),
-      Param("playCount", "Integer"),
-      Param("p1PK", "String"),
-      Param("p2PK", "String")
-    )
-    val wallets: Seq[Wallet] = Seq(
-      Wallet(
-        "player1",
-        "pk",
-        Seq(Wallet.Box("funds", None))
-      ),
-      Wallet(
-        "player2",
-        "pk",
-        Seq(Wallet.Box("funds", None))
-      ),
-      Wallet(
-        "game",
-        "pk",
-        Seq(
-          Wallet.Box(
-            "game",
-            Some(ErgCondition("targetBoxName", "erg_expression")),
-            Seq(TokenCondition("tokeName", "targetBoxName", "expression")),
-            Seq(Condition("targetBoxName", "expression"))
-          )
-        )
-      ),
-      Wallet(
-        "state",
-        "pk",
-        Seq(Wallet.Box("init", None), Wallet.Box("end", None))
-      )
-    )
-    val transactions = Seq(
-      Transaction(
-        name = "provide funds",
-        inputs = Seq(InputArrow("state", "init", Some(SpendingPath("action", "Condition"))))
-      ),
-      Transaction(
-        name = "play game",
-        inputs = Seq(InputArrow("p2Choice", "fromBox", Some(SpendingPath("action", "Condition"))))
-      ),
-      Transaction(
-        name = "create game",
-        inputs = Seq(InputArrow("p2Choice", "fromBox", Some(SpendingPath("action", "Condition"))))
-      ),
-      Transaction(
-        name = "withdraw",
-        inputs = Seq(InputArrow("p2Choice", "fromBox", Some(SpendingPath("action", "Condition"))))
-      )
-    )
+ 
 
-    //val boxes: Seq[Wallet.Box] = Seq(new Wallet.Box("",None))
-
-    FlowSpec(name, parameters, wallets, transactions)
 
   test("build petri net") {
 

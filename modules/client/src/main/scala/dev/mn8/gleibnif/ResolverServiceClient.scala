@@ -1,8 +1,5 @@
 package dev.mn8.gleibnif
 
-import org.didcommx.didcomm.diddoc.DIDDocResolver
-import java.util.Optional
-import scala.jdk.OptionConverters
 import sttp.client3.*
 import sttp.client3.circe.*
 
@@ -11,11 +8,9 @@ import io.circe.parser.*
 import dev.mn8.gleibnif.DIDDoc
 import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
 
-
 case class ResolverServiceClient(resolverURI:String):
 
   def resolve(did: String): Either[ResolverError,DIDDoc] =
-    val query = "http language:scala"
     val request =
       basicRequest.get(uri"$resolverURI$did")
     val backend = HttpClientSyncBackend()

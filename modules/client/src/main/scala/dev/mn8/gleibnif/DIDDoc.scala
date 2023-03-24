@@ -7,7 +7,7 @@ import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
 import io.circe.*
 import io.circe.syntax._
 
-import foundation.identity.did.VerificationRelationships
+//import foundation.identity.did.VerificationRelationships
 import java.net.URI
 
 

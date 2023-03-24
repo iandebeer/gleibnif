@@ -1,0 +1,202 @@
+syntax = "proto3";
+package dev.mn8.dwn;
+
+//import "proto/google/api/annotations.proto";
+
+enum Status {
+    OK = 0;
+    NOT_FOUND = 1;
+    ERROR = 2;
+    CONFLICT = 3;
+    INVALID_ATTESTATION = 4;
+    INVALID_AUTHORIZATION = 5;
+}
+
+enum QueryType {
+    SINGLE_RECORD_BY_ID_SCHEMA_URI = 0;
+
+
+}
+
+message CommonStatus {
+    Status status = 1;
+    string details = 2; 
+ }
+
+
+ /*
+  * RECORD SERVICE
+  */
+
+ message StoreRecordRequest {
+
+   bytes message = 1;
+
+ }
+
+ message StoreRecordResponse {
+    CommonStatus status = 1;
+    string recordId = 2;
+    string ownerDID = 3;
+    bool initialEntry = 4;
+ }
+
+ message FindRecordRequest {
+
+    QueryType queryType = 1;
+    string recordId = 2;
+    string schemaURI = 3;
+    string requestorDID = 4;
+
+ }
+
+ message FindRecordResponse {
+    CommonStatus status = 1;
+    string schemaURI = 2;
+    repeated string writers = 3;
+    repeated string readers = 4;
+    bool isPublished = 5;
+    bytes recordItem = 6;
+ }
+
+
+ message CreateSchemaRequest {
+
+ }
+
+ message CreateSchemaResponse {
+    CommonStatus status = 1;
+ }
+
+ message ValidateRecordRequest {
+    string schemaURI = 1;
+    bytes document = 2;
+ }
+
+ message ValidateRecordResponse {
+    CommonStatus status = 1;
+ }
+
+ message InvalidateSchemaRequest {
+    string schemaURI = 1;
+ }
+
+ message InvalidateSchemaResponse {
+    CommonStatus status = 1;
+ }
+
+ service RecordService {
+
+    rpc StoreRecord(StoreRecordRequest) returns (StoreRecordResponse) {
+       /*  option (google.api.http) = {
+            post: "/v1/records"
+            body: "*"
+        }; */
+    }
+    rpc FindRecord(FindRecordRequest) returns (FindRecordResponse) {}
+
+    rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse) {}
+    rpc ValidateRecord(ValidateRecordRequest) returns (ValidateRecordResponse) {}
+    rpc InvalidateSchema(InvalidateSchemaRequest) returns (InvalidateSchemaResponse) {}
+
+ }
+
+ /*
+ * HOOK SERVICE
+ */
+message HookDefinition {
+   
+   enum HookChannel {
+      HTTP_CALLBACK = 0;
+      GRPC_CALLBACK = 1;
+   }
+   
+   string hookId = 1;
+   HookChannel hookChannel = 2;
+   string uri = 3;
+
+}
+
+
+message RegisterHookRequest {
+   bytes message = 1;
+}
+
+message RegisterHookResponse {
+   CommonStatus status = 1;
+}
+
+message UpdateHookRequest {
+   bytes message = 1;
+}
+
+message UpdateHookResponse {
+   CommonStatus status = 1;
+}
+
+message GetHookByRecordIdRequest {
+   string recordId = 1;
+}
+
+message GetHookByRecordIdResponse {
+   CommonStatus status = 1;
+   HookDefinition hookDefinition = 2;
+}
+
+message GetHooksForRecordRequest {
+   string recordId = 1;
+   string protocol = 2;
+   string protocolVersion = 3;
+   string schema = 4;
+}
+
+message GetHooksForRecordResponse {
+   CommonStatus status = 1;
+   repeated HookDefinition hookDefinitions = 2;
+}
+
+enum RecordEventType {
+   RECORD_CREATED = 0;
+   RECORD_CHANGED = 1;
+   RECORD_DELETED = 2;
+}
+
+message NotifyHooksOfRecordEventRequest {
+   string recordId = 1;
+   string protocol = 2;
+   string protocolVersion = 3;
+   string schema = 4;
+   RecordEventType recordEventType = 5;
+}
+
+message NotifyHooksOfRecordEventResponse {
+   CommonStatus status = 1;
+}
+
+
+ service HookService {
+   rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
+   rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse) {}
+   rpc GetHookByRecordId(GetHookByRecordIdRequest) returns (GetHookByRecordIdResponse) {}
+   rpc GetHooksForRecord(GetHooksForRecordRequest) returns (GetHooksForRecordResponse) {}
+   rpc NotifyHooksOfRecordEvent(NotifyHooksOfRecordEventRequest) returns (NotifyHooksOfRecordEventResponse) {}
+ }
+
+
+/*
+ * KEY SERVICE
+ */
+
+ message VerifyMessageAttestationRequest {
+   bytes message = 1;
+ }
+
+ message VerifyMessageAttestationResponse {
+   CommonStatus status = 1;
+ }
+
+ service KeyService {
+
+   rpc VerifyMessageAttestation(VerifyMessageAttestationRequest) returns (VerifyMessageAttestationResponse) {}
+
+ }

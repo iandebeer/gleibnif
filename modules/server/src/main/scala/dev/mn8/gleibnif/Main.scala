@@ -1,26 +1,51 @@
 package dev.mn8.gleipnif
 
-import fs2.*
 import cats.effect.*
 import _root_.io.grpc.*
 
 import fs2.grpc.syntax.all._
-
-
 import fs2.grpc.syntax.all._
 import fs2.grpc.server.ServerOptions
 import _root_.io.grpc.ForwardingServerCall.SimpleForwardingServerCall
 import Constants._
-import org.ergoplatform.flow.spec.flowspec.PetrinetFs2Grpc
-import org.ergoplatform.flow.spec.flowspec.Response
-import dev.mn8.castanet.Place
-import dev.mn8.castanet.Transition
-import dev.mn8.castanet.NodeId
+import  dev.mn8.dwn.dwn_service.*
+import scala.concurrent.ExecutionContext
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
+import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
+import scala.concurrent.Await
+import com.google.api.http.Http
 
-import dev.mn8.castanet.RPC
+object GRPCGateway :
 
-import dev.mn8.castanet.Service 
+  def main(args: Array[String]): Unit = 
+    val channel = NettyChannelBuilder.forAddress("localhost", 8080).usePlaintext().build()
+    val service = RecordServiceGrpc.stub(channel)
+    val server = new RecordServer(service)
+    server.start(8081)
 
+  
+
+
+
+
+class RecordServer(service: RecordServiceStub) :
+  val server = Http.defaultInstance.serve(":8081", TicketBookingGatewayService(service))
+  Await.ready(server)
+
+
+
+
+
+object RecordGatewayService :
+  def apply(service: RecordServiceStub) = 
+    HttpRoutes.of[Task] {
+
+      case request @ Method.POST -> Root / "record" / user =>
+        val request = StoreRecordRequest(user)
+        val response = service.storeRecord(request)
+        Ok(response)
+
+    }
 
 case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
   override def interceptCall[Req,Res] (
@@ -30,36 +55,90 @@ case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
         println(s"$msg: ${requestHeaders.get(Constants.AuthorizationMetadataKey)}")
         next.startCall(call,requestHeaders)
 
-class FlowSpecImpl extends PetrinetFs2Grpc[IO, Metadata] :
-  override def addFlow(request: org.ergoplatform.flow.spec.flowspec.FlowSpec, clientHeaders: Metadata): IO[org.ergoplatform.flow.spec.flowspec.Response] =
-    val p2: Place = Place( "left", 3)
-    val s1 = Service()
-    val r1 = RPC("test","test","test")
-    val t1: Transition = Transition("splitter", s1, r1)
-    IO(Response(true,"It works: " + request.name))
-  
-/* class GreeterImpl extends GreeterFs2Grpc[IO, Metadata] :
-  override def sayHello(request: HelloRequest, clientHeaders: Metadata): IO[HelloReply] =
-    IO(HelloReply("Request name is: " + request.name))
+class HookServiceImpl extends HookServiceFs2Grpc[IO, Metadata] {
 
-  override def sayHelloStream(request: Stream[IO, HelloRequest],clientHeaders: Metadata): Stream[IO, HelloReply] = 
-    request.evalMap(req => sayHello(req, clientHeaders)) */
+  override def updateHook(request: UpdateHookRequest, ctx: Metadata): IO[UpdateHookResponse] = 
+    println(s"updateHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(UpdateHookResponse())
+
+  override def getHooksForRecord(request: GetHooksForRecordRequest, ctx: Metadata): IO[GetHooksForRecordResponse] = 
+    println(s"getHooksForRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(GetHooksForRecordResponse())
+
+
+  override def getHookByRecordId(request: GetHookByRecordIdRequest, ctx: Metadata): IO[GetHookByRecordIdResponse] = 
+    println(s"getHookByRecordId: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(GetHookByRecordIdResponse())
+
+  override def notifyHooksOfRecordEvent(request: NotifyHooksOfRecordEventRequest, ctx: Metadata): IO[NotifyHooksOfRecordEventResponse] = 
+    println(s"notifyHooksOfRecordEvent: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(NotifyHooksOfRecordEventResponse())
+
+  override def registerHook(request: RegisterHookRequest, ctx: Metadata): IO[RegisterHookResponse] = 
+    println(s"registerHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(RegisterHookResponse())
+} 
+ 
+class KeyServiceImpl extends KeyServiceFs2Grpc[IO, Metadata] :
+
+  def verifyMessageAttestation(request: VerifyMessageAttestationRequest, ctx: Metadata): IO[VerifyMessageAttestationResponse] =
+    println(s"verifyMessageAttestation: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(VerifyMessageAttestationResponse())
+
+class RecordServiceImp extends RecordServiceFs2Grpc[IO, Metadata] :
+  def createSchema(request: CreateSchemaRequest, ctx: Metadata): IO[CreateSchemaResponse] =
+    println(s"createSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(CreateSchemaResponse())
+  override def storeRecord(request: StoreRecordRequest, ctx: Metadata): IO[StoreRecordResponse] = 
+    println(s"storeRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(StoreRecordResponse())
+  override def findRecord(request: FindRecordRequest, ctx: Metadata): IO[FindRecordResponse] = 
+    println(s"findRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(FindRecordResponse())
+  override def validateRecord(request: ValidateRecordRequest, ctx: Metadata): IO[ValidateRecordResponse] = 
+    println(s"validateRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(ValidateRecordResponse())
+  override def invalidateSchema(request: InvalidateSchemaRequest, ctx: Metadata): IO[InvalidateSchemaResponse] = 
+    println(s"invalidateSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    IO(InvalidateSchemaResponse())
+
+  def storeRecord(request: Record, metadata: Metadata): IO[Record] = 
+    println(s"storeRecord: ${metadata.get(Constants.AuthorizationMetadataKey)}")
+    IO(request)
+  
 
 object Main extends IOApp.Simple:
-  //extension(i:ServerInterceptor) def interceptWith: ServerServiceDefinition
-  val helloService: Resource[IO, ServerServiceDefinition] =
-    PetrinetFs2Grpc.bindServiceResource[IO](new FlowSpecImpl, ServerOptions.default )
+  import scala.jdk.CollectionConverters.*
 
+  val recordService: Resource[IO, ServerServiceDefinition] = 
+        RecordServiceFs2Grpc.bindServiceResource[IO](new RecordServiceImp, ServerOptions.default )
+  val keyService: Resource[IO, ServerServiceDefinition] =
+        KeyServiceFs2Grpc.bindServiceResource[IO](new KeyServiceImpl, ServerOptions.default )
+
+  val hookService: Resource[IO, ServerServiceDefinition] =
+        HookServiceFs2Grpc.bindServiceResource[IO](new HookServiceImpl, ServerOptions.default )
+  val services =
+    for 
+      r <- recordService.use(s => IO(s))
+      k <- keyService.use(s => IO(s))
+      h <- hookService.use(s => IO(s))
+    yield List(r,k,h)
 
   def run: IO[Unit] =
     val mySync: Async[IO] = Async[IO]
-    val startup: IO[Any] = helloService.use{ service =>
-      ServerBuilder
-        .forPort(9999)
-        .addService(service)
-        .intercept(AuthInterceptor("hi there: "))
-        .resource[IO](mySync)
-        .evalMap(server => IO(server.start()))
-        .useForever
-    }
+
+    val startup: IO[Any] = 
+      for
+        _ <- IO(println("starting server"))
+        s <- services
+        _ <- recordService.use{ (service: ServerServiceDefinition) =>
+          ServerBuilder
+            .forPort(9999)
+            .addServices(s.asJava)
+            .intercept(AuthInterceptor("hi there: "))
+            .resource[IO](mySync)
+            .evalMap(server => IO(server.start()))
+            .useForever
+        }
+      yield ()
     startup >> IO.unit

@@ -159,6 +159,12 @@ case class ServiceEndpointURI(uri: URI) extends ServiceEndpoint:
        |  uri=$uri
        |)""".stripMargin
 
+case class ServiceEndpointNodes(nodes: Set[URI]) extends ServiceEndpoint:
+  override def toString: String =
+    s"""ServiceEndpointNodes(
+      |  nodes=$nodes
+       |)""".stripMargin
+
 case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint:
   override def toString: String =
     s"""ServiceEndpointDIDURL(

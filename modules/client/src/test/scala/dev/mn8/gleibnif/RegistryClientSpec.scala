@@ -25,7 +25,7 @@ class RegistryClientSpec extends FunSuite {
     "service": [
       {
         "id": "#dwn",
-        "type": "DecentralizedWebNode",
+        "type": "DecentralizedWebNode", 
         "serviceEndpoint": {
           "nodes": [
             "https://dwn.example.com",

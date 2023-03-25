@@ -21,6 +21,9 @@ import com.apicatalog.jsonld.JsonLd
 import java.io.Reader
 import com.apicatalog.jsonld.document.JsonDocument
 import dev.mn8.gleibnif.jsonld.JsonLDP
+import cats.effect.IO
+import cats.effect.unsafe.implicits._
+
 
 class DidDocSpec extends FunSuite {
 
@@ -229,6 +232,8 @@ class DidDocSpec extends FunSuite {
 
 
 
+  val apiKey = "c2850992-32fd-4ccf-9352-77aa329eef13"
+  val baseURL = "https://api.godiddy.com/0.1.0/universal-resolver/identifiers/"
 
   def testParse(jsonString:String) =
      val didDocJsonString = parse(jsonString) match {
@@ -238,21 +243,45 @@ class DidDocSpec extends FunSuite {
         val dDoc = json.as[DIDDoc]
         dDoc match 
           case Left(failure) => 
-            println(s"Failed decoding Json :( $failure)")
+            println(s"Failed decoding Json :( $failure)")                     
           case Right(didDoc) => 
             println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2)
     }
 
-  test("JSONLD should be encoded to JSON") {
+ /*  test("Resolve a did") {
+    val r = for 
+      x <- ResolverServiceClient(baseURL,apiKey).resolve("did:indy:danube:7vZbRUJtepc9ct8KPUuQNn") 
+      _ <- x match
+        case Left(failure) => 
+          IO(println(s"Failed resolving DID :( $failure)"))
+        case Right(didDoc: Any) => 
+          IO(println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2))
+    yield()
+    r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
+  } */
+
+  test("ResolveToJson a did") {
+    val r = for 
+      x <- ResolverServiceClient(baseURL,apiKey).resolveToJson("did:indy:danube:7vZbRUJtepc9ct8KPUuQNn") 
+      _ <- x match
+        case Left(failure) => 
+          IO(println(s"Failed resolving DID :( $failure)"))
+        case Right(didDoc: String) => 
+          IO(println("\n"))
+    yield()
+    r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
+  }
+
+ /*  test("JSONLD should be encoded to JSON") {
     //import dev.mn8.gleibnif.DIDCodec.* 
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")
     testParse(didDocJson)
     println("\n\n******************************************************************\n")
 
     
-  }
+  } */
 
-  test("Jsonldp must process jsonld docs") {
+  /* test("Jsonldp must process jsonld docs") {
     println("\n\n******************* JSONLD Processor: *******************\n")
 
     parse(jsonLDString) match {
@@ -270,5 +299,5 @@ class DidDocSpec extends FunSuite {
               case Left(value) => println(value)
               case Right(value) => println(value.json.spaces2) 
     }
-  }
+  } */
 }

@@ -162,6 +162,8 @@ object DIDCodec:
             "uri" -> Json.fromString(uri.toString),
             "accept" -> Json.fromValues(accept.map(_.toString).map(Json.fromString)),
             "routingKeys" -> Json.fromValues(routingKeys.map(_.toString).map(Json.fromString)))
+            case ServiceEndpointNodes(nodes) => Json.obj(
+              "nodes" -> Json.fromValues(nodes.map(n => n.toString).map(Json.fromString)))
         }
       
   
@@ -440,12 +442,20 @@ object DIDCodec:
           routingKeys <- c.downField("routingKeys").as[Option[Set[String]]]
         } 
         yield ServiceEndpointDIDCommService(uri, accept, routingKeys)
+  
+  given decodeServiceEndpointNodes: Decoder[ServiceEndpointNodes] =
+    new Decoder[ServiceEndpointNodes]:
+      final def apply(c: HCursor): Decoder.Result[ServiceEndpointNodes] =
+        for {
+          nodes <- c.downField("nodes").as[Set[URI]]
+        } 
+        yield ServiceEndpointNodes(nodes)
 
 
   given decodeServiceEndpoint: Decoder[ServiceEndpoint] =
     decodeServiceEndpointURI.widen[ServiceEndpoint] or decodeServiceEndpointDIDURL
       .widen[ServiceEndpoint] or decodeServiceEndpointDIDCommService
-      .widen[ServiceEndpoint]
+      .widen[ServiceEndpoint] or decodeServiceEndpointNodes.widen[ServiceEndpoint]
 
 
   given decodeService: Decoder[Service] =
@@ -460,7 +470,8 @@ object DIDCodec:
           serviceEndpoint <- c.downField("serviceEndpoint").focus match
             case Some(value) if value.isString => Right(Set(ServiceEndpointURI(new URI(value.asString.getOrElse("")))))
             case Some(values) if values.isArray => values.as[Set[ServiceEndpoint]]
-            case _ =>  Right(Set.empty[ServiceEndpoint])
+            case Some(value) if value.isObject => value.as[ServiceEndpoint].map(Set(_)) 
+            case _ =>  Right(Set(ServiceEndpointURI(new URI(""))))
         } yield Service(
           new URI(id),
           `type`,

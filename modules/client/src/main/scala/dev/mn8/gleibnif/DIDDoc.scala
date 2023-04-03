@@ -34,6 +34,8 @@ import java.net.URI
   *   type. See https://www.w3.org/TR/did-core/#services and
   *   https://identity.foundation/didcomm-messaging/spec/#did-document-service-endpoint.
   */
+
+
 case class DIDDoc(
     did: String,
     controller: Option[String],

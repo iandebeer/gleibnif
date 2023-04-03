@@ -4,7 +4,7 @@ lazy val catsVersion = "2.9.0"
 lazy val ceVersion = "3.4.8"
 lazy val fs2Version = "3.6.1"
 lazy val circeVersion = "0.14.5"
-lazy val grpcVersion = "1.53.0"
+lazy val grpcVersion = "1.54.0"
 lazy val googleProtoVersion = "3.22.2"
 lazy val monocleVersion = "3.1.0"
 lazy val scodecVersion = "1.1.37"
@@ -13,20 +13,20 @@ lazy val refinedVersion = "0.9.27"
 lazy val castanetVersion = "0.1.5"
 //lazy val didCommonVersion = "1.0.0"
 lazy val didCommVersion = "0.3.2"
-lazy val sttpVersion = "3.8.13"
+lazy val sttpVersion = "3.8.14"
 lazy val tinkVersion = "1.8.0"
 lazy val redis4catsVersion = "1.4.0"
 lazy val openAIVersion = "0.3.1"
 lazy val bouncyCastleVersion = "1.70"
 lazy val titaniumVersion = "1.3.2"
-lazy val munitVersion = "0.7.29"
+lazy val munitVersion = "1.0.0-M7"
 lazy val munitCEVersion = "1.0.7"
-lazy val pureconfigVersion = "0.17.2"
+lazy val pureconfigVersion = "0.17.3-SNAPSHOT"
 lazy val ipfsVersion = "1.4.2"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    "org.scala-lang" %% "scala3-staging" % Scala3,
+   //m "org.scala-lang" %% "scala3-staging" % Scala3,
     "org.typelevel" %% "cats-core" % catsVersion,
     "co.fs2" %% "fs2-core" % fs2Version,
     "co.fs2" %% "fs2-io" % fs2Version,
@@ -92,11 +92,13 @@ lazy val core = project
     ),
     // crossScalaVersions := List(scala3, scala212),
     libraryDependencies ++= Seq(
-      "org.scala-lang" %% "scala3-staging" % Scala3,
+   //   "org.scala-lang" %% "scala3-staging" % Scala3,
       "org.didcommx" % "didcomm" % didCommVersion,
       "com.apicatalog" % "titanium-json-ld" % titaniumVersion,
       "org.glassfish" % "jakarta.json" % "2.0.1",
-      "com.google.crypto.tink" % "tink" % tinkVersion
+      "com.google.crypto.tink" % "tink" % tinkVersion,
+      "com.google.crypto.tink" % "tink-awskms" % tinkVersion
+
     )
   )
 
@@ -122,6 +124,7 @@ lazy val client = project
   .settings(
     name := "gleipnifClient",
     description := "Protobuf Client",
+    Compile / mainClass := Some("dev.mn8.gleipnif.Main"),
     resolvers ++= Seq(
       Resolver.mavenLocal,
       "jitpack" at "https://jitpack.io",
@@ -136,7 +139,7 @@ lazy val client = project
             <version>3.0.1</version>
       */
       "com.github.kenglxn.QRGen" % "javase" % "3.0.1",
-      "org.scala-lang" %% "scala3-staging" % Scala3,
+    //  "org.scala-lang" %% "scala3-staging" % Scala3,
      // "decentralized-identity" % "did-common-java" % didCommonVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
@@ -160,6 +163,12 @@ lazy val client = project
   .settings(commonSettings: _*)
   .settings(grpcSettings: _*)
   .enablePlugins(Fs2Grpc)
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .settings(
+      dockerBaseImage := "openjdk:21-jdk-slim",
+      Docker / packageName := "dawnpatrol",
+      Docker / version := "latest"
+    )
   .dependsOn(protocol)
   .dependsOn(core)
   .dependsOn(protocol % "protobuf")
@@ -187,6 +196,11 @@ lazy val server = project
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
   )
   .enablePlugins(Fs2Grpc)
-  .enablePlugins(NativeImagePlugin)
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .settings(
+      dockerBaseImage := "openjdk:21-jdk-slim",
+      Docker / packageName := "dwn-grpc-server",
+      Docker / version := "latest"
+    )
   .dependsOn(protocol)
   .dependsOn(protocol % "protobuf")

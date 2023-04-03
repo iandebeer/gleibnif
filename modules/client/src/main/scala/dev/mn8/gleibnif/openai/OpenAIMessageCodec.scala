@@ -1,11 +1,10 @@
 package dev.mn8.gleibnif.openai
 
-import io.circe.Decoder.Result
-import io.circe.*
-import io.circe.{Decoder,Json,Encoder}
-import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
-import io.circe.syntax._
+import cats.syntax.all.*
+import io.circe.Decoder.Result
+import io.circe.syntax.*
+import io.circe.*
 
 object OpenAIMessageCodec {
   given openAIResponseDecoder: Decoder[OpenAIResponse] = new Decoder[OpenAIResponse] {

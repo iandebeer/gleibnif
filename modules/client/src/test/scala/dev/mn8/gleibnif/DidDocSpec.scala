@@ -272,6 +272,13 @@ class DidDocSpec extends FunSuite {
     r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
   }
 
+  test("add template document") {
+    val doc = DIDDoc("",Some("did:example:123456789"),Some(Set("tel:12345k;name=Ian de Beer")),None,None,None,None,None,None,
+    Some(Set(Service(id= new URI("#dwn"), `type`= Set("DecentralizedWebNode"), serviceEndpoint=Set(ServiceEndpointNodes(
+    nodes=Set(new URI("https://dwn.example.com"), new URI("https://example.org/dwn"))))))))
+    println(doc.asJson.spaces2)
+
+  }
  /*  test("JSONLD should be encoded to JSON") {
     //import dev.mn8.gleibnif.DIDCodec.* 
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")

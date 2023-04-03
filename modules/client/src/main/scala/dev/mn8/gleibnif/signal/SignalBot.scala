@@ -1,21 +1,19 @@
 package dev.mn8.gleibnif.signal
 
 
-import SignalMessageCodec.*
-
-import SignalMessageCodec.signalMessageDecoder
-import SignalMessageCodec.signalSendMessage
-import io.circe.*
-import io.circe.syntax.*
-import sttp.client3.*
-import sttp.model.*
-import sttp.client3.circe.*
-import cats.implicits._
-
-import io.circe.parser.*
+import cats.data.EitherT
 import cats.effect.IO
+import cats.implicits.*
+import dev.mn8.gleibnif.signal.SignalMessageCodec.signalMessageDecoder
+import dev.mn8.gleibnif.signal.SignalMessageCodec.signalSendMessage
+import io.circe.*
+import io.circe.parser.*
+import io.circe.syntax.*
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
+import sttp.client3.*
+import sttp.client3.circe.*
+import sttp.model.*
 
 case class SignalConfig(
   signalUrl: String,
@@ -33,91 +31,58 @@ case class SignalBot():
         println(s"Error: $error")
         SignalConfig("", "", "" )
       case Right(conf) => conf
+    println(s"Signal Conf: $signalConf")
+    println(s"Phone: ${signalConf.signalPhone}")  
     signalConf
 
   val signalConf= getConf() 
 
   def init(): Unit = ()
-  def register(voiceMode:Boolean) = 
+  def register(voiceMode:Boolean): IO[Either[Exception,String]] = 
     val request = basicRequest.contentType("application/json").body(s"""{"use_voice": $voiceMode}""").post(
-      uri"${signalConf.signalUrl}/v1/register/${signalConf.signalPhone}")
+      uri"${signalConf.signalUrl}/register/${signalConf.signalPhone}")
     val response = request.send(backend) 
     response.code.toString match
       case "200" => 
-        println("Registration successful")
-        true
-      case "409" => 
-        println("Registration failed")
-        false
-      case _ => 
-        println("Registration failed")
-        false
-
+        IO(Right("200: Message sent"))
+      case "409" =>
+        IO(Left(new Exception("409: Message failed")))
+      case _ =>
+        IO(Left(new Exception("Message failed")))
     
-
-    
-  def verify(pin:String) = 
+  def verify(pin:String) : IO[Either[Exception,String]] = 
     val request = basicRequest.contentType("application/json").body(s"""{"pin": $pin""").post(
-      uri"${signalConf.signalUrl}/v1/verify/${signalConf.signalPhone}")
+      uri"${signalConf.signalUrl}/verify/${signalConf.signalPhone}")
     val response = request.send(backend) 
     response.code.toString match
       case "200" => 
-        println("Verification successful")
-        true
-      case "409" => 
-        println("Verification failed")
-        false
-      case _ => 
-        println("Verification failed")
-        false
+        IO(Right("200: Message sent"))
+      case "409" =>
+        IO(Left(new Exception("409: Message failed")))
+      case _ =>
+        IO(Left(new Exception("Message failed")))
 
-  def send(message: SignalSendMessage): IO[Unit] = 
-    for 
-      request <- IO.blocking(basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
-         uri"${signalConf.signalUrl}/v2/send"))
-     /*  _ <- IO(println(s"Sending message: $message"))
-      _ <- IO(println(s"Sending message: ${message.asJson.noSpaces}")) */
-      _ <- IO.blocking(request.send(backend).body match
-        case Left(error) => 
-          IO.println(error)
-        case Right(response) => 
-          IO.println(response))
-    yield ()
+  def send(message: SignalSendMessage): EitherT[IO,Exception,String] =
+    val request = basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
+      uri"${signalConf.signalUrl}/send/${signalConf.signalPhone}")
+    val response = request.send(backend)
+    response.code.toString match
+      case "200" => 
+        EitherT(IO(Right("200: Message sent")))
+      case "409" =>
+        EitherT(IO(Left(new Exception("409: Message failed"))))
+      case _ =>
+        EitherT(IO(Left(new Exception("Message failed"))))
 
-  def receive(): IO[List[SignalSimpleMessage]] = 
-    for 
-      request <- IO.blocking(basicRequest.contentType("application/json")get(
-        uri"${signalConf.signalUrl}/v1/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}"))
-      _ <- IO(println("Receiving messages"))
-      response <-  IO.blocking(request.send(backend))
-      _ <- IO.println(response.body)
-      messages <-  IO(response.body match
-        case Left(error) => 
-          IO.println(error)
-          List[SignalMessage]()
-        case Right(messages) => 
-          //println(messages)
-          parse(messages) match
-            case Left(error) => 
-              IO.println(error)
-              List[SignalMessage]()
-            case Right(json) => 
-              json.as[List[SignalMessage]] match
-                case Left(error) => 
-                  println(error)
-                  List[SignalMessage]()
-                case Right(messages) => 
-                  IO.println(messages.mkString("\n"))
-                  messages)
-
-      result <- IO(messages.flatMap(m =>
-        List(
-          m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message)),
-         // m.envelope.syncMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.sentMessage.map(snt => snt.message).getOrElse(""))),
-         // m.envelope.sentMessage.map(sm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,sm.message))
-        )
-      ).flattenOption)
-    yield result
+  def receive(): EitherT[IO, Exception,List[SignalSimpleMessage]] = 
+    val request = basicRequest.contentType("application/json").
+      response(asJson[List[SignalMessage]]).
+      get(uri"${signalConf.signalUrl}/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}")
+    val messages: EitherT[IO, ResponseException[String, Error], List[SignalMessage]] = EitherT(IO(request.send(backend).body))
+    for
+      ms <- messages
+      d <- EitherT.right(IO(ms.map(m => m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message))).flattenOption))
+    yield d
 
     
 

@@ -1,13 +1,12 @@
 package dev.mn8.gleibnif.didops
 
-import io.circe.Decoder.Result
-import io.circe.*
-import io.circe.{Decoder,Json,Encoder}
-import io.circe.syntax.*
-import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
-import io.circe.syntax._
 import cats.data.OptionT
+import cats.syntax.all.*
+import dev.mn8.gleibnif.DIDDoc
+import io.circe.Decoder.Result
+import io.circe.syntax.*
+import io.circe.*
 
 
 /*
@@ -136,5 +135,9 @@ case class Metadata(
 )
 
 
-
+case class RegistryRequest(
+  didDocument: DIDDoc,
+  options: Map[String, String] = Map("network" -> "danube"),
+  secret: Map[String, String] = Map.empty
+)
 

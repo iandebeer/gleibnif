@@ -1,34 +1,21 @@
 package dev.mn8.gleibnif.didops
 
+import cats.data.EitherT
+import cats.effect.IO
+import cats.implicits.*
+import dev.mn8.gleibnif.didops.RegistryResponseCodec.registryResponseDecoder
 import io.circe.*
+import io.circe.parser.*
 import io.circe.syntax.*
 import sttp.client3.*
-import sttp.model.*
 import sttp.client3.circe.*
-import cats.implicits._
+import sttp.model.*
 
-import io.circe.parser.*
-import cats.effect.IO
-
- 
-
-import RegistryResponseCodec.registryResponseDecoder
-
-
-final case class RegistryServiceClient(registryUrl: String, apiKey: String, document:String): 
-  val backend = HttpClientSyncBackend()
-
-//https://api.godiddy.com/0.1.0/universal-registrar/create?method=sov
-
-
-  def createDID(method:String): IO[String] = 
-    val exampleDID = "did:example:48e8cec"
+final case class RegistryServiceClient(registryUrl: String, apiKey: String): 
+  private val client = SimpleHttpClient()
+  def createDID(method:String, document:String): EitherT[IO,Exception,String] =
 
     val url = uri"${registryUrl}create?method=$method"
-    println(s"Creating DID with url: $url")
-    println(s"apiKey $apiKey")
-    println(s"document ${document.length}: $document")  
-
     val request: RequestT[Identity, Either[ResponseException[String, Error], RegistryResponse], Any] = basicRequest
       .post(url)
       .header("Content-Type", "application/json")
@@ -36,17 +23,7 @@ final case class RegistryServiceClient(registryUrl: String, apiKey: String, docu
       .response(asJson[RegistryResponse])
       .body(document)
 
-    val curl = request.toCurl
-    request.headers.foreach(println)
-    println(s"curl: \n $curl")
-
-    val response: Response[Either[ResponseException[String, Error], RegistryResponse]] = request.send(backend) 
-
-    response.body match
-      case Left(error) =>
-        println (s"Error creating DID: $error.")
-        IO(exampleDID)
-      case Right(registryResponse) =>
-        println(s"DID created successfully: $registryResponse")
-        IO(registryResponse.didState.did)
-            
+    //val curl = request.toCurl
+    //request.headers.foreach(println)
+    //println(s"curl: \n $curl")
+    EitherT(IO.delay(client.send(request).body.map(r => r.didState.did)))

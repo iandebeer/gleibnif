@@ -15,37 +15,7 @@ import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
 import scala.concurrent.Await
 import com.google.api.http.Http
 
-object GRPCGateway :
 
-  def main(args: Array[String]): Unit = 
-    val channel = NettyChannelBuilder.forAddress("localhost", 8080).usePlaintext().build()
-    val service = RecordServiceGrpc.stub(channel)
-    val server = new RecordServer(service)
-    server.start(8081)
-
-  
-
-
-
-
-class RecordServer(service: RecordServiceStub) :
-  val server = Http.defaultInstance.serve(":8081", TicketBookingGatewayService(service))
-  Await.ready(server)
-
-
-
-
-
-object RecordGatewayService :
-  def apply(service: RecordServiceStub) = 
-    HttpRoutes.of[Task] {
-
-      case request @ Method.POST -> Root / "record" / user =>
-        val request = StoreRecordRequest(user)
-        val response = service.storeRecord(request)
-        Ok(response)
-
-    }
 
 case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
   override def interceptCall[Req,Res] (

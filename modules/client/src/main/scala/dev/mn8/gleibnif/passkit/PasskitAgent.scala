@@ -1,28 +1,19 @@
 package dev.mn8.gleibnif.passkit
 
-import de.brendamour.jpasskit.PKPass
+import cats.data.EitherT
+import cats.effect.{IO, Resource}
+import de.brendamour.jpasskit.{PKBarcode, PKField, PKPass}
+import de.brendamour.jpasskit.enums.{PKBarcodeFormat, PKPassType}
 import de.brendamour.jpasskit.passes.PKGenericPass
-import de.brendamour.jpasskit.enums.PKPassType
-import de.brendamour.jpasskit.PKField
-import de.brendamour.jpasskit.PKBarcode
-import de.brendamour.jpasskit.enums.PKBarcodeFormat
-import java.nio.charset.Charset
-import java.awt.Color
-import scala.jdk.CollectionConverters._
-import de.brendamour.jpasskit.signing.PKSigningInformationUtil
-import java.io.InputStream
-import de.brendamour.jpasskit.signing.PKPassTemplateFolder
-import de.brendamour.jpasskit.signing.PKFileBasedSigningUtil
-import pureconfig.ConfigReader
+import de.brendamour.jpasskit.signing.{PKFileBasedSigningUtil, PKPassTemplateFolder, PKSigningInformationUtil}
+import pureconfig.{ConfigReader, ConfigSource}
 import pureconfig.generic.derivation.default.*
-import cats.effect.IO
-import pureconfig.ConfigSource
-import cats.effect.Resource
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.OutputStream
+
+import java.awt.Color
+import java.io.*
 import java.net.URL
+import java.nio.charset.Charset
+import scala.jdk.CollectionConverters.*
 
 
 case class PasskitConfig(
@@ -52,10 +43,9 @@ final case class PasskitAgent(name: String, did:String, dawnURL:URL):
       case Right(conf) => conf
     passkitConf
 
-  def getPass: IO[PKPass] = 
-    for
-      p <-  IO.delay(PKPass
-        .builder()
+  def getPass: Either[Exception,PKPass] =
+    
+    Right(PKPass.builder()
         .pass(
           PKGenericPass
             .builder()
@@ -95,24 +85,22 @@ final case class PasskitAgent(name: String, did:String, dawnURL:URL):
         
         // ... and more initializations ...
         .build())
-    yield p
+    
 
-
-  def signPass(): IO[Array[Byte]] =
-
-    for 
-      pass <- getPass
+  def signPass(): EitherT[IO,Exception,String] =
+    for
+      pass <- EitherT(IO.delay(getPass))
       pkSigningInformation = new PKSigningInformationUtil()
         .loadSigningInformationFromPKCS12AndIntermediateCertificate(
           passkitConf.keystorePath,
           passkitConf.keystorePassword,
           passkitConf.appleWWDRCA
         )
-      pkSigningUtil <- IO.delay( new PKFileBasedSigningUtil())
-      passTemplate <- IO.delay( new PKPassTemplateFolder(passkitConf.templatePath))
-    yield 
-      pkSigningUtil.createSignedAndZippedPkPassArchive(pass, passTemplate, pkSigningInformation)
-    
+      pkSigningUtil <-  EitherT.right(IO.delay(new PKFileBasedSigningUtil()))
+      passTemplate <- EitherT.right(IO.delay( new PKPassTemplateFolder(passkitConf.templatePath)))
+      passBytes <- EitherT.right(IO.delay(pkSigningUtil.createSignedAndZippedPkPassArchive(pass, passTemplate, pkSigningInformation)))
+      passBase64 <- EitherT.right(PasskitAgent.base64Encode(passBytes))
+    yield passBase64
    
 object PasskitAgent:
   def base64Encode(bytes: Array[Byte]): IO[String] =
@@ -147,10 +135,8 @@ object PasskitAgent:
     inputOutputStreams(origin, destination).use { case (in, out) =>
       transfer(in, out)
     }
-
   def write(f: File, data: Array[Byte]): IO[Long] =
     Resource.fromAutoCloseable(IO(new FileOutputStream(f))).use { out =>
       IO.blocking(out.write(data)) >> IO.pure(data.length.toLong)
     }  
 
-  //println(getPass.getBarcodes().asScala.map(b => b.getMessage()).mkString(","))

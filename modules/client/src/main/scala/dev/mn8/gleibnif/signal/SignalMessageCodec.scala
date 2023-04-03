@@ -116,7 +116,14 @@ object SignalMessageCodec:
         timestamp <- c.downField("timestamp").as[Long]
       yield SignalReadMessage(sender, senderNumber, senderUuid, timestamp)
   
-  
+  given signalSimpleMessageDecoder: Decoder[SignalSimpleMessage] = new Decoder[SignalSimpleMessage]:
+    def apply(c: HCursor): Result[SignalSimpleMessage] =
+      for
+        message <- c.downField("message").as[String]
+        number <- c.downField("number").as[String]
+        text <- c.downField("text").as[String]
+        keywords <- c.downField("keywords").as[List[String]]
+      yield SignalSimpleMessage(message, number, text, keywords) 
 
 
 

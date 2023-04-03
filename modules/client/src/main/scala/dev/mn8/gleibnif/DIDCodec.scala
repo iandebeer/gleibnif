@@ -1,16 +1,15 @@
 package dev.mn8.gleibnif
 
+import cats.*
+import cats.syntax.all.*
 import io.circe.Decoder.Result
 import io.circe.*
-import io.circe.{Decoder,Json,Encoder}
-import cats.Applicative.ops.toAllApplicativeOps
-import cats.*
+
 import java.net.URI
 
 //import summon.{Decoder => _, _}
 
 object DIDCodec:
-
   given encodeDIDDoc: Encoder[DIDDoc] =
     new Encoder[DIDDoc]:
       final def apply(a: DIDDoc): Json =

@@ -124,7 +124,7 @@ case class SignalReadMessage(
        senderUuid: $senderUuid, 
        timestamp: $timestamp)"""
 
-case class SignalSimpleMessage(phone:String, name:String, text:String, keywords:List[String] = List()):
+case class SignalSimpleMessage(phone:String, name:String, text:String, keywords:List[String] = List[String]()):
 
   override def toString(): String =
     s"""SignalSimpleMessage(phone: $phone, 

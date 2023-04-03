@@ -10,49 +10,24 @@ import pureconfig.generic.derivation.default.*
 import sttp.client3.*
 import sttp.client3.circe.*
 
-final case class PrismClient(prismUrl: String, apiKey: String):
-  val backend = HttpClientSyncBackend()
-  val exampleDID = "did:prism:48e8cec7eaf939e2bcd8d48dfa016dc338a1633289c430fc031c7ffd44738260"
+final case class PrismClient(prismUrl: String, apiKey: String, documentTemplate: DocumentTemplate):
+  private val backend = HttpClientSyncBackend()
 
-  val documentTemplate = DocumentTemplate(
-    Seq(
-      PublicKey("key1", "authentication"),
-      PublicKey("key2", "assertionMethod")
-    ),
-    Seq(
-      Service("did:prism:test1", "LinkedDomains", Seq("https://test1.com")),
-      Service("did:prism:test2", "LinkedDomains", Seq("https://test2.com"))
-    )
-  )
-
-  def createDID(): IO[String] = {
-    val result: String = createUnpublishedDID() match {
+  def createDID(): IO[Either[Exception,String]] = 
+    val result = createUnpublishedDID() match 
       case Left(error) =>
-        println(
-          s"Error creating DID: $error.\nReturning example DID."
-        )
-        exampleDID
-
+        Left(new Exception(s"Error creating DID: $error"))
       case Right(jsonResponse) =>
-        println(s"DID created successfully: $jsonResponse")
-
-        val parsedResponse =
-          decode[CreateDIDResponse](jsonResponse).toOption
-
+        val parsedResponse = decode[CreateDIDResponse](jsonResponse).toOption
         parsedResponse.map(_.longFormDid) match
           case None =>
-            println(
-              "Could not parse longFormDid from response. Returning example did."
-            )
-            exampleDID
+            Left(Exception("Could not parse longFormDid from response. Returning example did."))
           case Some(longDID) =>
             getPublishDIDResponse(longDID)
-    }
-
     IO.delay(result)
-  }
+  
 
-  def createUnpublishedDID() = {
+  private def createUnpublishedDID() = 
     // Create unpublished DID and store it inside Prism Agent's wallet. The private keys of the DID is managed by Prism Agent. The DID can later be published to the VDR using publications endpoint.
     val endpoint = "did-registrar/dids"
 
@@ -69,9 +44,8 @@ final case class PrismClient(prismUrl: String, apiKey: String):
     val response = request.send(backend)
 
     response.body
-  }
 
-  def publishDID(longFormDID: String): Either[String, String] = {
+  private def publishDID(longFormDID: String): Either[String, String] = 
     // Publish the DID stored in Prism Agent's wallet to the VDR.
     val endpoint = s"did-registrar/dids/$longFormDID/publications"
 
@@ -85,29 +59,20 @@ final case class PrismClient(prismUrl: String, apiKey: String):
     val response = request.send(backend)
 
     response.body
-  }
+  
 
-  def getPublishDIDResponse(longFormDID: String): String = {
-    publishDID(longFormDID) match {
+  private def getPublishDIDResponse(longFormDID: String): Either[Exception,String] = 
+    publishDID(longFormDID) match 
       case Left(error) =>
-        println(
-          s"Error publishing DID: $error. Returning example DID."
-        )
-        exampleDID
+        Left(Exception(s"Error publishing DID: $error."))
+
       case Right(jsonResponse) =>
-        println(s"DID published successfully: $jsonResponse")
+        decode[PublishedDIDResponse](jsonResponse).map(_.scheduledOperation.didRef)
 
-        val parsedResponse =
-          decode[PublishedDIDResponse](jsonResponse).toOption
-
-        parsedResponse.map(_.scheduledOperation.didRef).getOrElse {
-          println(
-            "Could not parse didRef from response. Returning example did."
-          )
-          exampleDID
-        }
-    }
-  }
+      
+        
+    
+  
 
 case class DocumentTemplate(publicKeys: Seq[PublicKey], services: Seq[Service])
 case class PublicKey(id: String, purpose: String)

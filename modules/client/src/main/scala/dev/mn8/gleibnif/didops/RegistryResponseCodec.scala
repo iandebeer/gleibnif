@@ -3,9 +3,10 @@ package dev.mn8.gleibnif.didops
 import io.circe.*
 import io.circe.{Decoder,Json,Encoder}
 import io.circe.syntax.*
-import cats.Applicative.ops.toAllApplicativeOps
+import cats.syntax.all.*
 import cats.*
 import io.circe.syntax._
+import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
 
 object RegistryResponseCodec:
   import io.circe.generic.auto.*
@@ -82,3 +83,13 @@ object RegistryResponseCodec:
       } yield Metadata(from, digest)
   }
   
+   given encodeRegistryRequest: Encoder[RegistryRequest] =
+    new Encoder[RegistryRequest]:
+      final def apply(a: RegistryRequest): Json =
+        Json.obj(
+          ("didDocument", encodeDIDDoc.apply(a.didDocument)),
+          ("options", Json.obj(a.options.map { case (k:String, v:String) => (k, Json.fromString(v)) }.toSeq: _*)),
+          ("secret", Json.obj(a.secret.map { case (k:String, v:String) => (k, Json.fromString(v)) }.toSeq: _*))
+          )
+            
+          

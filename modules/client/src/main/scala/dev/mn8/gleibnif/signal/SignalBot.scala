@@ -64,8 +64,12 @@ case class SignalBot():
 
   def send(message: SignalSendMessage): EitherT[IO,Exception,String] =
     val request = basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
-      uri"${signalConf.signalUrl}/send/${signalConf.signalPhone}")
+      uri"${signalConf.signalUrl}/v2/send")
+    val curl = request.toCurl
+    request.headers.foreach(println)
+    println(s"curl: \n $curl")
     val response = request.send(backend)
+    println(s"Response: ${response.body}")
     response.code.toString match
       case "200" => 
         EitherT(IO(Right("200: Message sent")))
@@ -77,9 +81,13 @@ case class SignalBot():
   def receive(): EitherT[IO, Exception,List[SignalSimpleMessage]] = 
     val request = basicRequest.contentType("application/json").
       response(asJson[List[SignalMessage]]).
-      get(uri"${signalConf.signalUrl}/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}")
+      get(uri"${signalConf.signalUrl}/v1/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}")
     val messages: EitherT[IO, ResponseException[String, Error], List[SignalMessage]] = EitherT(IO(request.send(backend).body))
+    val curl = request.toCurl
+    request.headers.foreach(println)
+    println(s"curl: \n $curl")
     for
+      _ <- EitherT.right(IO.println("Received messages"))
       ms <- messages
       d <- EitherT.right(IO(ms.map(m => m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message))).flattenOption))
     yield d

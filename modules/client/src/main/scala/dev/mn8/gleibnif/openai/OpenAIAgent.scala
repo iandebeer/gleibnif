@@ -38,6 +38,8 @@ final case class OpenAIAgent():
   val apiConf= getConf() 
 
   def extractKeywords(message: SignalSimpleMessage): EitherT[IO, Exception, SignalSimpleMessage] =
+    println("Extract keywords")
+
     val openAIRequest = OpenAIRequest(prompt = s"Extract keywords from this text: ${message.text}").asJson.noSpaces
     val request = basicRequest
       .contentType("application/json")
@@ -45,12 +47,18 @@ final case class OpenAIAgent():
       .body(openAIRequest)
       .response(asJson[OpenAIResponse])
       .post(uri"https://api.openai.com/v1/completions")
+     val curl = request.toCurl
+    println(s"curl: \n $curl")
     val response = client.send(request)
+    println(s"Response: ${response.body.toString}")
+    
     response.body match
       case Left(s:ResponseException[String, Error]) => 
+        println(s"Error: $s")
         EitherT(IO.delay(Left(s)))
       case Right(openAIResponse) =>
         val keys = openAIResponse.choices.map(choice => choice.text)
+        println(keys.mkString(","))
         EitherT(IO.delay(Right(message.copy(keywords = keys))))
 
     

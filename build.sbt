@@ -15,14 +15,14 @@ lazy val castanetVersion = "0.1.5"
 lazy val didCommVersion = "0.3.2"
 lazy val sttpVersion = "3.8.14"
 lazy val tinkVersion = "1.8.0"
-lazy val redis4catsVersion = "1.4.0"
+lazy val redis4catsVersion = "1.4.1"
 lazy val openAIVersion = "0.3.1"
 lazy val bouncyCastleVersion = "1.70"
 lazy val titaniumVersion = "1.3.2"
 lazy val munitVersion = "1.0.0-M7"
 lazy val munitCEVersion = "1.0.7"
 lazy val pureconfigVersion = "0.17.3-SNAPSHOT"
-lazy val ipfsVersion = "1.4.2"
+lazy val ipfsVersion = "1.4.4"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(

@@ -26,4 +26,6 @@ final case class RegistryServiceClient(registryUrl: String, apiKey: String):
     //val curl = request.toCurl
     //request.headers.foreach(println)
     //println(s"curl: \n $curl")
+    println("Create DID")
+
     EitherT(IO.delay(client.send(request).body.map(r => r.didState.did)))

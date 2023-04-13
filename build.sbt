@@ -13,7 +13,7 @@ lazy val refinedVersion = "0.9.27"
 lazy val castanetVersion = "0.1.5"
 //lazy val didCommonVersion = "1.0.0"
 lazy val didCommVersion = "0.3.2"
-lazy val sttpVersion = "3.8.14"
+lazy val sttpVersion = "3.8.15"
 lazy val tinkVersion = "1.8.0"
 lazy val redis4catsVersion = "1.4.1"
 lazy val openAIVersion = "0.3.1"
@@ -23,6 +23,9 @@ lazy val munitVersion = "1.0.0-M7"
 lazy val munitCEVersion = "1.0.7"
 lazy val pureconfigVersion = "0.17.3-SNAPSHOT"
 lazy val ipfsVersion = "1.4.4"
+lazy val log4catsVersion = "2.1.1"
+lazy val logbackVersion = "1.2.6"
+lazy val slf4jVersion = "1.7.36"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
@@ -38,7 +41,11 @@ lazy val commonSettings = Seq(
     "org.typelevel" %% "cats-core" % catsVersion,
     "org.typelevel" %% "cats-effect" % ceVersion,
     "org.bouncycastle" % "bcpkix-jdk15on" % bouncyCastleVersion,
-    
+    "org.typelevel" %% "log4cats-core" % log4catsVersion,
+    "org.typelevel" %% "log4cats-slf4j" % log4catsVersion,
+    //"ch.qos.logback" % "logback-classic" % logbackVersion,
+    //"org.slf4j" % "slf4j-api" % slf4jVersion,
+    // "org.slf4j" % "slf4j-nop" % slf4jVersion ,
     "org.scalameta" %% "munit" % munitVersion % Test,
     "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
     "org.typelevel" %% "munit-cats-effect-3" % munitCEVersion % Test
@@ -143,11 +150,14 @@ lazy val client = project
      // "decentralized-identity" % "did-common-java" % didCommonVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "cats" % sttpVersion,
+      "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % sttpVersion,
       "org.didcommx" % "didcomm" % didCommVersion,
       "com.apicatalog" % "titanium-json-ld" % titaniumVersion,
       "org.glassfish" % "jakarta.json" % "2.0.1",
       "org.didcommx" % "didcomm" % "0.3.2",
       "com.github.ipfs" % "java-ipfs-http-client" % ipfsVersion,
+     
       //"com.github.pureconfig" %% "pureconfig" % pureconfigVersion,
       "com.github.pureconfig" %% "pureconfig-core" % pureconfigVersion,
       "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,

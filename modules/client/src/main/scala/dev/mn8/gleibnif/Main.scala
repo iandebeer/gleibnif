@@ -31,6 +31,7 @@ import dev.mn8.gleibnif.dawn.DWNClient
 import dev.mn8.gleibnif.passkit.PasskitAgent
 import dev.mn8.gleibnif.openai.OpenAIAgent
 import sttp.client3.ResponseException
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 
 object Main extends IOApp:
   type ErrorOr[A] = EitherT[IO, Exception, A]
@@ -109,19 +110,19 @@ object Main extends IOApp:
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
   )
+  
 
   def callServices(): IO[Either[Exception, List[String]]] =
-    val x: ErrorOr[List[String]] = for
-      messages: List[SignalSimpleMessage] <- signalBot.receive()
-      mt = messages.partition(m => m.text.toLowerCase().startsWith("@admin|add"))
+    val messages: EitherT[IO, ResponseException[String, io.circe.Error], List[SignalSimpleMessage]] = EitherT(AsyncHttpClientCatsBackend.resource[IO]().use { b => 
+       signalBot.receive(b)})
+    (for
+      mt <- messages.map(_.partition(m => m.text.toLowerCase().startsWith("@admin|add")))
       adminMsg <- mt._1.map(m =>
         for
           // add content to the didDocument
           did <- registryClient.createDID("indy", "")
           member <- EitherT(IO.delay(decode[Member](m.text.split("\\|")(2))))
-
           pass <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
-
           r <- signalBot.send(
             SignalSendMessage(
               List[String](
@@ -145,8 +146,7 @@ object Main extends IOApp:
               List(k.phone)
             )
           )).sequence
-    yield s
-    x.value
+    yield s).value  
 
   val pollingInterval: FiniteDuration = 30.seconds
 

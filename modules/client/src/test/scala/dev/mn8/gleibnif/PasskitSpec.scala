@@ -14,6 +14,7 @@ import java.io.OutputStream
 import java.nio.file.Files
 import cats.effect.unsafe.implicits._
 import java.net.URL
+import cats.data.EitherT
 
 
 class PasskitSpec extends FunSuite:
@@ -21,13 +22,15 @@ class PasskitSpec extends FunSuite:
 
   test("create pass ") {
     val u = for {
-      a <- IO.delay(PasskitAgent("Ian de Beer","did:prism1234567",new URL("https://google.com")))
+      a <- EitherT.right(IO.delay(PasskitAgent("Ian de Beer","did:prism1234567",new URL("https://google.com"))))
       p <- a.signPass()    
-      x <- copy(QRCode.from("did:prism1234567").file(),new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/qr2.png"))
-      y <- write(new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/pass.pkpass"),p)
-      z <- base64Encode(p)
-    } yield ((x,y,z))
-    u.flatTap(m => IO(println(s"Wrote files: ${m._1}, ${m._2}\n${{m._3}}"))).unsafeRunSync()
+      x <- EitherT.right(copy(QRCode.from("did:prism1234567").file(),new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/qr2.png")))
+      y <-  EitherT.right(write(new File("/Users/ian/dev/gleibnif/modules/client/src/main/resources/pass.pkpass"),p.getBytes))
+      z <-  EitherT.right(base64Encode(p.getBytes()))
+    } yield (x,y,z)
+
+    u.value.flatTap(m => IO.delay(println(s"${m.toOption.map(_.toString())} done")
+    )).unsafeRunSync()
 
 
 

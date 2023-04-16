@@ -77,23 +77,24 @@ case class SignalBot():
         EitherT(IO(Left(new Exception("Signalbot Verify: Message failed"))))
 
 
-  def send(message: SignalSendMessage):  ErrorOr[String] =
+  def send(message: SignalSendMessage, backendA: SttpBackend[IO, Any]): IO[Either[Exception, String]] =
     log(s"Sending message: $message")
     val request = basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
       uri"${signalConf.signalUrl}/v2/send")
     // val curl = request.toCurl
     // request.headers.foreach(println)
     // println(s"curl: \n $curl")
-    val response = request.send(backend)
+    val response = request.send(backendA)
     // println(s"Response: ${response.body}")
     log(s"Sent message: $message")
-    response.code.toString match
-      case "200" => 
-        EitherT(IO(Right("Signalbot Send: 200 - Message sent")))
-      case "409" =>
-        EitherT(IO(Left(new Exception("Signalbot Send: 409 - Message failed"))))
+    response.map(c => c.code match
+      case s:StatusCode if s.isSuccess => 
+        Right(s"Signalbot Send: $s - Message sent")
+      case s:StatusCode =>
+        Left(new Exception(s"Signalbot Send: $s "))
       case _ =>
-        EitherT(IO(Left(new Exception("Signalbot Send: Message failed"))))
+        Left(new Exception("Signalbot Send: Message failed")))
+
 
   def receive(backendA: SttpBackend[IO, Any]): IO[Either[ResponseException[String, Error], List[SignalSimpleMessage]]] = 
     log("Receiving messages...")
@@ -114,16 +115,27 @@ case class SignalBot():
             log(s"Received messages... ${messages.toString}")
             Either.right(messages)
       )
-    response.flatMap(
-      r => r match
-        case Left(error) => IO(Left(error))
-        case Right(messages) => IO(Right(messages))
-    ).map(e => e.map(messages => 
-      messages.map(m =>
-        m.envelope.dataMessage match
-          case Some(dm) => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message)
-          case None => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,""))))  
+    // response.flatMap(
+    //   r => r match
+    //     case Left(error) => IO(Left(error))
+    //     case Right(messages) => IO(Right(messages))
+    // ).map(e => e.map(messages => 
+    //   messages.map(m =>
+    //     m.envelope.dataMessage match
+    //       case Some(dm) => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message)
+    //       case None =>  IO(Left("no data"))))) //SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,""))))  
 
+      val result = for 
+        r <- EitherT(response)
+        messages = r.map { m =>
+          
+          m.envelope.dataMessage match {
+            case Some(dm) => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName, dm.message)
+            case None => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName, "")
+          }
+        }
+      yield messages
+      result.value
 
         
         //m.envelope.dataMessage.map(dm => SignalSimpleMessage(m.envelope.sourceNumber, m.envelope.sourceName,dm.message))))

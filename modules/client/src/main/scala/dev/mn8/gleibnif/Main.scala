@@ -22,6 +22,7 @@ import pureconfig.*
 import pureconfig.generic.derivation.default.*
 
 import io.circe.parser.*
+import io.circe._, io.circe.parser._, io.circe.syntax._
 import fs2.Stream
 
 import dev.mn8.gleibnif.signal.*
@@ -32,6 +33,12 @@ import dev.mn8.gleibnif.passkit.PasskitAgent
 import dev.mn8.gleibnif.openai.OpenAIAgent
 import sttp.client3.ResponseException
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import dev.mn8.gleibnif.DIDDoc
+import dev.mn8.gleibnif.Service
+import java.net.URI
+import dev.mn8.gleibnif.didops.RegistryRequest
+import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
+import dev.mn8.gleibnif.ServiceEndpointNodes
 
 object Main extends IOApp:
   type ErrorOr[A] = EitherT[IO, Exception, A]
@@ -110,48 +117,96 @@ object Main extends IOApp:
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
   )
-  
+  val backend = AsyncHttpClientCatsBackend.resource[IO]()
 
   def callServices(): IO[Either[Exception, List[String]]] =
-    val messages: EitherT[IO, ResponseException[String, io.circe.Error], List[SignalSimpleMessage]] = EitherT(AsyncHttpClientCatsBackend.resource[IO]().use { b => 
-       signalBot.receive(b)})
+    val messages: EitherT[IO, ResponseException[String, io.circe.Error], List[
+      SignalSimpleMessage
+    ]] = EitherT(backend.use { b =>
+      signalBot.receive(b)
+    })
     (for
-      mt <- messages.map(_.partition(m => m.text.toLowerCase().startsWith("@admin|add")))
-      adminMsg <- mt._1.map(m =>
-        for
-          // add content to the didDocument
-          did <- registryClient.createDID("indy", "")
-          member <- EitherT(IO.delay(decode[Member](m.text.split("\\|")(2))))
-          pass <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
-          r <- signalBot.send(
-            SignalSendMessage(
-              List[String](
-                s"data:application/vnd.apple.pkpass;filename=did.pkpass;base64,${pass}"
-              ),
-              s"${member.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
-              "+27659747833",
-              List[String](member.number))
-          )
-        yield r).sequence
-
-      keywords <- mt._2.map(m =>
-        openAIAgent.extractKeywords(m)
-      ).sequence
-      s <-  keywords.map(k => signalBot.send(
-            SignalSendMessage(
-              List[String](),
-              s"${k.name}, I have extracted the following keywords: ${k.keywords
-                  .mkString(",")}",
-              "+27659747833",
-              List(k.phone)
+      mt <- messages.map(
+        _.filter(_.text.length > 0)
+          .partition(_.text.toLowerCase().startsWith("@admin|add"))
+      )
+      adminMsg <- mt._1
+        .map(m =>
+          val member = decode[Member](m.text.split("\\|")(2)).getOrElse(Member("", ""))
+          val doc = DIDDoc(
+            did = "",
+            controller = Some("did:example:123456789"),
+            alsoKnownAs = Some(Set(s"tel:${member.number}.};name=${member.name}")),
+            verificationMethods = None,
+            keyAgreements = None,
+            authentications = None,
+            assertionMethods = None,
+            capabilityInvocations = None,
+            capabilityDelegations = None,
+            services = Some(
+              Set(
+                Service(
+                  id = new URI("#dwn"),
+                  `type` = Set("DecentralizedWebNode"),
+                  serviceEndpoint = Set(
+                    ServiceEndpointNodes(
+                      nodes = Set(
+                        new URI("https://dwn.example.com"),
+                        new URI("https://example.org/dwn")
+                      )
+                    )
+                  )
+                )
+              )
             )
-          )).sequence
-    yield s).value  
+          )
+          val reg = RegistryRequest(doc)
+          val document = reg.asJson.spaces2
+          for
+            did <- EitherT(backend.use { b =>
+              registryClient.createDID("indy", document, b)
+            })
+            member <- EitherT(IO.delay(decode[Member](m.text.split("\\|")(2))))
+            pass <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
+            r <- EitherT(backend.use { b =>
+              signalBot.send(
+                SignalSendMessage(
+                  List[String](
+                    s"data:application/vnd.apple.pkpass;filename=did.pkpass;base64,${pass}"
+                  ),
+                  s"${member.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
+                  "+27659747833",
+                  List[String](member.number)
+                ),
+                b
+              )
+            })
+          yield r
+        )
+        .sequence
 
-  val pollingInterval: FiniteDuration = 30.seconds
+      keywords <- mt._2.map(m => openAIAgent.extractKeywords(m)).sequence
+      s <- keywords
+        .map(k =>
+          EitherT(backend.use { b =>
+            signalBot.send(
+              SignalSendMessage(
+                List[String](),
+                s"${k.name}, I have extracted the following keywords: ${k.keywords
+                    .mkString(",")}",
+                "+27659747833",
+                List(k.phone)
+              ),
+              b
+            )
+          })
+        )
+        .sequence
+    yield s).value
 
- 
-  val stream: Stream[IO, Either[Exception,List[String]]] =
+  val pollingInterval: FiniteDuration = 10.seconds
+
+  val stream: Stream[IO, Either[Exception, List[String]]] =
     Stream
       .repeatEval(callServices())
       .metered(pollingInterval)

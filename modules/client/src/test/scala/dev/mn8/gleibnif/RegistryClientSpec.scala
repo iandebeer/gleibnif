@@ -18,6 +18,10 @@ import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
 import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
 import dev.mn8.gleibnif.didops.RegistryRequest
 import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
+import sttp.client3.HttpURLConnectionBackend
+import munit.Clue.generate
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import cats.data.EitherT
 
 
 
@@ -54,21 +58,24 @@ class RegistryClientSpec extends FunSuite {
   }
 }""".stripMargin
   val client = RegistryServiceClient(baseURL, apiKey)
+  val backend = AsyncHttpClientCatsBackend.resource[IO]()
 
   test("RegistryClient should be able to create a DID") {
     val doc = DIDDoc("",Some("did:example:123456789"),Some(Set("tel:12345k;name=Ian de Beer")),None,None,None,None,None,None,
-    Some(Set(Service(id= new URI("#dwn"), `type`= Set("DecentralizedWebNode"), serviceEndpoint=Set(ServiceEndpointNodes(
-    nodes=Set(new URI("https://dwn.example.com"), new URI("https://example.org/dwn"))))))))
+      Some(Set(Service(id= new URI("#dwn"), `type`= Set("DecentralizedWebNode"), serviceEndpoint=Set(ServiceEndpointNodes(
+      nodes=Set(new URI("https://dwn.example.com"), new URI("https://example.org/dwn"))))))))
     val reg = RegistryRequest(doc)
     val document = reg.asJson.spaces2
+    val dd: IO[String] = EitherT(backend.use { b => client.createDID("indy",document,b)}).value.flatMap {
+      case Left(e) => IO.raiseError(e)
+      case Right(r) => IO.pure(r)
+    }
 
-    
-    val r = for 
-      did <- client.createDID("indy",document)
-      _ <- IO(println(s"did: $did"))
-    yield
-      assert(did.startsWith("did:"))
-    r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
+    val did: String = dd.unsafeRunSync()
+
+    println(did)
+  
+    assert(did.startsWith("did:"))
 
   }
 

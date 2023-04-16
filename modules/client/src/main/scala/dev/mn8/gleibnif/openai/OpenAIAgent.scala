@@ -16,15 +16,19 @@ import cats.effect.Sync
 import cats.implicits._
 import cats.data.EitherT
 
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+
 case class APIConf(apiKey: String, orgId: String) derives ConfigReader:
   override def toString: String = s"APIConf(key: ${apiKey.toString}, orgId: ${orgId.toString})"
 
 final case class OpenAIAgent():
   import OpenAIMessageCodec.openAIRequestEncoder
   import OpenAIMessageCodec.openAIResponseDecoder
-
+  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
   private val client = SimpleHttpClient()
-
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+    logger.info(s"OpenAIAgent: $value")
   def getConf() = 
     val apiConf: APIConf = ConfigSource.default.at("openai-conf").load[APIConf]  match
       case Left(error) => 
@@ -38,7 +42,7 @@ final case class OpenAIAgent():
   val apiConf= getConf() 
 
   def extractKeywords(message: SignalSimpleMessage): EitherT[IO, Exception, SignalSimpleMessage] =
-    println("Extract keywords")
+    log("Extract keywords")
 
     val openAIRequest = OpenAIRequest(prompt = s"Extract keywords from this text: ${message.text}").asJson.noSpaces
     val request = basicRequest
@@ -47,10 +51,10 @@ final case class OpenAIAgent():
       .body(openAIRequest)
       .response(asJson[OpenAIResponse])
       .post(uri"https://api.openai.com/v1/completions")
-     val curl = request.toCurl
-    println(s"curl: \n $curl")
+    val curl = request.toCurl
+    //println(s"curl: \n $curl")
     val response = client.send(request)
-    println(s"Response: ${response.body.toString}")
+    log(s"Response: ${response.body.toString}")
     
     response.body match
       case Left(s:ResponseException[String, Error]) => 

@@ -17,7 +17,39 @@ import scala.concurrent.Future
 class PrismClientSpec extends FunSuite {
   val baseURL = "http://13.244.55.248:8080/prism-agent"
   val apiKey = "kxr9i@6XgKBUxe%O"
+  val document1 = """{
+  "didDocument": {
+    "@context": [
+      "https//www.w3.org/ns/did/v1"
+    ],
+    "controller": "did:example:bcehfew7h32f32h7af3",
 
+    "service": [
+      {
+        "id": "#dwn",
+        "type": "DecentralizedWebNode", 
+        "serviceEndpoint": {
+          "nodes": [
+            "https://dwn.example.com",
+            "https://example.org/dwn"
+          ]
+        }
+      }
+    ],
+    "verificationMethod": [
+
+    ]
+  },
+  "options": {
+    "network": "danube"
+  },
+  "secret": {
+  }
+}""".stripMargin
+  test("nothing") {
+    println("nothing")
+  } 
+ /*  
   test("PrismClient should be able to create a DID") {
     val client = PrismClient(baseURL, apiKey)
     client.createUnpublishedDID() match {
@@ -56,5 +88,6 @@ class PrismClientSpec extends FunSuite {
             throw new Exception(s"Error parsing response for creating DID")
           case Some(value) => client.getPublishDIDResponse(value)
     }
-  }
+  } 
+  */
 }

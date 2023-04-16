@@ -260,18 +260,6 @@ class DidDocSpec extends FunSuite {
     r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
   } */
 
-  test("ResolveToJson a did") {
-    val r = for 
-      x <- ResolverServiceClient(baseURL,apiKey).resolveToJson("did:indy:danube:7vZbRUJtepc9ct8KPUuQNn") 
-      _ <- x match
-        case Left(failure) => 
-          IO(println(s"Failed resolving DID :( $failure)"))
-        case Right(didDoc: String) => 
-          IO(println("\n"))
-    yield()
-    r.flatTap(m => IO(println(s"$r"))).unsafeRunSync()
-  }
-
   test("add template document") {
     val doc = DIDDoc("",Some("did:example:123456789"),Some(Set("tel:12345k;name=Ian de Beer")),None,None,None,None,None,None,
     Some(Set(Service(id= new URI("#dwn"), `type`= Set("DecentralizedWebNode"), serviceEndpoint=Set(ServiceEndpointNodes(

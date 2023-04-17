@@ -1,7 +1,5 @@
 package dev.mn8.gleibnif
 
-
-
 import munit.FunSuite
 import dev.mn8.gleibnif.signal.*
 import dev.mn8.gleibnif.openai.OpenAIAgent
@@ -22,8 +20,6 @@ import sttp.client3.HttpURLConnectionBackend
 import munit.Clue.generate
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import cats.data.EitherT
-
-
 
 class RegistryClientSpec extends FunSuite {
   val baseURL = "https://api.godiddy.com/0.1.0/universal-registrar/"
@@ -61,23 +57,48 @@ class RegistryClientSpec extends FunSuite {
   val backend = AsyncHttpClientCatsBackend.resource[IO]()
 
   test("RegistryClient should be able to create a DID") {
-    val doc = DIDDoc("",Some("did:example:123456789"),Some(Set("tel:12345k;name=Ian de Beer")),None,None,None,None,None,None,
-      Some(Set(Service(id= new URI("#dwn"), `type`= Set("DecentralizedWebNode"), serviceEndpoint=Set(ServiceEndpointNodes(
-      nodes=Set(new URI("https://dwn.example.com"), new URI("https://example.org/dwn"))))))))
+    val doc = DIDDoc(
+      "",
+      Some("did:example:123456789"),
+      Some(Set("tel:12345k;name=Ian de Beer")),
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      Some(
+        Set(
+          Service(
+            id = new URI("#dwn"),
+            `type` = Set("DecentralizedWebNode"),
+            serviceEndpoint = Set(
+              ServiceEndpointNodes(
+                nodes = Set(
+                  new URI("https://dwn.example.com"),
+                  new URI("https://example.org/dwn")
+                )
+              )
+            )
+          )
+        )
+      )
+    )
     val reg = RegistryRequest(doc)
     val document = reg.asJson.spaces2
-    val dd: IO[String] = EitherT(backend.use { b => client.createDID("indy",document,b)}).value.flatMap {
-      case Left(e) => IO.raiseError(e)
+    val dd: IO[String] = EitherT(backend.use { b =>
+      client.createDID("indy", document, b)
+    }).value.flatMap {
+      case Left(e)  => IO.raiseError(e)
       case Right(r) => IO.pure(r)
     }
 
     val did: String = dd.unsafeRunSync()
 
     println(did)
-  
+
     assert(did.startsWith("did:"))
 
   }
-
 
 }

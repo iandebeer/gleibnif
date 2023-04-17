@@ -91,10 +91,7 @@ case class SignalBot():
       case s:StatusCode if s.isSuccess => 
         Right(s"Signalbot Send: $s - Message sent")
       case s:StatusCode =>
-        Left(new Exception(s"Signalbot Send: $s "))
-      case _ =>
-        Left(new Exception("Signalbot Send: Message failed")))
-
+        Left(new Exception(s"Signalbot Send: $s ")))
 
   def receive(backendA: SttpBackend[IO, Any]): IO[Either[ResponseException[String, Error], List[SignalSimpleMessage]]] = 
     log("Receiving messages...")

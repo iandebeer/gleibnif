@@ -14,6 +14,7 @@ import java.io.*
 import java.net.URL
 import java.nio.charset.Charset
 import scala.jdk.CollectionConverters.*
+import org.typelevel.log4cats.Logger
 
 
 case class PasskitConfig(
@@ -33,12 +34,14 @@ case class PasskitConfig(
     |templatePath: $templatePath
     |""".stripMargin
 
-final case class PasskitAgent(name: String, did:String, dawnURL:URL):
+final case class PasskitAgent(name: String, did:String, dawnURL:URL)(using logger: Logger[IO] ):
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+      logger.info(s"$value") *> IO.unit
   val passkitConf = getConf()
   def getConf() = 
     val passkitConf: PasskitConfig = ConfigSource.default.at("passkit-conf").load[PasskitConfig]  match
       case Left(error) => 
-        println(s"Error: $error")
+        log(s"Error: $error")
         PasskitConfig("", "", "", "" )
       case Right(conf) => conf
     passkitConf

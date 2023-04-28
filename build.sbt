@@ -1,11 +1,11 @@
 lazy val Scala3 = "3.2.2"
 lazy val Scala213 = "2.13.6"
 lazy val catsVersion = "2.9.0"
-lazy val ceVersion = "3.4.8"
+lazy val ceVersion = "3.4.9"
 lazy val fs2Version = "3.6.1"
 lazy val circeVersion = "0.14.5"
-lazy val grpcVersion = "1.54.0"
-lazy val googleProtoVersion = "3.22.2"
+lazy val grpcVersion = "1.54.1"
+lazy val googleProtoVersion = "3.22.3"
 lazy val monocleVersion = "3.1.0"
 lazy val scodecVersion = "1.1.37"
 lazy val junitVersion = "0.11"
@@ -21,13 +21,20 @@ lazy val bouncyCastleVersion = "1.70"
 lazy val titaniumVersion = "1.3.2"
 lazy val munitVersion = "1.0.0-M7"
 lazy val munitCEVersion = "1.0.7"
-lazy val pureconfigVersion = "0.17.3-SNAPSHOT"
+lazy val pureconfigVersion = "0.17.3"
 lazy val ipfsVersion = "1.4.4"
-lazy val log4catsVersion = "2.1.1"
-lazy val logbackVersion = "1.2.6"
+lazy val log4catsVersion = "2.6.0"
+lazy val logbackVersion = "1.4.7"
 lazy val slf4jVersion = "1.7.36"
 
 lazy val commonSettings = Seq(
+  resolvers ++= Seq(
+        Resolver.mavenLocal,
+        "jitpack" at "https://jitpack.io",
+        "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+        "releases" at "https://oss.sonatype.org/content/repositories/releases"
+
+      ),
   libraryDependencies ++= Seq(
    //m "org.scala-lang" %% "scala3-staging" % Scala3,
     "org.typelevel" %% "cats-core" % catsVersion,
@@ -43,7 +50,12 @@ lazy val commonSettings = Seq(
     "org.bouncycastle" % "bcpkix-jdk15on" % bouncyCastleVersion,
     "org.typelevel" %% "log4cats-core" % log4catsVersion,
     "org.typelevel" %% "log4cats-slf4j" % log4catsVersion,
-    //"ch.qos.logback" % "logback-classic" % logbackVersion,
+    "org.didcommx" % "didcomm" % didCommVersion,
+    "com.github.ipfs" % "java-ipfs-http-client" % ipfsVersion,
+    "com.github.pureconfig" %% "pureconfig-core" % pureconfigVersion,
+    "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,
+
+    "ch.qos.logback" % "logback-classic" % logbackVersion,
     //"org.slf4j" % "slf4j-api" % slf4jVersion,
     // "org.slf4j" % "slf4j-nop" % slf4jVersion ,
     "org.scalameta" %% "munit" % munitVersion % Test,
@@ -105,7 +117,6 @@ lazy val core = project
       "org.glassfish" % "jakarta.json" % "2.0.1",
       "com.google.crypto.tink" % "tink" % tinkVersion,
       "com.google.crypto.tink" % "tink-awskms" % tinkVersion
-
     )
   )
 
@@ -152,20 +163,11 @@ lazy val client = project
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "cats" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % sttpVersion,
-      "org.didcommx" % "didcomm" % didCommVersion,
       "com.apicatalog" % "titanium-json-ld" % titaniumVersion,
       "org.glassfish" % "jakarta.json" % "2.0.1",
       "org.didcommx" % "didcomm" % "0.3.2",
-      "com.github.ipfs" % "java-ipfs-http-client" % ipfsVersion,
-     
-      //"com.github.pureconfig" %% "pureconfig" % pureconfigVersion,
-      "com.github.pureconfig" %% "pureconfig-core" % pureconfigVersion,
-      "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,
-      "dev.profunktor" %% "redis4cats-effects" % redis4catsVersion,
       "io.cequence" %% "openai-scala-client" % openAIVersion,
-    
       "de.brendamour" % "jpasskit" % "0.3.1-SNAPSHOT",
-
       "com.google.crypto.tink" % "tink" % tinkVersion
     ),
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
@@ -196,6 +198,7 @@ lazy val server = project
     libraryDependencies ++= List(
       "dev.mn8" %% "castanet" % castanetVersion,
       "org.typelevel" %% "cats-core" % catsVersion,
+      "dev.profunktor" %% "redis4cats-effects" % redis4catsVersion,
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
       "org.typelevel" %% "cats-effect" % ceVersion,

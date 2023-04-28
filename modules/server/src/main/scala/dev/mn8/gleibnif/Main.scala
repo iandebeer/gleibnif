@@ -14,6 +14,9 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
 import scala.concurrent.Await
 import com.google.api.http.Http
+import dev.mn8.gleibnif.HookImpl
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 
 
@@ -25,63 +28,70 @@ case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
         println(s"$msg: ${requestHeaders.get(Constants.AuthorizationMetadataKey)}")
         next.startCall(call,requestHeaders)
 
-class HookServiceImpl extends HookServiceFs2Grpc[IO, Metadata] {
-
+class HookServiceImpl(using logger: Logger[IO]) extends HookServiceFs2Grpc[IO, Metadata] {
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+     logger.info(s"HookServiceImpl: $value")
   override def updateHook(request: UpdateHookRequest, ctx: Metadata): IO[UpdateHookResponse] = 
-    println(s"updateHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"updateHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(UpdateHookResponse())
 
   override def getHooksForRecord(request: GetHooksForRecordRequest, ctx: Metadata): IO[GetHooksForRecordResponse] = 
-    println(s"getHooksForRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"getHooksForRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(GetHooksForRecordResponse())
 
 
   override def getHookByRecordId(request: GetHookByRecordIdRequest, ctx: Metadata): IO[GetHookByRecordIdResponse] = 
-    println(s"getHookByRecordId: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"getHookByRecordId: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(GetHookByRecordIdResponse())
 
   override def notifyHooksOfRecordEvent(request: NotifyHooksOfRecordEventRequest, ctx: Metadata): IO[NotifyHooksOfRecordEventResponse] = 
-    println(s"notifyHooksOfRecordEvent: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"notifyHooksOfRecordEvent: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(NotifyHooksOfRecordEventResponse())
 
   override def registerHook(request: RegisterHookRequest, ctx: Metadata): IO[RegisterHookResponse] = 
-    println(s"registerHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
-    IO(RegisterHookResponse())
+    log(s"registerHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    HookImpl().registerHook(request) 
 } 
  
-class KeyServiceImpl extends KeyServiceFs2Grpc[IO, Metadata] :
-
+class KeyServiceImpl(using logger: Logger[IO]) extends KeyServiceFs2Grpc[IO, Metadata] :
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+    logger.info(s"HookSeKeyServiceImplrviceImpl: $value")
   def verifyMessageAttestation(request: VerifyMessageAttestationRequest, ctx: Metadata): IO[VerifyMessageAttestationResponse] =
-    println(s"verifyMessageAttestation: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"verifyMessageAttestation: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(VerifyMessageAttestationResponse())
 
-class RecordServiceImp extends RecordServiceFs2Grpc[IO, Metadata] :
+class RecordServiceImpl(using logger: Logger[IO] ) extends RecordServiceFs2Grpc[IO, Metadata] :
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+      logger.info(s"HookServiceImpl: $value")
   def createSchema(request: CreateSchemaRequest, ctx: Metadata): IO[CreateSchemaResponse] =
-    println(s"createSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"createSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(CreateSchemaResponse())
   override def storeRecord(request: StoreRecordRequest, ctx: Metadata): IO[StoreRecordResponse] = 
-    println(s"storeRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    logger.info(s"storeRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(StoreRecordResponse())
   override def findRecord(request: FindRecordRequest, ctx: Metadata): IO[FindRecordResponse] = 
-    println(s"findRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"findRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(FindRecordResponse())
   override def validateRecord(request: ValidateRecordRequest, ctx: Metadata): IO[ValidateRecordResponse] = 
-    println(s"validateRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"validateRecord: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(ValidateRecordResponse())
   override def invalidateSchema(request: InvalidateSchemaRequest, ctx: Metadata): IO[InvalidateSchemaResponse] = 
-    println(s"invalidateSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
+    log(s"invalidateSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(InvalidateSchemaResponse())
 
   def storeRecord(request: Record, metadata: Metadata): IO[Record] = 
-    println(s"storeRecord: ${metadata.get(Constants.AuthorizationMetadataKey)}")
+    log(s"storeRecord: ${metadata.get(Constants.AuthorizationMetadataKey)}")
     IO(request)
   
 
 object Main extends IOApp.Simple:
   import scala.jdk.CollectionConverters.*
+  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+    logger.info(s"Main: $value")
 
   val recordService: Resource[IO, ServerServiceDefinition] = 
-        RecordServiceFs2Grpc.bindServiceResource[IO](new RecordServiceImp, ServerOptions.default )
+        RecordServiceFs2Grpc.bindServiceResource[IO](new RecordServiceImpl, ServerOptions.default )
   val keyService: Resource[IO, ServerServiceDefinition] =
         KeyServiceFs2Grpc.bindServiceResource[IO](new KeyServiceImpl, ServerOptions.default )
 
@@ -96,7 +106,7 @@ object Main extends IOApp.Simple:
 
   def run: IO[Unit] =
     val mySync: Async[IO] = Async[IO]
-
+    log("starting server")
     val startup: IO[Any] = 
       for
         _ <- IO(println("starting server"))

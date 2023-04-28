@@ -51,5 +51,3 @@ final case class RegistryServiceClient(registryUrl: String, apiKey: String):
             log(s"created did: ${r.didState.did}")
             Right(r.didState.did)
       )
-
-  // EitherT(IO.delay(client.send(request).body.map(r => r.didState.did)))

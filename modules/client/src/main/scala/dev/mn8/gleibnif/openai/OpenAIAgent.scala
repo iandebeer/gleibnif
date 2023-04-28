@@ -22,21 +22,22 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 case class APIConf(apiKey: String, orgId: String) derives ConfigReader:
   override def toString: String = s"APIConf(key: ${apiKey.toString}, orgId: ${orgId.toString})"
 
-final case class OpenAIAgent():
+final case class OpenAIAgent()(using logger: Logger[IO] ):
   import OpenAIMessageCodec.openAIRequestEncoder
   import OpenAIMessageCodec.openAIResponseDecoder
-  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
+  logger.info(s"OpenAIAgent starting...3") 
   private val client = SimpleHttpClient()
-  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
-    logger.info(s"OpenAIAgent: $value")
+  def log[T](value: T)(using logger: Logger[IO]): IO[Unit] =
+    logger.info(s"$value") 
   def getConf() = 
     val apiConf: APIConf = ConfigSource.default.at("openai-conf").load[APIConf]  match
       case Left(error) => 
-        println(s"Error: $error")
+        logger.error(s"$error") *> IO.pure(error) 
         APIConf("", "" )
       case Right(conf) => conf
-    println(s"API Conf: $apiConf")
-    println(s"API Key: ${apiConf.apiKey}")  
+    logger.info(s"API Conf: $apiConf") *> IO.unit
+    logger.info(s"API Key: ${apiConf.apiKey}") 
     apiConf
 
   val apiConf= getConf() 
@@ -58,11 +59,11 @@ final case class OpenAIAgent():
     
     response.body match
       case Left(s:ResponseException[String, Error]) => 
-        println(s"Error: $s")
+        logger.error(s"Error: $s") *> IO.unit
         EitherT(IO.delay(Left(s)))
       case Right(openAIResponse) =>
         val keys = openAIResponse.choices.map(choice => choice.text)
-        println(keys.mkString(","))
+        log(keys.mkString(","))
         EitherT(IO.delay(Right(message.copy(keywords = keys))))
 
     

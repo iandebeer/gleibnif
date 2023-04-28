@@ -5,9 +5,9 @@ import cats.effect.std.Dispatcher
 import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
-import cats.data.EitherT
+import cats.data.{EitherT, WriterT}
 import cats.implicits._
-import cats.syntax.all.toTraverseOps
+import cats.syntax.all._
 import cats.FunctorFilter.ops.toAllFunctorFilterOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,9 +39,20 @@ import java.net.URI
 import dev.mn8.gleibnif.didops.RegistryRequest
 import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
 import dev.mn8.gleibnif.ServiceEndpointNodes
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import sttp.client3.SttpBackend
 
-object Main extends IOApp:
+class Services()(using logger: Logger[IO]):
   type ErrorOr[A] = EitherT[IO, Exception, A]
+  
+  def info[T](value: T)(using logger: Logger[IO]): IO[Unit] =
+    println(s"Main: $value")
+    logger.info(s"$value")
+  
+  def err[T](value: T)(using logger: Logger[IO]): IO[Unit] =
+    println(s"Main: $value")
+    logger.error(s"$value") 
 
   case class AppConf(
       redisUrl: URL,
@@ -84,7 +95,7 @@ object Main extends IOApp:
     val appConf: AppConf =
       ConfigSource.default.at("app-conf").load[AppConf] match
         case Left(error) =>
-          println(s"Error: $error")
+          err(s"Error: $error")
           AppConf(
             new URL("http://localhost:8080"),
             0,
@@ -104,32 +115,28 @@ object Main extends IOApp:
     val registryConf: RegistryConf =
       ConfigSource.default.at("registry-conf").load[RegistryConf] match
         case Left(error) =>
-          println(s"Error: $error")
+          err(s"Error: $error")
           RegistryConf(new URL("http://localhost:8080"), 0, "")
         case Right(conf) => conf
     registryConf
 
-  val registryConf = getRegistryConf()
   val appConf = getConf()
-  val signalBot = SignalBot()
-  val openAIAgent = OpenAIAgent()
+  val registryConf = getRegistryConf()
+
   val registryClient = RegistryServiceClient(
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
   )
-  val backend = AsyncHttpClientCatsBackend.resource[IO]()
 
-  def callServices(): IO[Either[Exception, List[String]]] =
-    val messages: EitherT[IO, ResponseException[String, io.circe.Error], List[
-      SignalSimpleMessage
-    ]] = EitherT(backend.use { b =>
-      signalBot.receive(b)
-    })
+  def callServices(backend:  SttpBackend[cats.effect.IO, Any] ): IO[Either[Exception, List[String]]] =
+    val signalBot = SignalBot(backend)
+     improvementsval openAIAgent = OpenAIAgent()
+    val message = EitherT{signalBot.receive().flatTap(m => logger.info(s"Processing input: ${m}"))}
     (for
-      mt <- messages.map(
-        _.filter(_.text.length > 0)
-          .partition(_.text.toLowerCase().startsWith("@admin|add"))
-      )
+      mt <- message.map(
+            _.filter(_.text.length > 0)
+              .partition(_.text.toLowerCase().startsWith("@admin|add"))
+          ) 
       adminMsg <- mt._1
         .map(m =>
           val member = decode[Member](m.text.split("\\|")(2)).getOrElse(Member("", ""))
@@ -163,12 +170,13 @@ object Main extends IOApp:
           val reg = RegistryRequest(doc)
           val document = reg.asJson.spaces2
           for
-            did <- EitherT(backend.use { b =>
-              registryClient.createDID("indy", document, b)
-            })
-            member <- EitherT(IO.delay(decode[Member](m.text.split("\\|")(2))))
+            did <- EitherT(//(backend.use { b =>
+              registryClient.createDID("indy", document, backend))
+
+
+            member <- EitherT.fromEither(decode[Member](m.text.split("\\|")(2)))
             pass <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
-            r <- EitherT(backend.use { b =>
+            r <- EitherT(//backend.use { b =>
               signalBot.send(
                 SignalSendMessage(
                   List[String](
@@ -177,10 +185,10 @@ object Main extends IOApp:
                   s"${member.name}, Welcome to D@wnPatrol\nAttached is a DID-card you can add to your Apple wallet. \nIf you have an Android phone consider using https://play.google.com/store/apps/details?id=color.dev.com.tangerine to import into your preferred wallet \nFeel free to use me as your personal assistant ;)",
                   "+27659747833",
                   List[String](member.number)
-                ),
-                b
-              )
-            })
+                )
+              ))
+             _ <- EitherT.liftF(logger.info(s"sent badge with $did to : ${member.name} "))
+           // })
           yield r
         )
         .sequence
@@ -188,7 +196,7 @@ object Main extends IOApp:
       keywords <- mt._2.map(m => openAIAgent.extractKeywords(m)).sequence
       s <- keywords
         .map(k =>
-          EitherT(backend.use { b =>
+          EitherT(//backend.use { b =>
             signalBot.send(
               SignalSendMessage(
                 List[String](),
@@ -196,24 +204,34 @@ object Main extends IOApp:
                     .mkString(",")}",
                 "+27659747833",
                 List(k.phone)
-              ),
-              b
-            )
-          })
+              )
+            ))
         )
         .sequence
+      _ <- EitherT.liftF(logger.info(s"sent intent: ${keywords.map(k => k.keywords.mkString(","))} to ${keywords.map (k => k.name)}"))
     yield s).value
 
+object Main extends IOApp.Simple:   
+  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
   val pollingInterval: FiniteDuration = 10.seconds
+  val services = new Services()
+  val run = Dispatcher[IO].use { dispatcher =>
+      val pollingStream = for {
+        backend: SttpBackend[cats.effect.IO, Any] <- Stream.resource(AsyncHttpClientCatsBackend.resource[IO]())
+        _ <- Stream.fixedRate[IO](10.seconds) // Poll every 10 seconds
+        data <- Stream.eval(services.callServices(backend))
+       // _ <- Stream.sleep[IO](10.millis) // Explicitly yield by sleeping for a short duration
 
-  val stream: Stream[IO, Either[Exception, List[String]]] =
-    Stream
-      .repeatEval(callServices())
-      .metered(pollingInterval)
+      } yield data
 
-  override def run(args: List[String]): IO[ExitCode] =
-    stream
-      .evalTap(response => IO(println(response)))
-      .compile
-      .drain
-      .as(ExitCode.Success)
+      val pollingWithLogging = pollingStream
+        .evalTap(data => IO(println(s"Received data: $data")))
+        .compile
+        .drain
+
+      for {
+        fiber <- pollingWithLogging.start
+        _ <- fiber.join
+      } yield ()
+    }

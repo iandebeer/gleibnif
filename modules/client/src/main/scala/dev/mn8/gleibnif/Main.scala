@@ -130,7 +130,7 @@ class Services()(using logger: Logger[IO]):
 
   def callServices(backend:  SttpBackend[cats.effect.IO, Any] ): IO[Either[Exception, List[String]]] =
     val signalBot = SignalBot(backend)
-     improvementsval openAIAgent = OpenAIAgent()
+    val openAIAgent = OpenAIAgent()
     val message = EitherT{signalBot.receive().flatTap(m => logger.info(s"Processing input: ${m}"))}
     (for
       mt <- message.map(

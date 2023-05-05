@@ -1,0 +1,20 @@
+digraph G {
+0 [label="payment\n°°\n" shape=circle]
+1 [label="end\n\n" shape=circle]
+2 [label="order" shape=box]
+3 [label="pay" shape=box]
+4 [label="shopping-cart\n°°°\n" shape=circle]
+5 [label="done" shape=box]
+6 [label="delivery\n°°\n" shape=circle]
+7 [label="start\n°°\n" shape=circle]
+8 [label="deliver" shape=box]
+
+0 -> 8 [label="3" ] 
+2 -> 4 [label="3" ] 
+3 -> 0 [label="2" ] 
+4 -> 3 [label="5" ] 
+5 -> 1 [label="0" ] 
+6 -> 5 [label="2" ] 
+7 -> 2 [label="2" ] 
+8 -> 6 [label="2" ] 
+}

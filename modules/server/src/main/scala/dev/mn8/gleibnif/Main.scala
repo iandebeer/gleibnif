@@ -14,7 +14,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
 import scala.concurrent.Await
 import com.google.api.http.Http
-import dev.mn8.gleibnif.HookImpl
+import dev.mn8.gleibnif.hook.HookImpl
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 

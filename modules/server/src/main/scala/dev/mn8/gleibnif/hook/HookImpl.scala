@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.hook
 
 import dev.mn8.dwn.dwn_service.*
 import dev.mn8.dwn.dwn_service.CommonStatus

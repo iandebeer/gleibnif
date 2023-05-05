@@ -50,7 +50,6 @@ lazy val commonSettings = Seq(
     "org.bouncycastle" % "bcpkix-jdk15on" % bouncyCastleVersion,
     "org.typelevel" %% "log4cats-core" % log4catsVersion,
     "org.typelevel" %% "log4cats-slf4j" % log4catsVersion,
-    "org.didcommx" % "didcomm" % didCommVersion,
     "com.github.ipfs" % "java-ipfs-http-client" % ipfsVersion,
     "com.github.pureconfig" %% "pureconfig-core" % pureconfigVersion,
     "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,

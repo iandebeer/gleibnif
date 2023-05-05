@@ -37,16 +37,16 @@ import java.net.URI
 
 
 case class DIDDoc(
-    did: String,
-    controller: Option[String],
-    alsoKnownAs: Option[Set[String]],
-    verificationMethods: Option[Set[VerificationMethod]],
-    keyAgreements: Option[Set[KeyAgreement]],
-    authentications: Option[Set[Authentication]],
-    assertionMethods: Option[Set[Assertion]],
-    capabilityInvocations: Option[Set[CapabilityInvocation]],
-    capabilityDelegations: Option[Set[CapabilityDelegation]], 
-    services: Option[Set[Service]]) :
+    did: String = "",
+    controller: Option[String] = None,
+    alsoKnownAs: Option[Set[String]] = None,
+    verificationMethods: Option[Set[VerificationMethod]] = None,
+    keyAgreements: Option[Set[KeyAgreement]] = None,
+    authentications: Option[Set[Authentication]]= None,
+    assertionMethods: Option[Set[Assertion]]= None,
+    capabilityInvocations: Option[Set[CapabilityInvocation]]= None,
+    capabilityDelegations: Option[Set[CapabilityDelegation]]= None, 
+    services: Option[Set[Service]]= None) :
 
   def findVerificationMethod(id: String): Either[DIDUrlNotFoundException, VerificationMethod] =
     verificationMethods match 
@@ -82,7 +82,7 @@ object DIDDoc:
   import DIDCodec.encodeDIDDoc
   import DIDCodec.decodeDIDDoc
 
-  def apply(did: String, controller: Option[String], alsoKnownAs: Option[Set[String]], verificationMethods: Option[Set[VerificationMethod]], keyAgreements: Option[Set[KeyAgreement]], authentications: Option[Set[Authentication]], assertionMethods: Option[Set[Assertion]], capabilityInvocations: Option[Set[CapabilityInvocation]], capabilityDelegations: Option[Set[CapabilityDelegation]], services: Option[Set[Service]]): DIDDoc = new DIDDoc(did, controller, alsoKnownAs, verificationMethods, keyAgreements, authentications, assertionMethods, capabilityInvocations, capabilityDelegations, services)
+  //def apply(did: String, controller: Option[String], alsoKnownAs: Option[Set[String]], verificationMethods: Option[Set[VerificationMethod]], keyAgreements: Option[Set[KeyAgreement]], authentications: Option[Set[Authentication]], assertionMethods: Option[Set[Assertion]], capabilityInvocations: Option[Set[CapabilityInvocation]], capabilityDelegations: Option[Set[CapabilityDelegation]], services: Option[Set[Service]]): DIDDoc = new DIDDoc(did, controller, alsoKnownAs, verificationMethods, keyAgreements, authentications, assertionMethods, capabilityInvocations, capabilityDelegations, services)
 
   def createDIDKeyDocument(did: String, controller: String, verificationMethod: VerificationMethod, service: Service): DIDDoc =
     DIDDoc(

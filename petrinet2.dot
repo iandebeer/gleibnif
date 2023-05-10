@@ -1,19 +1,41 @@
-digraph G {
-0 [label="right\n•\n" shape=circle]
-1 [label="left\n••_\n" shape=circle]
-2 [label="end\n_\n" shape=circle]
-3 [label="continuer" shape=box]
-4 [label="joiner" shape=box]
-5 [label="start\n_\n" shape=circle]
-6 [label="splitter" shape=box]
-7 [label="joint\n••_\n" shape=circle]
+digraph petri_net {
+  rankdir = TD;
+  node [shape=circle, fixedsize=true, width=2.1];
 
-0 -> 4 [label="1" ] 
-1 -> 4 [label="2" ] 
-3 -> 2 [label="1" ] 
-4 -> 7 [label="1" ] 
-5 -> 6 [label="1" ] 
-6 -> 1 [label="1" ] 
-6 -> 0 [label="1" ] 
-7 -> 3 [label="3" ] 
+  // Places
+  place_customers [label="Customers"];
+  place_high_value_items [label="High Value Items"];
+  place_online_purchases [label="Online Purchases"];
+  place_shipping [label="Shipping"];
+  place_generated_leads_shipping [label="Generated Leads - Shipping"];
+  place_generated_leads_asset [label="Generated Leads - Asset"];
+  place_short_term_insurance [label="Short Term Insurance"];
+  place_asset_insurance [label="Asset Insurance"];
+
+  // Transitions
+  node [shape=rectangle, fixedsize=true, width=2.1, height=0.6];
+
+  transition_purchase [label="Purchase"];
+  transition_ship [label="Ship"];
+  transition_generate_lead_shipping [label="Generate Lead - Shipping"];
+  transition_generate_lead_asset [label="Generate Lead - Asset"];
+  transition_request_shipping_insurance [label="Request Shipping Insurance"];
+  transition_request_asset_insurance [label="Request Asset Insurance"];
+
+  // Arcs
+  place_customers -> transition_purchase;
+  place_high_value_items -> transition_purchase;
+  transition_purchase -> place_online_purchases;
+  place_online_purchases -> transition_ship;
+  place_online_purchases -> transition_generate_lead_asset;
+  transition_ship -> place_shipping;
+  place_shipping -> transition_generate_lead_shipping;
+  transition_generate_lead_shipping -> place_generated_leads_shipping;
+  transition_generate_lead_asset -> place_generated_leads_asset;
+  place_customers -> transition_request_shipping_insurance;
+  place_shipping -> transition_request_shipping_insurance;
+  transition_request_shipping_insurance -> place_short_term_insurance;
+  place_customers -> transition_request_asset_insurance;
+  place_high_value_items -> transition_request_asset_insurance;
+  transition_request_asset_insurance -> place_asset_insurance;
 }

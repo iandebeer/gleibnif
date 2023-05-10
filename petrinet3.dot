@@ -1,19 +1,56 @@
-digraph G {
-0 [label="right\n_\n" shape=circle]
-1 [label="left\n___\n" shape=circle]
-2 [label="end\n_\n" shape=circle]
-3 [label="continuer" shape=box]
-4 [label="joiner" shape=box]
-5 [label="start\n_\n" shape=circle]
-6 [label="splitter" shape=box]
-7 [label="joint\n•••\n" shape=circle]
+digraph petri_net {
+  rankdir = TD;
+  node [shape=circle, fixedsize=true, width=1.5];
 
-0 -> 4 [label="1" ] 
-1 -> 4 [label="2" ] 
-3 -> 2 [label="1" ] 
-4 -> 7 [label="1" ] 
-5 -> 6 [label="1" ] 
-6 -> 1 [label="1" ] 
-6 -> 0 [label="1" ] 
-7 -> 3 [label="3" ] 
+  // Places
+  place_producers [label="Producers"];
+  place_consumers [label="Consumers"];
+  place_smart_contract [label="Smart Contract"];
+  place_payments [label="Payments"];
+  place_iot_devices [label="IoT Devices"];
+  place_decentralized_storage [label="Decentralized Storage"];
+  place_webhooks [label="Webhooks"];
+  place_order_book [label="Order Book"];
+  place_bids [label="Bids"];
+  place_offers [label="Offers"];
+  place_futures_contracts [label="Futures Contracts"];
+
+  // Transitions
+  node [shape=rectangle, fixedsize=true, width=1.5, height=0.8];
+
+  transition_sell [label="Sell"];
+  transition_buy [label="Buy"];
+  transition_measure [label="Measure"];
+  transition_settle [label="Settle"];
+  transition_store [label="Store"];
+  transition_invoke [label="Invoke"];
+  transition_place_bid [label="Place Bid"];
+  transition_place_offer [label="Place Offer"];
+  transition_match_orders [label="Match Orders"];
+
+  // Arcs
+  place_producers -> transition_sell;
+  place_consumers -> transition_buy;
+  transition_sell -> place_smart_contract;
+  transition_buy -> place_smart_contract;
+  place_smart_contract -> transition_settle;
+  transition_settle -> place_payments;
+  place_iot_devices -> transition_measure;
+  transition_measure -> place_producers;
+  transition_measure -> place_consumers;
+  transition_measure -> place_decentralized_storage [label="Store Data"];
+  place_decentralized_storage -> transition_store;
+  transition_store -> place_webhooks [label="Trigger Webhooks"];
+  place_webhooks -> transition_invoke;
+  transition_invoke -> place_smart_contract;
+
+  // Order book related arcs
+  place_producers -> transition_place_offer;
+  place_consumers -> transition_place_bid;
+  transition_place_bid -> place_bids;
+  transition_place_offer -> place_offers;
+  place_bids -> transition_match_orders;
+  place_offers -> transition_match_orders;
+  transition_match_orders -> place_order_book;
+  place_order_book -> place_futures_contracts [label="Create Futures Contract"];
 }

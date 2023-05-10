@@ -1,20 +1,52 @@
-digraph G {
-0 [label="payment\n°°\n" shape=circle]
-1 [label="end\n\n" shape=circle]
-2 [label="order" shape=box]
-3 [label="pay" shape=box]
-4 [label="shopping-cart\n°°°\n" shape=circle]
-5 [label="done" shape=box]
-6 [label="delivery\n°°\n" shape=circle]
-7 [label="start\n°°\n" shape=circle]
-8 [label="deliver" shape=box]
-
-0 -> 8 [label="3" ] 
-2 -> 4 [label="3" ] 
-3 -> 0 [label="2" ] 
-4 -> 3 [label="5" ] 
-5 -> 1 [label="0" ] 
-6 -> 5 [label="2" ] 
-7 -> 2 [label="2" ] 
-8 -> 6 [label="2" ] 
+digraph fast_food_ordering_process {
+    node [shape=circle];
+    Start;
+    Order_Placed;
+    Payment_Made;
+    Order_Ready;
+    Order_Picked_Up;
+    Delivery_Prepared;
+    Order_Delivered;
+    node [shape=box];
+    Add_Item [label="Add Item"];
+    Remove_Item [label="Remove Item"];
+    Checkout [label="Checkout"];
+    Make_Payment [label="Make Payment"];
+    Prepare_Order [label="Prepare Order"];
+    Prepare_Delivery [label="Prepare Delivery"];
+    node [shape=diamond];
+    Payment_Received [label="Payment\nReceived"];
+    Order_Prepared [label="Order\nPrepared"];
+    Delivery_Option [label="Delivery\nOption?"];
+    Delivery_Received [label="Delivery\nReceived?"];
+    node [shape=point];
+    e1 [label=""];
+    e2 [label=""];
+    e3 [label=""];
+    e4 [label=""];
+    e5 [label=""];
+    e6 [label=""];
+    Start -> Add_Item;
+    Add_Item -> Checkout;
+    Checkout -> Remove_Item;
+    Remove_Item -> Checkout;
+    Checkout -> Delivery_Option;
+    Delivery_Option -> Prepare_Delivery [label="Yes"];
+    Delivery_Option -> Order_Placed [label="No"];
+    Prepare_Delivery -> Delivery_Received;
+    Delivery_Received -> Order_Delivered [label="Yes"];
+    Delivery_Received -> Order_Picked_Up [label="No"];
+    Order_Placed -> e1 -> Payment_Received;
+    Payment_Received -> Make_Payment;
+    Make_Payment -> Payment_Made -> e2;
+    e2 -> Order_Prepared;
+    Order_Prepared -> Prepare_Order;
+    Prepare_Order -> Order_Ready -> e3;
+    e3 -> Delivery_Prepared;
+    Delivery_Prepared -> Delivery_Received;
+    Order_Delivered -> Start [label="New Order"];
+    Order_Picked_Up -> Start [label="New Order"];
+    Payment_Made -> e4 -> Order_Ready;
+    {rank=same; Start, e4}
+    {rank=same; Delivery_Prepared, e5, e6}
 }

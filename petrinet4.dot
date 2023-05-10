@@ -1,19 +1,43 @@
-digraph G {
-0 [label="right\n_\n" shape=circle]
-1 [label="left\n___\n" shape=circle]
-2 [label="end\n•\n" shape=circle]
-3 [label="continuer" shape=box]
-4 [label="joiner" shape=box]
-5 [label="start\n_\n" shape=circle]
-6 [label="splitter" shape=box]
-7 [label="joint\n___\n" shape=circle]
-
-0 -> 4 [label="1" ] 
-1 -> 4 [label="2" ] 
-3 -> 2 [label="1" ] 
-4 -> 7 [label="1" ] 
-5 -> 6 [label="1" ] 
-6 -> 1 [label="1" ] 
-6 -> 0 [label="1" ] 
-7 -> 3 [label="3" ] 
+digraph fast_food_ordering_process {
+    node [shape=circle];
+    Start;
+    Order_Placed;
+    Payment_Made;
+    Order_Ready;
+    Order_Picked_Up;
+    node [shape=box];
+    Add_Item [label="Add Item"];
+    Remove_Item [label="Remove Item"];
+    Checkout [label="Checkout"];
+    Make_Payment [label="Make Payment"];
+    Prepare_Order [label="Prepare Order"];
+    node [shape=diamond];
+    Payment_Received [label="Payment\nReceived"];
+    Order_Prepared [label="Order\nPrepared"];
+    node [shape=point];
+    e1 [label=""];
+    e2 [label=""];
+    e3 [label=""];
+    e4 [label=""];
+    Start -> Add_Item;
+    Add_Item -> Checkout;
+    Checkout -> Remove_Item;
+    Remove_Item -> Checkout;
+    Checkout -> Order_Placed -> e1;
+    e1 -> Payment_Received;
+    Payment_Received -> Make_Payment;
+    Make_Payment -> Payment_Made -> e2;
+    e2 -> Order_Prepared;
+    Order_Prepared -> Prepare_Order;
+    Prepare_Order -> Order_Ready -> e3;
+    e3 -> Order_Picked_Up;
+    Order_Picked_Up -> Start [label="New Order"];
+    Payment_Made -> e4 -> Order_Ready;
+    {rank=same; Start, e4}
+    
+    node [shape=diamond, label="Payment\nOption", xlabel="Credit\nCard"];
+    Payment_Option_Card [shape=diamond, label="Payment\nOption", xlabel="Crypto"];
+    Payment_Option_Card -> Make_Payment [label="Credit\nCard"];
+    Payment_Option_Card -> Payment_Made [label="Crypto"];
+    {rank=same; Payment_Option_Card, Make_Payment, Payment_Made}
 }

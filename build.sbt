@@ -1,34 +1,38 @@
-lazy val Scala3 = "3.2.2"
+lazy val Scala3 = "3.3.0"
 lazy val Scala213 = "2.13.6"
 lazy val catsVersion = "2.9.0"
-lazy val ceVersion = "3.4.9"
-lazy val fs2Version = "3.6.1"
+lazy val ceVersion = "3.5.0"
+lazy val fs2Version = "3.7.0"
 lazy val circeVersion = "0.14.5"
-lazy val grpcVersion = "1.54.1"
-lazy val googleProtoVersion = "3.22.3"
+lazy val grpcVersion = "1.55.1"
+lazy val googleProtoVersion = "3.23.2"
 lazy val monocleVersion = "3.1.0"
 lazy val scodecVersion = "1.1.37"
 lazy val junitVersion = "0.11"
 lazy val refinedVersion = "0.9.27"
-lazy val castanetVersion = "0.1.5"
+lazy val castanetVersion = "0.1.9"
 //lazy val didCommonVersion = "1.0.0"
 lazy val didCommVersion = "0.3.2"
 lazy val sttpVersion = "3.8.15"
-lazy val tinkVersion = "1.8.0"
+lazy val tinkVersion = "1.9.0"
 lazy val redis4catsVersion = "1.4.1"
-lazy val openAIVersion = "0.3.1"
+lazy val openAIVersion = "0.3.2"
 lazy val bouncyCastleVersion = "1.70"
 lazy val titaniumVersion = "1.3.2"
 lazy val munitVersion = "1.0.0-M7"
 lazy val munitCEVersion = "1.0.7"
-lazy val pureconfigVersion = "0.17.3"
+lazy val pureconfigVersion = "0.17.4"
 lazy val ipfsVersion = "1.4.4"
 lazy val log4catsVersion = "2.6.0"
 lazy val logbackVersion = "1.4.7"
 lazy val slf4jVersion = "1.7.36"
+lazy val shapelessVersion =   "3.3.0"
+lazy val passkitVersion = "0.3.4-SNAPSHOT"
+lazy val tapirVersion = "1.5.5"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
+        "github" at "https://maven.pkg.github.com/iandebeer",
         Resolver.mavenLocal,
         "jitpack" at "https://jitpack.io",
         "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -53,6 +57,13 @@ lazy val commonSettings = Seq(
     "com.github.ipfs" % "java-ipfs-http-client" % ipfsVersion,
     "com.github.pureconfig" %% "pureconfig-core" % pureconfigVersion,
     "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-sttp-stub-server" % tapirVersion % Test,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
+    "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml" % "0.4.0",
 
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     //"org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -87,6 +98,29 @@ ThisBuild / organizationName := "MN8 Technology ÖU"
 ThisBuild / organizationHomepage := Some(url("https://mn8.dev"))
 Global / scalaVersion := Scala3
 
+/*
+ThisBuild / scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/iandebeer/gleibnif"),
+    "scm:git@github.iandebeer/gleibnif.git"
+  )
+)
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
+ThisBuild / developers := List(
+  Developer(
+    id = "iandebeer",
+    name = "Ian de Beer",
+    email = "ian@mn8.ee",
+    url = url("https://mn8.dev")
+  )
+)
+
+ThisBuild /  githubOwner := "iandebeer"
+ThisBuild /githubRepository := "gleibnif" */
+//ThisBuild / githubTokenSource := TokenSource.GitConfig("github.token")// || TokenSource.Environment("GITHUB_TOKEN")
+
 lazy val root = project
   .in(file("."))
   .aggregate(core, protocol, client, server)
@@ -115,7 +149,7 @@ lazy val core = project
       "com.apicatalog" % "titanium-json-ld" % titaniumVersion,
       "org.glassfish" % "jakarta.json" % "2.0.1",
       "com.google.crypto.tink" % "tink" % tinkVersion,
-      "com.google.crypto.tink" % "tink-awskms" % tinkVersion
+      "com.google.crypto.tink" % "tink-awskms" % "1.8.0"
     )
   )
 
@@ -166,8 +200,9 @@ lazy val client = project
       "org.glassfish" % "jakarta.json" % "2.0.1",
       "org.didcommx" % "didcomm" % "0.3.2",
       "io.cequence" %% "openai-scala-client" % openAIVersion,
-      "de.brendamour" % "jpasskit" % "0.3.1-SNAPSHOT",
-      "com.google.crypto.tink" % "tink" % tinkVersion
+      "de.brendamour" % "jpasskit" % passkitVersion,
+      "com.google.crypto.tink" % "tink" % tinkVersion,
+      "org.typelevel" %% "shapeless3-deriving"  % shapelessVersion
     ),
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
   )

@@ -2,12 +2,9 @@
 
 ## Draft - Product Description and Specification
 
-### Gleipnif Introduction
+### D@WN Introduction
 
-**Gleipnif - Mythological context:** - Old Norse "open one":
-_An unbreakable binding, commissioned by the Gods to restrain Fenrir the wolf. Dwarves forged a net out of 6 impossible strands thus making a net as thin as a silken ribbon, yet stronger than any iron chain._
-
-**Gleipnif** is MN8 Dev's _"Decentralized Service Bus"_ for building modular DApp's (Decentralised Applications). Like its mythological namesake, it provides a light but unbreakable framework for implementing SideChain and SideTree solutions that allows developers to achieve the properties of **High Cohesion** and **Loose Coupling** that is the key feature of high quality software.
+**D@WN** is an implementation of the Decentralized Web Nod specification as provided by the DIF. Our D@WN  implementation serves as a _"Decentralized Service Bus"_ for building modular DApp's (Decentralised Applications) by combining SideChain and SSI solutions that allows developers to achieve the properties of **High Cohesion** and **Loose Coupling** that is the key feature of high quality software.
 
 The concept of a Service Bus was formalised as an Enterprise Integration Pattern at the time when Service Oriented Architecture (SOA) emerged as a better alternative to monolithic enterprise systems. To this day Service Bus technologies form the back bone of large banking and financial systems with  large vendor system such as IBM MQ, TIBCo and Oracle Service Bus.
 
@@ -20,7 +17,7 @@ Our framework facilitates the creation and execution of business process workflo
 * Tokenization of assets based a standardized taxonomy that provides a composable blockchain agnostic token framework work creation and transfer of tokenized assets, commodities and attestations.
 * Stateful orchestration of workflows, expressed as Coloured Petri-Nets
   
-### Decentralised Identity and the Sidetree DID-method
+### Decentralised Identity and the DID-method
 
 The concept of Decentralized Identities has been formalised and adopted as W3C standard. The following description from their website: _Decentralized identifiers (DIDs) are a new type of identifier that enables verifiable, decentralized digital identity. A DID refers to any subject (e.g., a person, organization, thing, data model, abstract entity, etc.) as determined by the controller of the DID. In contrast to typical, federated identifiers, DIDs have been designed so that they may be decoupled from centralized registries, identity providers, and certificate authorities. Specifically, while other parties might be used to help enable the discovery of information related to a DID, the design enables the controller of a DID to prove control over it without requiring permission from any other party. DIDs are URIs that associate a DID subject with a DID document allowing trustable interactions associated with that subject._
 
@@ -74,7 +71,7 @@ The Sidetree DID-method is not anchored to a specific blockchain instance, like 
 
 ![alt text](https://miro.medium.com/max/1280/1*7_dSWvzwMnxNueu497NqWw.png)
 
-Our Sidetree-based DID-method implementation runs as peer-services as part of the Gleipnif decentralised nodes and is anchored to the Ergo blockchain platform while using IPFS as the Content Addressable Store.
+Our Sidetree-based DID-method implementation runs as peer-services as part of the D@WN's decentralised nodes and is anchored to the Cardano or Ergo blockchain platform while using IPFS as the Content Addressable Store.
 
 ### DIDComm messaging support
 
@@ -84,17 +81,17 @@ Using DIDComm, individuals on semi-connected mobile devices become full peers of
 
 DIDComm Messaging  provides a secure, private communication methodology built atop the decentralized design of DIDs. It enables higher-order protocols that inherit its security, privacy, decentralization, and transport independence. Examples include exchanging verifiable credentials, creating and maintaining relationships, buying and selling, scheduling events, negotiating contracts, voting, presenting tickets for travel, applying to employers or schools or banks, arranging healthcare, and playing games. Like web services atop HTTP, the possibilities are endless; unlike web services atop HTTP, many parties can participate without being clients of a central server, and they can use a mixture of connectivity models and technologies. And these protocols are composable into higher-order workflows, as supported by our State Machine.
 
-Gleipnif uses Asynchronous messaging as the foundation for integration solution because its architectural style acknowledges the challenges of distributed communication. However, many interactions between systems extend beyond sending a single, stateless message: a request may expect a response; a handshake or authentication are needed first; a reservation is confirmed or expires.
+D@WN uses Asynchronous messaging as the foundation for integration solution because its architectural style acknowledges the challenges of distributed communication. However, many interactions between systems extend beyond sending a single, stateless message: a request may expect a response; a handshake or authentication are needed first; a reservation is confirmed or expires.
 
 DID Core and DIDComm provides the platform for peer to peer communication between people organizations and things:
 ![alt text](https://www.windley.com/archives/2021/06/VRM_Wireframe.png)
 
-Gleipnif also uses DIDComm for its transport layer:
+D@WN also uses DIDComm for its transport layer:
 ![alt text](https://iiw.idcommons.net/images/4/41/IIW30_TH_19A_101_Session_Verifiable_Credential_Handler_(CHAPI)_%26_DIDComm_(1of2).jpg)
 
 ### Tokens: Templates, Classes and Instances
 
-A Token in the Decentralized Ledger domain serves as representation of an asset/liability, commodity/currency, right/proof. These tokens are normally stored in a crypto-wallet which provides secure access to the owner(s). Creation (minting), transfer and use (burning) of tokens are reflected on the decentralized ledger of a specific block-chain. Gleipnif as a platform is blockchain agnostic.
+A Token in the Decentralized Ledger domain serves as representation of an asset/liability, commodity/currency, right/proof. These tokens are normally stored in a crypto-wallet which provides secure access to the owner(s). Creation (minting), transfer and use (burning) of tokens are reflected on the decentralized ledger of a specific block-chain. D@WN as a platform is blockchain agnostic.
 
 There are 2 major Token types namely, Fungible (interchangeable) and Non-Fungible (distinct). A token representing a commodity such as a bag of potatoes or 1 kWh energy is fungible - the one is the same as the other and a potential buyer does not care which specific instance het gets -  while a token representing an asset such as a car or computer is Non-Fungible. (There is a hybrid type of token that represents fungible and non-fungible aspects in a specific context)
 
@@ -102,7 +99,7 @@ Tokens has wide applicability far beyond proof of ownership of over-hyped NFT Ar
 
 #### Behaviour
 
-Gleipnif supports **tokens** that adheres to the Token Taxonomy Framework as set out by the Interwork Alliance. It defines **behaviours** as capabilities or restrictions that applies to a token class along with Properties of a token, as information or data it contains.
+D@WN supports **tokens** that adheres to the Token Taxonomy Framework as set out by the Interwork Alliance. It defines **behaviours** as capabilities or restrictions that applies to a token class along with Properties of a token, as information or data it contains.
 
 The framework provides an extensible set of Behaviours, such as:
 
@@ -138,7 +135,7 @@ Properties of a token are used to define the information or data a token contain
 
 ### Stateful orchestration of workflows, expressed as Coloured Petri-Nets
 
-The Gleipnif State Engine handle consecutive Smart Contract invocations (the dApp Protocol) within the context of a encapsulating state machine (FSM) as expressed by a Petri Net and executed by an off-chain dApp-container.
+The D@WN State Engine handle consecutive Smart Contract invocations (the dApp Protocol) within the context of a encapsulating state machine (FSM) as expressed by a Petri Net and executed by an off-chain dApp-container.
 
 In general Petri-Nets is a directed acyclic graph that maps Places (circles) to Transitions (rectangles) and Transitions to Places via Arcs (arrows).
 It is well suited for describing the flow of concurrent processes. This maps perfectly to the of Stages (Places) and Actions (Transitions)

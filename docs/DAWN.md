@@ -1,30 +1,66 @@
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
 # D@WN - DIDx Decentralised Web Node Implementation
 
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+Author: Ian de Beer
+DIDx 
+24 June 2023
+
+<div style="page-break-after: always;"></div>
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
 - [D@WN - DIDx Decentralised Web Node Implementation](#dwn---didx-decentralised-web-node-implementation)
-  - [Overview](#overview)
-  - [Stateful orchestration of workflows, expressed as Coloured Petri-Nets](#stateful-orchestration-of-workflows-expressed-as-coloured-petri-nets)
-  - [Use of CPN's to implement custom protocols in a DWN](#use-of-cpns-to-implement-custom-protocols-in-a-dwn)
-  - [IOT use case: Web Hooks provies event triggers from Data Storage and DIDComm Messaging](#iot-use-case-web-hooks-provies-event-triggers-from-data-storage-and-didcomm-messaging)
-        - [Figure 1: Transactive Energy Marketplace](#figure-1-transactive-energy-marketplace)
-  - [Web Hooks for event triggers from DWN Data Storage and DIDComm Messaging in retail](#web-hooks-for-event-triggers-from-dwn-data-storage-and-didcomm-messaging-in-retail)
-        - [Figure 2: Online order and delivery](#figure-2-online-order-and-delivery)
-  - [True Privacy Preserving AI with DWN](#true-privacy-preserving-ai-with-dwn)
-  - [Lead Generation with DWN](#lead-generation-with-dwn)
+  - [1. Overview](#1-a-nameoverviewaoverview)
+        - [Figure 1: D@WN Technology Stack](#figure-1-dwn-technology-stack)
+  - [2. Stateful orchestration of workflows, expressed as Coloured Petri-Nets](#2-a-namestatefulorchestrationofworkflowsexpressedascolouredpetri-netsastateful-orchestration-of-workflows-expressed-as-coloured-petri-nets)
+        - [Figure 2: D@WN CPN Stack](#figure-2-dwn-cpn-stack)
+  - [3. Use of CPN's to implement custom protocols in a DWN](#3-a-nameuseofcpnstoimplementcustomprotocolsinadwnause-of-cpns-to-implement-custom-protocols-in-a-dwn)
+  - [4. Web Hooks for event triggers from DWN Data Storage and DIDComm Messaging in retail](#4-a-namewebhooksforeventtriggersfromdwndatastorageanddidcommmessaginginretailaweb-hooks-for-event-triggers-from-dwn-data-storage-and-didcomm-messaging-in-retail)
+        - [Figure 3: D@WN Flow Diagram](#figure-3-dwn-flow-diagram)
+  - [5. IOT use case: Web Hooks provides event triggers from Data Storage and DIDComm Messaging](#5-a-nameiotusecasewebhooksprovideseventtriggersfromdatastorageanddidcommmessagingaiot-use-case-web-hooks-provides-event-triggers-from-data-storage-and-didcomm-messaging)
+        - [Figure 4: Transactive Energy Marketplace](#figure-4-transactive-energy-marketplace)
+  - [6. True Privacy Preserving AI with D@WN](#6-a-nametrueprivacypreservingaiwithdwnatrue-privacy-preserving-ai-with-dwn)
+        - [Figure 5: Online order and delivery](#figure-5-online-order-and-delivery)
+  - [7. Lead Generation with DWN](#7-a-nameleadgenerationwithdwnalead-generation-with-dwn)
 
 <!-- /code_chunk_output -->
+<div style="page-break-after: always;"></div>
 
-## Overview
+##  1. <a name='Overview'></a>Overview
 
-A Decentralised Web Node (DWN) is a personal and application data storage and message relay node, as outlined in the Decentralised Identity Foundation's (DIF) Decentralised Web Node specification. DWNs enable users to have control over their data and communication, fostering a more secure and privacy-preserving environment. Users can operate multiple nodes that synchronise data between them, ensuring data redundancy, availability, and resilience.
+A Decentralised Web Node (DWN) provides a data storage and message relay node for personal and DApp use, as outlined in the Decentralised Identity Foundation's (DIF) Decentralised Web Node specification. DWNs enable users to have control over their data and communication, fostering a more secure and privacy-preserving environment. Users can operate multiple nodes that synchronise data between them, ensuring data redundancy, availability, and resilience.
 
  In the context of retail and IoT use cases, DWNs provide a flexible and scalable data storage and message relay mechanism that allows entities to exchange messages and data, and to store, discover, and fetch data related to various credential, app, or service flows.
 
 As W3C adopted standards, Decentralised Identifiers (DIDs), DID documents, and DID Communication (DIDComm) are key components in Decentralised Web Nodes (DWNs) that enable secure and decentralised identity management and communication between entities. DWNs enable users to have control over their data and communication, fostering a more secure and privacy-preserving environment. Users can operate multiple nodes that synchronise data between them, ensuring data redundancy, availability, and resilience.
+
+DWN is reliant on:
 
 1. Decentralised Identifier (DID): A DID is a globally unique identifier that allows individuals, organisations, and devices to establish and manage their digital identities in a decentralised manner. DIDs are created, resolved, and managed on decentralised networks such as blockchain, distributed ledgers, or other decentralised systems. In the context of DWNs, DIDs enable entities to interact securely and privately without relying on centralised identity providers.
 
@@ -32,7 +68,12 @@ As W3C adopted standards, Decentralised Identifiers (DIDs), DID documents, and D
 
 3. DID Communication (DIDComm): DIDComm is a protocol for secure, privacy-preserving, and authenticated communication between entities using DIDs and DID documents. It allows entities to exchange encrypted messages, establish secure connections, and perform various tasks such as authentication, authorisation, and data sharing. In the DWN ecosystem, DIDComm plays a critical role in enabling secure and privacy-preserving communication between nodes, devices, and users.
 
- A Decentralised Web Node (DWN) is a versatile and powerful component in the decentralised ecosystem, providing users with a decentralised solution for personal and application data storage and message relay. By using multiple nodes that replicate data between them, users can ensure data redundancy, availability, and resilience. DWNs empower users to maintain control over their data and communication while fostering a more secure, private, and interoperable environment. 
+ A Decentralised Web Node (DWN) is a versatile and powerful component in the decentralised ecosystem, providing users with a decentralised solution for personal and application data storage and message relay. By using multiple nodes that replicate data between them, users can ensure data redundancy, availability, and resilience. DWNs empower users to maintain control over their data and communication while fostering a more secure, private, and interoperable environment.
+
+<p align="center">
+<img src="./DAWNStack.png" alt="D@WN Stack" title="D@WN Technology Stack" width=85% height:40px/>
+</p>
+##### Figure 1: D@WN Technology Stack
 
 Key features of DWNs include:
 
@@ -54,11 +95,11 @@ By incorporating protocol definitions and web hooks into their design, Decentral
 
 In the realm of IoT, devices are constantly generating metrics and readings, such as sensor data and device status information. DWNs can serve as the backbone for the storage and communication of this data, enabling IoT devices to publish their metrics and readings as events in a decentralised network. Other components in the DWN, such as data storage systems, smart contracts, or services, can then register as listeners for these events and process the IoT device data as required. This event-driven, decentralised approach allows for real-time notifications, efficient data exchange, and enhanced system responsiveness, fostering a more dynamic and interconnected IoT ecosystem.
 
-As a practical example for the application of DWNs, concider e.g. in the retail industry, point of sale (POS) devices and payment gateways play a crucial role in generating and processing transaction data, including receipts, payment details, and other relevant information. DWNs can facilitate the storage and exchange of this data, allowing retail businesses to securely manage their transaction records, analyse sales trends, and improve inventory management without relying on centralised infrastructure or provider-specific solutions. By utilising Decentralised Identifiers (DIDs) and a mesh-like datastore construction, DWNs enable retail entities to operate multiple nodes that sync to the same state across one another, ensuring seamless and secure data access and management.
+As a practical example for the application of DWNs, consider e.g. in the retail industry, point of sale (POS) devices and payment gateways play a crucial role in generating and processing transaction data, including receipts, payment details, and other relevant information. DWNs can facilitate the storage and exchange of this data, allowing retail businesses to securely manage their transaction records, analyse sales trends, and improve inventory management without relying on centralised infrastructure or provider-specific solutions. By utilising Decentralised Identifiers (DIDs) and a mesh-like datastore construction, DWNs enable retail entities to operate multiple nodes that sync to the same state across one another, ensuring seamless and secure data access and management.
 
 In summary, Decentralised Web Nodes are revolutionising the way entities store, manage, and exchange data in various digital activities, including retail and IoT use cases. By providing a decentralised, secure, and adaptable solution for data storage and message relay, DWNs empower entities to operate without reliance on location or provider-specific infrastructure, interfaces, or routing mechanisms, promoting a more resilient and flexible digital landscape.
 
-## Stateful orchestration of workflows, expressed as Coloured Petri-Nets
+##  2. <a name='StatefulorchestrationofworkflowsexpressedasColouredPetri-Nets'></a>Stateful orchestration of workflows, expressed as Coloured Petri-Nets
 
 A Petri Net is a mathematical modeling tool used for the representation and analysis of concurrent systems. The main components of a Petri Net include:
 
@@ -70,6 +111,11 @@ Coloured Petri Nets (CPNs) are an extension of the basic Petri Net model that in
 
 In a Coloured Petri Net, tokens have an associated data value, or "colour", which belongs to a specific data type. The data types can be as simple as integers or as complex as user-defined data structures. The introduction of colours makes it possible to distinguish between different instances of tokens, allowing for a more concise representation of systems with a large number of similar elements.
 
+<p align="center">
+<img src="./DAWNArchitecture.png" alt="D@WN Architecture" title="D@WN Architecture" width=100% height:40px/>
+</p>
+##### Figure 2: D@WN CPN Stack
+
 The main components of a Coloured Petri Net include:
 
 1. Coloured Places: Similar to standard places, but each coloured place is associated with a specific data type, constraining the type of tokens that can reside in the place.
@@ -80,7 +126,7 @@ Coloured Petri Nets maintain the formal semantics of standard Petri Nets, allowi
 
 Moreover, Coloured Petri Nets can be combined with other extensions, such as timed or stochastic Petri Nets, to model systems with both data and time dependencies, making them an even more powerful and versatile tool for the analysis of concurrent systems.
 
-## Use of CPN's to implement custom protocols in a DWN
+##  3. <a name='UseofCPNstoimplementcustomprotocolsinaDWN'></a>Use of CPN's to implement custom protocols in a DWN
 
 Using Petri Nets, including Coloured Petri Nets (CPNs), in the design and implementation of custom protocols for decentralised web nodes can be an effective approach for ensuring correct concurrent behavior, data flow, and resource management. Here's a high-level overview of the steps you can follow to implement custom protocols according to your specifications using Petri Nets:
 
@@ -99,8 +145,31 @@ Using Petri Nets, including Coloured Petri Nets (CPNs), in the design and implem
 By following these steps, you can leverage the power of Petri Nets to design and implement custom protocols for decentralised web nodes according to your specifications. This approach provides a rigorous foundation for understanding and reasoning about the behavior of your protocol, ensuring that it exhibits the desired properties and operates correctly in a concurrent environment.
 
 
+##  4. <a name='WebHooksforeventtriggersfromDWNDataStorageandDIDCommMessaginginretail'></a>Web Hooks for event triggers from DWN Data Storage and DIDComm Messaging in retail
 
-## IOT use case: Web Hooks provies event triggers from Data Storage and DIDComm Messaging
+Point of sale (POS) devices in retail stores and payment gateways for online stores can also act as publishers of data in a decentralised web network (DWN) using the WebHook pub-sub mechanism. This allows for real-time event-driven communication and efficient data exchange between the publishers and various components in the system, such as data storage, analytics services, smart contracts, and DIDComm Messaging.
+
+Here's how the process would work with POS devices and payment gateways as data publishers:
+
+1. Data generation: POS devices in retail stores and payment gateways for online stores generate transaction data, including receipts, payment details, and other relevant information, as customers make purchases.
+
+2. Event registration: Components in the DWN, such as data storage systems, analytics services, smart contracts, or other services, can register as listeners for events published by the POS devices and payment gateways. They can subscribe to specific event types or filter events based on certain criteria, such as store location or transaction amount.
+
+3. Event publication: When a POS device or payment gateway has new transaction data to share, it publishes the data as an event to the WebHook pub-sub system. The system then distributes the event to all registered listeners that have subscribed to the corresponding event type or match the filtering criteria.
+
+4. Event processing: Upon receiving an event notification from the WebHook pub-sub, the subscribed components can process the transaction data and take appropriate actions. This may include storing the data in DWN Data Storage, analysing the data for sales trends, triggering actions in smart contracts, or initiating further communication through DIDComm Messaging.
+
+5. Event acknowledgment: After processing the event, the component can acknowledge the receipt and processing of the event back to the WebHook. This acknowledgment can include additional information, such as the result of the processing or any error messages encountered.
+
+By leveraging the WebHook pub-sub mechanism in a DWN with POS devices and payment gateways as publishers of transaction data, you can enable real-time, event-driven communication and efficient data exchange between the publishers and other components in the system. This approach allows the system to react to changes in transaction data, enhancing the overall capabilities of the DWN and supporting a wide range of use cases, such as sales analytics, inventory management, and customer relationship management.
+
+<p align="center">
+<img src="./DAwnFlow.png" alt="D@WN Stack" title="D@WN Technology Stack" height:60px/>
+</p>
+##### Figure 3: D@WN Flow Diagram
+
+
+##  5. <a name='IOTusecase:WebHooksprovideseventtriggersfromDataStorageandDIDCommMessaging'></a>IOT use case: Web Hooks provides event triggers from Data Storage and DIDComm Messaging
 
 In a decentralised web network (DWN) where IoT devices primarily act as publishers of their metrics and readings, the WebHook pub-sub mechanism can still be employed to facilitate effective communication between the devices and other components in the system, such as DWN Data Storage and DIDComm Messaging. Here's how the process would work in this scenario:
 
@@ -119,36 +188,17 @@ By utilising the WebHook pub-sub mechanism in a DWN with IoT devices as publishe
 <p align="center">
 <img src="./energy1.png" alt="Transactive Marketplace" title="Transactive Marketplace Model" width=40% height:40px/>
 </p>
-##### Figure 1: Transactive Energy Marketplace
+##### Figure 4: Transactive Energy Marketplace
 
 
-## Web Hooks for event triggers from DWN Data Storage and DIDComm Messaging in retail
-
-Point of sale (POS) devices in retail stores and payment gateways for online stores can also act as publishers of data in a decentralised web network (DWN) using the WebHook pub-sub mechanism. This allows for real-time event-driven communication and efficient data exchange between the publishers and various components in the system, such as data storage, analytics services, smart contracts, and DIDComm Messaging.
-
-Here's how the process would work with POS devices and payment gateways as data publishers:
-
-1. Data generation: POS devices in retail stores and payment gateways for online stores generate transaction data, including receipts, payment details, and other relevant information, as customers make purchases.
-
-2. Event registration: Components in the DWN, such as data storage systems, analytics services, smart contracts, or other services, can register as listeners for events published by the POS devices and payment gateways. They can subscribe to specific event types or filter events based on certain criteria, such as store location or transaction amount.
-
-3. Event publication: When a POS device or payment gateway has new transaction data to share, it publishes the data as an event to the WebHook pub-sub system. The system then distributes the event to all registered listeners that have subscribed to the corresponding event type or match the filtering criteria.
-
-4. Event processing: Upon receiving an event notification from the WebHook pub-sub, the subscribed components can process the transaction data and take appropriate actions. This may include storing the data in DWN Data Storage, analysing the data for sales trends, triggering actions in smart contracts, or initiating further communication through DIDComm Messaging.
-
-5. Event acknowledgment: After processing the event, the component can acknowledge the receipt and processing of the event back to the WebHook. This acknowledgment can include additional information, such as the result of the processing or any error messages encountered.
-
-By leveraging the WebHook pub-sub mechanism in a DWN with POS devices and payment gateways as publishers of transaction data, you can enable real-time, event-driven communication and efficient data exchange between the publishers and other components in the system. This approach allows the system to react to changes in transaction data, enhancing the overall capabilities of the DWN and supporting a wide range of use cases, such as sales analytics, inventory management, and customer relationship management.
-<p align="center">
-<img src="./purchase1.png" alt="Online Shopping Marketplace" title="TOnline Shopping Marketplace" width=50% height:100px/>
-</p>
-##### Figure 2: Online order and delivery
-
-
-## True Privacy Preserving AI with DWN
+##  6. <a name='TruePrivacyPreservingAIwithDWN'></a>True Privacy Preserving AI with D@WN
 
 In the context of Decentralised Web Nodes (DWNs) and Privacy-Preserving AI, applying the AI techniques to only the client's own data (a sample of 1) allows for highly personalised experiences while maintaining strict privacy. This approach ensures that the customer's data is used exclusively for their benefit, without sharing or aggregating it with other users' data.
 
+<p align="center">
+<img src="./purchase1.png" alt="Online Shopping Marketplace" title="TOnline Shopping Marketplace" width=50% height:100px/>
+</p>
+##### Figure 5: Online order and delivery
 Here's how this sample of 1 approach works with DWNs and Privacy-Preserving AI:
 
 1. Individual data storage: Each customer's retail data, such as purchase history, preferences, and browsing behavior, is securely stored in their own DWN. This decentralised storage approach keeps the data isolated and ensures its confidentiality.
@@ -163,7 +213,7 @@ Here's how this sample of 1 approach works with DWNs and Privacy-Preserving AI:
 
 In summary, using Decentralised Web Nodes to apply Privacy-Preserving AI on a sample of 1 allows retailers to offer highly personalised shopping experiences without compromising customer privacy. This approach ensures that the customer's data is used exclusively for their benefit, creating a more meaningful retail experience while adhering to strict privacy standards.
 
-## Lead Generation with DWN
+##  7. <a name='LeadGenerationwithDWN'></a>Lead Generation with DWN
 
 In a scenario where clients' data is stored in Decentralised Web Nodes (DWNs) storage, the lead generation service can utilise the DWN's storage and triggers to obtain relevant information for identifying potential insurance customers based on their high-value purchases.
 

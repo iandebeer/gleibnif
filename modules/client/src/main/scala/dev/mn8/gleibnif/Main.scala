@@ -47,8 +47,8 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sttp.client3.SttpBackend
 
 import  dev.mn8.castanet.*
-import dev.mn8.castanet.{Service => CastanetService}
 import scala.collection.immutable.ListSet
+import cats.data.IndexedStateT
 
 class Services()(using logger: Logger[IO]):
   type ErrorOr[A] = EitherT[IO, Exception, A]
@@ -165,49 +165,9 @@ class Services()(using logger: Logger[IO]):
     ]
   */
 
-  case class WeightConf(
-      start: String,
-      transition: String,
-      end: String,
-      action: String,
-      actionParams: List[String],
-  ) derives ConfigReader:
-    override def toString(): String =
-      s"""
-      |start: $start
-      |transition: $transition
-      |end: $end
-      |action: $action
-      |actionParams: $actionParams
-      |""".stripMargin
+  
 
-  case class StartConf(
-      place: String,
-      weight: Int,
-      initialParams: List[String]
-  ) derives ConfigReader:
-    override def toString(): String =
-      s"""
-      |place: $place
-      |weight: $weight
-      |initialParams: $initialParams
-      |""".stripMargin
-
-  case class ProtocolConf(
-      places: List[String],
-      transitions: List[String],
-      start: StartConf,
-      end: String,
-      weights: List[WeightConf],
-  ) derives ConfigReader:
-    override def toString(): String =
-      s"""
-      |places: $places
-      |transitions: $transitions
-      |start: $start
-      |end: $end
-      |weights: $weights
-      |""".stripMargin
+ 
   case class SignalConf(
       signalUrl: URL,
       signalTimeout: Int,
@@ -227,59 +187,7 @@ class Services()(using logger: Logger[IO]):
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
   )
-  def buildPetriNet(p: String):ColouredPetriNet =
-    val protocolConf: ProtocolConf =
-      ConfigSource.default.at(s"$p-proto").load[ProtocolConf] match
-        case Left(error) =>
-          err(s"Error: $error")
-          ProtocolConf(List(), List(), StartConf("", 0, List()), "", List())
-        case Right(conf) => conf
-    val places:Map[String, Place] = protocolConf.places.map{ p => 
-      val capacity: Int= if (p == protocolConf.start.place) then 
-          protocolConf.start.initialParams.length 
-        else  
-          protocolConf.weights.filter(w => w.start == p).foldRight[Int](0)((w, l) => w.actionParams.length)
-      (p -> Place(p,capacity))}.toMap
-    println(s"places -> $places")
-
-    val transitions: Map[String,Transition] = protocolConf.transitions.map(t => (t ->Transition(t,CastanetService(),RPC(t,"","")))).toMap
-    val start = protocolConf.start
-    val end = protocolConf.end
-    val w1: Map[String,ListSet[Weight]] = protocolConf.weights.map{ w => 
-      (w.end -> ListSet(Weight(Colour.fromOrdinal(protocolConf.weights.indexOf(w)),w.actionParams.length)))
-    }.toMap
-    val inWeights = w1 + (start.place -> ListSet(Weight(Colour.fromOrdinal(0),start.initialParams.length)))
-    println(s"in -> $inWeights")
-    val w2: Map[String,ListSet[Weight]] = protocolConf.weights.map{ w => 
-      (w.start -> ListSet(Weight(Colour.fromOrdinal(protocolConf.weights.indexOf(w)),w.actionParams.length)))
-    }.toMap
-    val outWeights = w2 + (end -> ListSet(Weight(Colour.WHITE,0)))
-    println(s"out -> $outWeights")
-
-    val triples: List[PlaceTransitionTriple] = protocolConf.weights.map{ w => 
-      PlaceTransitionTriple(places(w.start),
-      inWeights(w.start),
-      transitions(w.transition),
-      outWeights(w.end), 
-      places(w.end))
-    }
-    // val ptt2: List[PlaceTransitionTriple] = protocolConf.weights.find(w => w.end == protocolConf.end).map{ w => 
-    //   triples :+ PlaceTransitionTriple(places(w.start),
-    //   inWeights(w.start),
-    //   transitions(w.transition),
-    //   outWeights(w.end), 
-    //   places(w.end))
-    // }.getOrElse(triples)
-    
-    
-    //val ptt2 = ptt1++(ptt2)
-    triples.foldRight(PetriNetBuilder())((t, b) => b.add(t)).build()
-
-  // val protocols = appConf.protocolsEnabled.map(p => Map(
-  //   p -> buildPetriNet(p)
-  // ))
- 
- // val protoNet =  PetriNetBuilder().add(ptt1).add(ptt2).add(ptt3).add(ptt4).add(ptt5).build()
+  
 
   def callServices(backend:  SttpBackend[cats.effect.IO, Any] ): IO[Either[Exception, List[String]]] =
     val signalBot = SignalBot(backend)

@@ -1,43 +1,46 @@
-digraph fast_food_ordering_process {
-    node [shape=circle];
-    Start;
-    Order_Placed;
-    Payment_Made;
-    Order_Ready;
-    Order_Picked_Up;
-    node [shape=box];
-    Add_Item [label="Add Item"];
-    Remove_Item [label="Remove Item"];
-    Checkout [label="Checkout"];
-    Make_Payment [label="Make Payment"];
-    Prepare_Order [label="Prepare Order"];
-    node [shape=diamond];
-    Payment_Received [label="Payment\nReceived"];
-    Order_Prepared [label="Order\nPrepared"];
-    node [shape=point];
-    e1 [label=""];
-    e2 [label=""];
-    e3 [label=""];
-    e4 [label=""];
-    Start -> Add_Item;
-    Add_Item -> Checkout;
-    Checkout -> Remove_Item;
-    Remove_Item -> Checkout;
-    Checkout -> Order_Placed -> e1;
-    e1 -> Payment_Received;
-    Payment_Received -> Make_Payment;
-    Make_Payment -> Payment_Made -> e2;
-    e2 -> Order_Prepared;
-    Order_Prepared -> Prepare_Order;
-    Prepare_Order -> Order_Ready -> e3;
-    e3 -> Order_Picked_Up;
-    Order_Picked_Up -> Start [label="New Order"];
-    Payment_Made -> e4 -> Order_Ready;
-    {rank=same; Start, e4}
-    
-    node [shape=diamond, label="Payment\nOption", xlabel="Credit\nCard"];
-    Payment_Option_Card [shape=diamond, label="Payment\nOption", xlabel="Crypto"];
-    Payment_Option_Card -> Make_Payment [label="Credit\nCard"];
-    Payment_Option_Card -> Payment_Made [label="Crypto"];
-    {rank=same; Payment_Option_Card, Make_Payment, Payment_Made}
+digraph petri_net {
+  rankdir = TD;
+  node [shape=circle, fixedsize=true, width=1.5];
+
+  // Places
+  place_user [label="User"];
+  place_line_cook [label="Line Cook"];
+  place_food_ready [label="Food Ready"];
+  place_delivery [label="Delivery"];
+  place_order_status [label="Order Status"];
+  place_rating [label="Rating"];
+  place_delivery_unit [label="Delivery"];
+
+  // Transitions
+  node [shape=rectangle, fixedsize=true, width=1.5, height=0.8];
+
+  transition_place_order [label="Place Order"];
+  transition_notify_cook [label="Notify Cook"];
+  transition_allocate_food [label="Allocate Food"];
+  transition_notify_order_status [label="Notify Order State"];
+  transition_report_food_ready [label="Report Food Ready"];
+  transition_notify_delivery [label="Notify Delivery"];
+  transition_allocate_delivery_unit [label="Allocate Delivery"];
+  transition_mark_delivered [label="Mark Delivered"];
+  transition_submit_rating [label="Submit Rating"];
+
+  // Arcs
+  place_user -> transition_place_order;
+  transition_place_order -> place_line_cook;
+  place_line_cook -> transition_notify_cook;
+  transition_notify_cook -> place_food_ready;
+  place_food_ready -> transition_allocate_food;
+  transition_allocate_food -> place_order_status;
+  place_order_status -> transition_notify_order_status;
+  transition_notify_order_status -> place_user;
+  place_food_ready -> transition_report_food_ready;
+  transition_report_food_ready -> place_delivery;
+  place_delivery -> transition_notify_delivery;
+  transition_notify_delivery -> place_delivery_unit;
+  place_delivery_unit -> transition_allocate_delivery_unit;
+  transition_allocate_delivery_unit -> place_order_status;
+  place_order_status -> transition_mark_delivered;
+  transition_mark_delivered -> place_user;
+  place_user -> transition_submit_rating;
+  transition_submit_rating -> place_rating;
 }

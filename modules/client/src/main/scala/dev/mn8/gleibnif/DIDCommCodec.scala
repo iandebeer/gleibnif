@@ -31,7 +31,7 @@ object DIDCommCodec :
         ("hash", Json.fromString(a.hash.getOrElse(Json.Null.toString))),
         ("links", Json.fromValues(a.links.getOrElse(List.empty[URI]).map(u => Json.fromString(u.toString)))),
         ("base64", Json.fromString(a.base64.getOrElse(Json.Null.toString))),
-        ("json", parse(a.json.getOrElse(Json.Null.toString)) match 
+        ("json", io.circe.parser.parse(a.json.getOrElse(Json.Null.toString)) match 
           case Left(failure) => Json.Null
           case Right(json) => json)
       )

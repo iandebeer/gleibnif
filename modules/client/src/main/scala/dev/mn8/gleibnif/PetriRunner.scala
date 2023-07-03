@@ -18,6 +18,23 @@ import sttp.client3.{HttpURLConnectionBackend, SttpBackend}
 import sttp.model.*
 import shapeless3.deriving.*
 import cats.data.IndexedStateT
+import cats.effect.IOApp
+import sttp.tapir.server.ServerEndpoint
+import sttp.capabilities.fs2.Fs2Streams
+import cats.effect.ExitCode
+
+import org.http4s.HttpRoutes
+import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.server.Router
+import sttp.tapir._
+import sttp.tapir.generic.auto._
+import sttp.tapir.json.circe._
+import sttp.tapir.server.http4s.Http4sServerInterpreter
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
+import cats.syntax.all.toSemigroupKOps
+
+import java.util.concurrent.atomic.AtomicReference
+import scala.concurrent.ExecutionContext
 /**
   * PetriRunner
   * 
@@ -25,7 +42,27 @@ import cats.data.IndexedStateT
   * @param interfaceName
   * @param logger
   */
-case class PetriRunner(interfaceName: String)(using logger: Logger[IO]):
+
+object PetriRunner extends IOApp: 
+  given Logger[IO] = Slf4jLogger.getLogger[IO]
+  given  ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+
+  def run(args: List[String]): IO[ExitCode] =  // starting the server
+    val pr = PetriRunner(args.headOption.getOrElse("purchase"))
+    BlazeServerBuilder[IO]
+      .withExecutionContext(ec)
+      .bindHttp(8080, "localhost")
+      .withHttpApp(Router("/" -> (pr.routes)).orNotFound)
+      .resource
+      .use { _ =>
+        IO {
+          println("Go to: http://localhost:8080/docs")
+          println("Press any key to exit ...")
+          scala.io.StdIn.readLine()
+        }
+      }
+      .as(ExitCode.Success)
+case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
 
   def info[T](value: T)(using logger: Logger[IO]): IO[Unit] =
     println(s"Main: $value")
@@ -93,9 +130,7 @@ case class PetriRunner(interfaceName: String)(using logger: Logger[IO]):
   val paramMap: Map[String, Colour] = colourMap.map(_.swap)//(m => m._2 -> m._1)
   val paramValues = colourMap.map(  (k,v) => (k -> ""))
 
-  val cpn: ColouredPetriNet =
-
-    val places: Map[String, Place] = protocolConf.places.map { p =>
+  val places: Map[String, Place] = protocolConf.places.map { p =>
       val capacity: Int =
         if (p == protocolConf.start.place) then
           protocolConf.start.initialParams.length
@@ -107,11 +142,12 @@ case class PetriRunner(interfaceName: String)(using logger: Logger[IO]):
     }.toMap
    // println(s"places -> $places")
 
-    val transitions: Map[String, Transition] = protocolConf.transitions
+  val transitions: Map[String, Transition] = protocolConf.transitions
       .map(t => (t -> Transition(t, CastanetService(), RPC(t, "", ""))))
       .toMap
-    val start = protocolConf.start
-    val end = protocolConf.end
+  val start = protocolConf.start
+  val end = protocolConf.end
+  val cpn: ColouredPetriNet =
     val w1 = protocolConf.weights.map { w =>
       (w.end -> ListSet.from( w.actionParams.map(p => Weight(paramMap(p),1))))}.toMap
 
@@ -130,7 +166,6 @@ case class PetriRunner(interfaceName: String)(using logger: Logger[IO]):
     }.toMap
     val outWeights = w2 + (end -> ListSet(Weight(Colour.WHITE, 0)))
     val x =  outWeights.map((k:String, v:ListSet[Weight]) => s"${k} -> ${v.map(w => w.colour).mkString(",")}")
-    //println(s"out -> \n${x.mkString("\n")}")
     val triples: List[PlaceTransitionTriple] = protocolConf.weights.map { w =>
       PlaceTransitionTriple(
         places(w.start),
@@ -142,11 +177,36 @@ case class PetriRunner(interfaceName: String)(using logger: Logger[IO]):
     }
     triples.foldRight(PetriNetBuilder())((t, b) => b.add(t)).build()
 
-  
+  val endpoints: List[Endpoint[Unit, List[(String,String)], Unit, Map[String,String], Any]] =
+    protocolConf.transitions.map { t =>
+      val transition = transitions(t)
+      val params: List[String] = protocolConf.weights
+        .filter(w => w.transition == t)
+        .flatMap(w => w.actionParams)
+        .toList
+      
+      val e: PublicEndpoint[List[(String,String)], Unit, Map[String,String], Any] = endpoint.post
+        .in(transition.name)
+        .in(jsonBody[List[(String,String)]]
+          .description("List of DWN Record URIs (on IPFS) pertaining to the caller's Instance (DID), providing the requested input data.")
+          .example(params.flatMap(p => Map(p ->  "ipfs:<address> / String value")))
+          )
+        .out(jsonBody[Map[String,String]])
+        
+      params.foreach(p => e.in(p))
+      e
+    }
 
+  val interfaceRoutes: List[HttpRoutes[cats.effect.IO]] = 
+    endpoints.map(e => Http4sServerInterpreter[IO]().toRoutes(e.serverLogicSuccess(_ => IO(Map("result" -> "OK")))))
+    
+  // generating and exposing the documentation in yml
+  val swaggerUIRoutes: HttpRoutes[IO] =
+    Http4sServerInterpreter[IO]().toRoutes(
+      SwaggerInterpreter().fromEndpoints[IO](endpoints, s"The D@WN ${interfaceName.capitalize} Interface", "1.0.0")
+    )
 
-  
+  val routes: HttpRoutes[IO] =  interfaceRoutes.foldRight(swaggerUIRoutes)((r, b) => r <+> b)
 
- 
   
 

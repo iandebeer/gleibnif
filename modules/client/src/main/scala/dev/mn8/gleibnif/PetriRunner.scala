@@ -11,6 +11,8 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import cats.data.StateT
+import cats.data.State
+import cats.syntax.functor.*
 import cats.effect.{IO, Resource}
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
@@ -35,6 +37,8 @@ import cats.syntax.all.toSemigroupKOps
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.ExecutionContext
+import java.nio.file.{Files, Paths}
+
 /**
   * PetriRunner
   * 
@@ -189,13 +193,83 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
         .in(transition.name)
         .in(jsonBody[List[(String,String)]]
           .description("List of DWN Record URIs (on IPFS) pertaining to the caller's Instance (DID), providing the requested input data.")
-          .example(params.flatMap(p => Map(p ->  "ipfs:<address> / String value")))
+          .example(params.flatMap(p => Map(p ->  "https:<FaaS endpoint> / ipfs:<address> / String value")))
           )
         .out(jsonBody[Map[String,String]])
+        .description(s"Executes the ${t} transition")
         
       params.foreach(p => e.in(p))
       e
     }
+
+  val peekEndpoint: Endpoint[Unit, String, Unit, (Set[String], Set[String]), Any] =
+      endpoint.get
+        .in("petrinet")
+        .in("peek")
+        .in(query[String]("context").description("context to peek"))
+        .out(jsonBody[(Set[String], Set[String])])
+        .description("Returns the current state of the Petri Net for the given context")
+
+  val stepEndpoint: Endpoint[Unit, String, Unit, String, Any] =
+      endpoint.get
+        .in("petrinet")
+        .in("step")
+        .in(query[String]("context").description("context to step"))
+        .out(jsonBody[String])
+        .description("Executes one step of the Petri Net for the given context")
+  
+  val showEndpoint : Endpoint[Unit, Unit,  Unit, Array[Byte], Any] =
+      endpoint.get
+        .in("petrinet")
+        .in("show")
+        .out(header(Header.contentType(MediaType.ImagePng)))
+        .out(byteArrayBody)
+        .description("Renders a png image of the Petri Net")
+
+  def getImage(): IO[Array[Byte]] = IO {
+    PetriPrinter(fileName = s"$interfaceName", petriNet = cpn).print()
+    Files.readAllBytes(Paths.get(s"${interfaceName}.png"))
+  }
+
+  val stateManager: StateManager = StateManager()
+
+  def peek(context: String): IO[(Set[String], Set[String])] = IO {
+    val state = stateManager.getCurrentState(context)
+
+    val markers = state.match
+      case Some(m) => Markers(cpn, m)
+      case None => Markers(cpn)
+    val tuple = cpn.peek(Step(markers))
+    (tuple._1.map(_.toString), tuple._2.map(_.toString))
+  }
+
+  def step(context: String): IO[String] = IO {
+    val state = stateManager.getCurrentState(context)
+  
+    val markers = state.match
+      case Some(m) => Markers(cpn, m)
+      case None => Markers(cpn)
+    val steps: State[Step, Unit] =
+      for
+        _ <- cpn.step
+      yield ()
+    val step = steps.run(Step(markers)).value._1.markers.serialize
+    stateManager.updateState(context, step)
+    s"Stepped Petri Net for context $context"
+  }
+
+  
+  val contextStore = new AtomicReference[Map[String, String]](Map.empty[String, String])
+  def addStateContext(context: String, state: String): IO[Unit] = IO {
+    contextStore.updateAndGet(_ + (context -> state))
+  }
+  def getStateFromContext(context: String): IO[String] = IO {
+    contextStore.get().getOrElse(context, "")
+  }
+
+  val showEndpointRoutes: HttpRoutes[IO] = Http4sServerInterpreter[IO]().toRoutes(showEndpoint.serverLogicSuccess(_ => getImage()))
+  val stepEndpointRoutes: HttpRoutes[IO] = Http4sServerInterpreter[IO]().toRoutes(stepEndpoint.serverLogicSuccess(step _))
+  val peekEndpointRoutes: HttpRoutes[IO] = Http4sServerInterpreter[IO]().toRoutes(peekEndpoint.serverLogicSuccess(peek _))
 
   val interfaceRoutes: List[HttpRoutes[cats.effect.IO]] = 
     endpoints.map(e => Http4sServerInterpreter[IO]().toRoutes(e.serverLogicSuccess(_ => IO(Map("result" -> "OK")))))
@@ -203,10 +277,13 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
   // generating and exposing the documentation in yml
   val swaggerUIRoutes: HttpRoutes[IO] =
     Http4sServerInterpreter[IO]().toRoutes(
-      SwaggerInterpreter().fromEndpoints[IO](endpoints, s"The D@WN ${interfaceName.capitalize} Interface", "1.0.0")
+      SwaggerInterpreter().fromEndpoints[IO](endpoints ++ List(peekEndpoint, stepEndpoint, showEndpoint), s"The D@WN ${interfaceName.capitalize} Interface", "1.0.0")
     )
 
-  val routes: HttpRoutes[IO] =  interfaceRoutes.foldRight(swaggerUIRoutes)((r, b) => r <+> b)
+  val routes: HttpRoutes[IO] =  interfaceRoutes.foldRight(swaggerUIRoutes)((r, b) => r <+> b) 
+    <+> stepEndpointRoutes
+    <+> peekEndpointRoutes
+    <+> showEndpointRoutes
 
   
 

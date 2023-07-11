@@ -67,6 +67,7 @@ object PetriRunner extends IOApp:
       }
       .as(ExitCode.Success)
 case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
+  
 
   def info[T](value: T)(using logger: Logger[IO]): IO[Unit] =
     println(s"Main: $value")
@@ -140,7 +141,7 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
           protocolConf.start.initialParams.length
         else
           protocolConf.weights
-            .filter(w => w.start == p)
+            .filter(w => w.end == p)
             .foldRight[Int](0)((w, l) => w.actionParams.length)
       (p -> Place(p, capacity))
     }.toMap
@@ -152,23 +153,28 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
   val start = protocolConf.start
   val end = protocolConf.end
   val cpn: ColouredPetriNet =
-    val w1 = protocolConf.weights.map { w =>
-      (w.end -> ListSet.from( w.actionParams.map(p => Weight(paramMap(p),1))))}.toMap
-
-    val inWeights = w1 + (start.place -> ListSet(
-      Weight(Colour.fromOrdinal(0), start.initialParams.length)
-    ))
-    val y = inWeights.map((k:String, v:ListSet[Weight]) => s"${k} -> ${v.map(w => w.colour).mkString(",")}")
-
-    val w2: Map[String, ListSet[Weight]] = protocolConf.weights.map { w =>
-      (w.start -> ListSet(
+    val w1: Map[String, ListSet[Weight]] = protocolConf.weights.map { w =>
+      (w.end -> ListSet(
         Weight(
           Colour.fromOrdinal(protocolConf.weights.indexOf(w)),
           w.actionParams.length
         )
       ))
     }.toMap
-    val outWeights = w2 + (end -> ListSet(Weight(Colour.WHITE, 0)))
+    val inWeights = w1 + (start.place -> ListSet(
+      Weight(Colour.fromOrdinal(0), start.initialParams.length)
+    ))
+    val y = inWeights.map((k:String, v:ListSet[Weight]) => s"${k} -> ${v.map(w => w.colour).mkString(",")}")
+
+    val w2: Map[String, ListSet[Weight]] = protocolConf.weights.map { w =>
+      (w.end -> ListSet(
+        Weight(
+          Colour.fromOrdinal(protocolConf.weights.indexOf(w)),
+          w.actionParams.length
+        )
+      ))
+    }.toMap
+    val outWeights = w2 //+ (end -> ListSet(Weight(Colour.WHITE, 1)))
     val x =  outWeights.map((k:String, v:ListSet[Weight]) => s"${k} -> ${v.map(w => w.colour).mkString(",")}")
     val triples: List[PlaceTransitionTriple] = protocolConf.weights.map { w =>
       PlaceTransitionTriple(
@@ -202,13 +208,13 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
       e
     }
 
-  val peekEndpoint: Endpoint[Unit, String, Unit, (Set[String], Set[String]), Any] =
+  val peekEndpoint: Endpoint[Unit, String, Unit, (Set[String],Set[String]), Any] =
       endpoint.get
         .in("petrinet")
         .in("peek")
         .in(query[String]("context").description("context to peek"))
-        .out(jsonBody[(Set[String], Set[String])])
-        .description("Returns the current state of the Petri Net for the given context")
+        .out(jsonBody[(Set[String],Set[String])] )
+        .description("Returns the next transition(s) and subsequent place(s) of the Petri Net for the given context")
 
   val stepEndpoint: Endpoint[Unit, String, Unit, String, Any] =
       endpoint.get
@@ -232,15 +238,23 @@ case class PetriRunner[F[_]](interfaceName: String)(using logger: Logger[IO]):
   }
 
   val stateManager: StateManager = StateManager()
+  stateManager.updateState("123", "AAw=")
+  stateManager.updateState("124", "AAABgA==")
+  stateManager.updateState("125", "Afw=")
+  stateManager.updateState("126", "AHA=")
+  stateManager.updateState("125", "AAA=")
 
-  def peek(context: String): IO[(Set[String], Set[String])] = IO {
+
+
+  def peek(context: String): IO[(Set[String],Set[String])] = IO {
+    logger.info(s"Peeking Petri Net for context $context")
     val state = stateManager.getCurrentState(context)
-
+    
     val markers = state.match
       case Some(m) => Markers(cpn, m)
       case None => Markers(cpn)
     val tuple = cpn.peek(Step(markers))
-    (tuple._1.map(_.toString), tuple._2.map(_.toString))
+    (tuple._1.map(_.name),tuple._2.map(_.name))
   }
 
   def step(context: String): IO[String] = IO {

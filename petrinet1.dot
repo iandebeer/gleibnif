@@ -3,9 +3,9 @@ digraph G {
 1 [label="end\n__\n" shape=circle]
 2 [label="order" shape=box]
 3 [label="pay" shape=box]
-4 [label="shopping-cart\n_____\n" shape=circle]
+4 [label="shopping-cart\n•••••\n" shape=circle]
 5 [label="done" shape=box]
-6 [label="delivery\n••\n" shape=circle]
+6 [label="delivery\n__\n" shape=circle]
 7 [label="start\n__\n" shape=circle]
 8 [label="deliver" shape=box]
 

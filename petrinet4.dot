@@ -1,46 +1,20 @@
-digraph petri_net {
-  rankdir = TD;
-  node [shape=circle, fixedsize=true, width=1.5];
+digraph G {
+0 [label="payment\n___\n" shape=circle]
+1 [label="end\n••\n" shape=circle]
+2 [label="order" shape=box]
+3 [label="pay" shape=box]
+4 [label="shopping-cart\n_____\n" shape=circle]
+5 [label="done" shape=box]
+6 [label="delivery\n__\n" shape=circle]
+7 [label="start\n__\n" shape=circle]
+8 [label="deliver" shape=box]
 
-  // Places
-  place_user [label="User"];
-  place_line_cook [label="Line Cook"];
-  place_food_ready [label="Food Ready"];
-  place_delivery [label="Delivery"];
-  place_order_status [label="Order Status"];
-  place_rating [label="Rating"];
-  place_delivery_unit [label="Delivery"];
-
-  // Transitions
-  node [shape=rectangle, fixedsize=true, width=1.5, height=0.8];
-
-  transition_place_order [label="Place Order"];
-  transition_notify_cook [label="Notify Cook"];
-  transition_allocate_food [label="Allocate Food"];
-  transition_notify_order_status [label="Notify Order State"];
-  transition_report_food_ready [label="Report Food Ready"];
-  transition_notify_delivery [label="Notify Delivery"];
-  transition_allocate_delivery_unit [label="Allocate Delivery"];
-  transition_mark_delivered [label="Mark Delivered"];
-  transition_submit_rating [label="Submit Rating"];
-
-  // Arcs
-  place_user -> transition_place_order;
-  transition_place_order -> place_line_cook;
-  place_line_cook -> transition_notify_cook;
-  transition_notify_cook -> place_food_ready;
-  place_food_ready -> transition_allocate_food;
-  transition_allocate_food -> place_order_status;
-  place_order_status -> transition_notify_order_status;
-  transition_notify_order_status -> place_user;
-  place_food_ready -> transition_report_food_ready;
-  transition_report_food_ready -> place_delivery;
-  place_delivery -> transition_notify_delivery;
-  transition_notify_delivery -> place_delivery_unit;
-  place_delivery_unit -> transition_allocate_delivery_unit;
-  transition_allocate_delivery_unit -> place_order_status;
-  place_order_status -> transition_mark_delivered;
-  transition_mark_delivered -> place_user;
-  place_user -> transition_submit_rating;
-  transition_submit_rating -> place_rating;
+0 -> 8 [label="3" ] 
+2 -> 4 [label="5" ] 
+3 -> 0 [label="3" ] 
+4 -> 3 [label="5" ] 
+5 -> 1 [label="2" ] 
+6 -> 5 [label="2" ] 
+7 -> 2 [label="2" ] 
+8 -> 6 [label="2" ] 
 }

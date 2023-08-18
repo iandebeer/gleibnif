@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 
 sealed trait VerificationRelationship
 

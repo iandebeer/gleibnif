@@ -6,7 +6,8 @@ import io.circe.syntax.*
 import cats.syntax.all.*
 import cats.*
 import io.circe.syntax._
-import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec
 
 object RegistryResponseCodec:
   import io.circe.generic.auto.*

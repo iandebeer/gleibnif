@@ -28,8 +28,8 @@ case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
         println(s"$msg: ${requestHeaders.get(Constants.AuthorizationMetadataKey)}")
         next.startCall(call,requestHeaders)
 
-class HookServiceImpl(using logger: Logger[IO]) extends HookServiceFs2Grpc[IO, Metadata] {
-  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+class HookServiceImpl(using logger: org.log4s.Logger) extends HookServiceFs2Grpc[IO, Metadata] {
+  def log[T](value: T)(implicit logger: org.log4s.Logger) =
      logger.info(s"HookServiceImpl: $value")
   override def updateHook(request: UpdateHookRequest, ctx: Metadata): IO[UpdateHookResponse] = 
     log(s"updateHook: ${ctx.get(Constants.AuthorizationMetadataKey)}")
@@ -53,15 +53,15 @@ class HookServiceImpl(using logger: Logger[IO]) extends HookServiceFs2Grpc[IO, M
     HookImpl().registerHook(request) 
 } 
  
-class KeyServiceImpl(using logger: Logger[IO]) extends KeyServiceFs2Grpc[IO, Metadata] :
-  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+class KeyServiceImpl(using logger: org.log4s.Logger) extends KeyServiceFs2Grpc[IO, Metadata] :
+  def log[T](value: T)(implicit logger: org.log4s.Logger) =
     logger.info(s"HookSeKeyServiceImplrviceImpl: $value")
   def verifyMessageAttestation(request: VerifyMessageAttestationRequest, ctx: Metadata): IO[VerifyMessageAttestationResponse] =
     log(s"verifyMessageAttestation: ${ctx.get(Constants.AuthorizationMetadataKey)}")
     IO(VerifyMessageAttestationResponse())
 
-class RecordServiceImpl(using logger: Logger[IO] ) extends RecordServiceFs2Grpc[IO, Metadata] :
-  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+class RecordServiceImpl(using logger: org.log4s.Logger ) extends RecordServiceFs2Grpc[IO, Metadata] :
+  def log[T](value: T)(implicit logger: org.log4s.Logger) =
       logger.info(s"HookServiceImpl: $value")
   def createSchema(request: CreateSchemaRequest, ctx: Metadata): IO[CreateSchemaResponse] =
     log(s"createSchema: ${ctx.get(Constants.AuthorizationMetadataKey)}")
@@ -86,8 +86,8 @@ class RecordServiceImpl(using logger: Logger[IO] ) extends RecordServiceFs2Grpc[
 
 object Main extends IOApp.Simple:
   import scala.jdk.CollectionConverters.*
-  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
-  def log[T](value: T)(implicit logger: Logger[IO]): IO[Unit] =
+  given logger: org.log4s.Logger = org.log4s.getLogger//Slf4jLogger.getLogger[IO]
+  def log[T](value: T)(implicit logger: org.log4s.Logger) =
     logger.info(s"Main: $value")
 
   val recordService: Resource[IO, ServerServiceDefinition] = 

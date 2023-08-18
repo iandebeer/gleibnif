@@ -5,11 +5,12 @@ import io.circe.*
 import io.circe.syntax.*
 
 import io.circe.parser.*
-import dev.mn8.gleibnif.DIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
 import dev.mn8.gleibnif.DWNodeCodec.decodeDWNodeMessage
 import dev.mn8.gleibnif.DWNodeCodec.encodeDWNodeMessage
 
 import sttp.client3.*
+import dev.mn8.gleibnif.didcomm.DIDCommCodec
 
 
 class DWNodeSpec extends FunSuite  {
@@ -82,7 +83,7 @@ class DWNodeSpec extends FunSuite  {
 """
 
   test("DIDDoc should be encoded to JSON") {
-    import dev.mn8.gleibnif.DIDCommCodec.* 
+    import dev.mn8.gleibnif.didcomm.DIDCommCodec.* 
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")
     testParse(jsonString)
     

@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 
 import cats.*
 import cats.implicits.catsSyntaxApplicativeId
@@ -9,6 +9,7 @@ import io.circe.syntax.*
 import io.circe.*
 
 import java.net.URI
+import dev.mn8.gleibnif.didcomm.{DIDCommMessage, DIDCommAttachment, DIDCommData}
 
 object DIDCommCodec :
   given encodeDIDCommMessage: Encoder[DIDCommMessage] = new Encoder[DIDCommMessage] :

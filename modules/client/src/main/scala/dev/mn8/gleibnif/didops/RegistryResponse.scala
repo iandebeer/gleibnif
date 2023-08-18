@@ -3,7 +3,7 @@ package dev.mn8.gleibnif.didops
 import cats.*
 import cats.data.OptionT
 import cats.syntax.all.*
-import dev.mn8.gleibnif.DIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
 import io.circe.Decoder.Result
 import io.circe.syntax.*
 import io.circe.*

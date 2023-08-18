@@ -45,7 +45,7 @@ object DWNContext:
     
 class PetriSpec extends CatsEffectSuite {
   //implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  given logger: org.log4s.Logger  = org.log4s.getLogger
 
   import DWNContext.*
   val s = PetriRunner("purchase")

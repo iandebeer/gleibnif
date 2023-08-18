@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 
 //import org.didcommx.didcomm.common.VerificationMaterial
 //import org.didcommx.didcomm.common.VerificationMethodType
@@ -9,6 +9,9 @@ import io.circe.syntax._
 
 //import foundation.identity.did.VerificationRelationships
 import java.net.URI
+import dev.mn8.gleibnif.didcomm.VerificationMethodType
+import dev.mn8.gleibnif.didcomm.DIDCodec
+import scala.util.matching.Regex
 
 
 //import foundation.identity.did.VerificationMethod
@@ -34,6 +37,52 @@ import java.net.URI
   *   type. See https://www.w3.org/TR/did-core/#services and
   *   https://identity.foundation/didcomm-messaging/spec/#did-document-service-endpoint.
   */
+
+object DIDTypes {
+  opaque type DIDUrl = String
+  opaque type Method = String
+  opaque type MethodSpecificId = String
+
+  private val methodNamePattern: Regex = """[a-z0-9]+""".r
+  private val methodSpecificIdPattern: Regex = """(:[a-z0-9]+)*[a-z0-9]+""".r
+  private val supportedMethods: List[String] = List("example", "ion", "key", "indy", "web", "prism")
+  def createMethodName(value: String): Option[Method] = 
+    methodNamePattern.findFirstIn(value) match {
+      case Some(m) if supportedMethods.contains(m) => Some(m)
+      case _ => None
+    }
+
+  def createMethodSpecificId(value: String): Option[MethodSpecificId] = 
+    methodSpecificIdPattern.findFirstIn(value).map(_ => value)
+
+  def extractMethodName(value: String): Option[Method] = 
+    value.split(":").tail.headOption.flatMap(createMethodName)
+  def extractMethodSpecificId(value: String): Option[MethodSpecificId] = 
+    value.split(":").tail.tail.headOption.flatMap(createMethodSpecificId)
+ /*  def fromDIDUrl(didUrl: DIDUrl): Option[DID] = 
+    for {
+      methodName <- extractMethodName(didUrl)
+      methodSpecificId <- extractMethodSpecificId(didUrl)
+    } yield DID(methodName, methodSpecificId) */
+  def fromDIDUrl(value: DIDUrl): Option[DID] =
+    value.split(":").toList match {
+      case "did" :: methodName :: methodSpecificId :: Nil => 
+        for {
+          methodName <- createMethodName(methodName)
+          methodSpecificId <- createMethodSpecificId(methodSpecificId)
+        } yield DID(methodName, methodSpecificId)
+      case _ => None
+    }
+}
+
+import DIDTypes._
+
+case class DID(methodName: Method, methodSpecificId: MethodSpecificId) {
+  override def toString: String = s"did:$methodName:$methodSpecificId "
+  def  toDIDUrl : DIDUrl = toString.asInstanceOf[DIDUrl]
+
+}
+
 
 
 case class DIDDoc(

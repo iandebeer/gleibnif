@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 
 import io.circe.Decoder
 

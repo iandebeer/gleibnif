@@ -5,11 +5,13 @@ import io.circe.*
 import io.circe.syntax.*
 
 import io.circe.parser.*
-import dev.mn8.gleibnif.DIDCommMessage
-import dev.mn8.gleibnif.DIDCommCodec.decodeDIDCommMessage
-import dev.mn8.gleibnif.DIDCommCodec.encodeDIDCommMessage
+import dev.mn8.gleibnif.didcomm.DIDCommMessage
+import dev.mn8.gleibnif.didcomm.DIDCommCodec.decodeDIDCommMessage
+import dev.mn8.gleibnif.didcomm.DIDCommCodec.encodeDIDCommMessage
 
 import sttp.client3.*
+import dev.mn8.gleibnif.didcomm.DIDCommCodec
+import dev.mn8.gleibnif.didcomm.DIDCodec
 
 
 class DIDCommMessageSpec extends FunSuite {
@@ -66,7 +68,7 @@ class DIDCommMessageSpec extends FunSuite {
 """
   
   test("DIDCommMessage should be encoded to JSON") {
-    import dev.mn8.gleibnif.DIDCodec.* 
+    import dev.mn8.gleibnif.didcomm.DIDCodec.* 
     println("\n\n*******************\nDIDCommMessage as JSON:\n*******************\n")
     testParse(jsonString)
     

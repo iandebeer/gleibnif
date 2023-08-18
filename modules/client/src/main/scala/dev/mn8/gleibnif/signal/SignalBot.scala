@@ -62,9 +62,10 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
   def send(message: SignalSendMessage): IO[Either[Exception, String]] =
     val request = basicRequest.contentType("application/json").body(message.asJson.noSpaces).post(
       uri"${signalConf.signalUrl}/v2/send")
-     //val curl = request.toCurl
+    val curl = request.toCurl
+
     // request.headers.foreach(println)
-    // println(s"curl: \n $curl")
+    println(s"curl: \n $curl")
     val response = request.send(backend)
     response.map(c => c.code match
       case s:StatusCode if s.isSuccess => 

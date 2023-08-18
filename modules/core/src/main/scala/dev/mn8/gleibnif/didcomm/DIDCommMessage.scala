@@ -1,6 +1,8 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 
 import java.net.URI
+import java.util.UUID
+
 
 final case class DIDCommMessage(
   id: String,
@@ -71,3 +73,22 @@ final case class DIDCommData(
       |  base64: $base64,
       |  json: $json
       |)""".stripMargin
+
+
+enum Role:
+  case Inviter, Invitee
+
+enum State:
+  case InvitationSent, RequestReceived, ResponseSent, Completed
+
+case class Party(did: String, role: Role, state: State)
+
+trait DidExchangeMessage:
+  def `@id`: UUID
+  def `@type`: String
+
+case class Invitation(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage
+
+case class Request(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage
+
+case class Response(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage

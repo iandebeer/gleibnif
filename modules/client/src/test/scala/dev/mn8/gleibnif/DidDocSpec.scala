@@ -7,9 +7,9 @@ import io.circe.*
 import io.circe.syntax.*
 
 import io.circe.parser.*
-import dev.mn8.gleibnif.DIDDoc
-import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
-import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
 
 import sttp.client3.*
 import java.io.StringReader
@@ -23,6 +23,8 @@ import com.apicatalog.jsonld.document.JsonDocument
 import dev.mn8.gleibnif.jsonld.JsonLDP
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
+import dev.mn8.gleibnif.didcomm.{Service, ServiceEndpointNodes}
+import dev.mn8.gleibnif.didcomm.DIDCodec
 
 
 class DidDocSpec extends FunSuite {

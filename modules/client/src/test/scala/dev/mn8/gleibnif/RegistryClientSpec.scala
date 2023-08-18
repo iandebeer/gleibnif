@@ -11,15 +11,17 @@ import io.circe._, io.circe.parser._, io.circe.syntax._
 import dev.mn8.gleibnif.signal.SignalMessageCodec.memberDecoder
 import dev.mn8.gleibnif.didops.RegistryServiceClient
 import java.net.URI
-import dev.mn8.gleibnif.DIDDoc
-import dev.mn8.gleibnif.DIDCodec.decodeDIDDoc
-import dev.mn8.gleibnif.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
 import dev.mn8.gleibnif.didops.RegistryRequest
 import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
 import sttp.client3.HttpURLConnectionBackend
 import munit.Clue.generate
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import cats.data.EitherT
+import dev.mn8.gleibnif.didcomm.{Service, ServiceEndpointNodes}
+import dev.mn8.gleibnif.didcomm.DIDCodec
 
 class RegistryClientSpec extends FunSuite {
   val baseURL = "https://api.godiddy.com/0.1.0/universal-registrar/"

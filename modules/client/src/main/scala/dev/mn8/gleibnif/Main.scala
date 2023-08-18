@@ -36,12 +36,12 @@ import dev.mn8.gleibnif.passkit.PasskitAgent
 import dev.mn8.gleibnif.openai.OpenAIAgent
 import sttp.client3.ResponseException
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import dev.mn8.gleibnif.DIDDoc
-import dev.mn8.gleibnif.Service
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.Service
 import java.net.URI
 import dev.mn8.gleibnif.didops.RegistryRequest
 import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
-import dev.mn8.gleibnif.ServiceEndpointNodes
+import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sttp.client3.SttpBackend
@@ -49,6 +49,12 @@ import sttp.client3.SttpBackend
 import  dev.mn8.castanet.*
 import scala.collection.immutable.ListSet
 import cats.data.IndexedStateT
+import dev.mn8.gleibnif.connection.RedisStorage
+import dev.mn8.gleibnif.connection.RedisStorage.*
+
+import dev.mn8.gleibnif.dawn.ConversationAgent
+import dev.mn8.gleibnif.didcomm.DID
+import dev.mn8.gleibnif.dawn.Aspects.Action
 
 class Services()(using logger: Logger[IO]):
   type ErrorOr[A] = EitherT[IO, Exception, A]
@@ -173,6 +179,7 @@ class Services()(using logger: Logger[IO]):
       signalTimeout: Int,
       signalPhone: String,
   ) derives ConfigReader:
+    
     override def toString(): String =
       s"""
       |signalUrl: $signalUrl
@@ -187,20 +194,54 @@ class Services()(using logger: Logger[IO]):
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
   )
+  val redisStorage: Resource[cats.effect.IO, RedisStorage] = RedisStorage.create(appConf.redisUrl.toString())
   
+  def callServices(backend:  SttpBackend[cats.effect.IO, Any]): IO[Either[Exception, List[String]]] =
 
-  def callServices(backend:  SttpBackend[cats.effect.IO, Any] ): IO[Either[Exception, List[String]]] =
+
+  //def callServices(backend:  SttpBackend[cats.effect.IO, Any],redisStorage: Resource[cats.effect.IO, RedisStorage]): IO[Either[Exception, List[String]]] =
     val signalBot = SignalBot(backend)
     val openAIAgent = OpenAIAgent(backend)
-    val message = EitherT{signalBot.receive().flatTap(m => logger.info(s"Processing input: ${m}"))}
+
+    def logNonEmptyList[T](result: Either[ResponseException[String,Error], List[T]])(using logger: Logger[IO]): IO[Unit] =
+      result match {
+        case Right(list) if list.nonEmpty =>
+          logger.info(s"Processing input: $list")
+        case Left(e) => 
+          logger.error(s"Error: $e")
+        case _ => 
+          IO.unit // Do nothing
+      }
+    val message = EitherT{signalBot.receive().flatTap(m => logNonEmptyList[SignalSimpleMessage](m))}
+    def extractEmail(text: String): Option[String] = 
+      val emailRegex = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}\\b".r
+      emailRegex.findFirstIn(text)
     
+ /*    def handleConversation(m: SignalSimpleMessage) = {
+        import dev.mn8.gleibnif.dawn.Aspects.*
+        redisStorage.use {redis => 
+          redis.getDidByPhoneNumber(m.phone) match
+            case Some(did:DID) => 
+              val conversation = ConversationAgent(did).extractIntent( m.text)
+              redis.writeToRedis(did.toString, Action, conversation)
+              signalBot.send(SignalSendMessage(List[String](), s"Conversation stored for $did", signalConf.signalPhone, List(m.phone)))
+            case None => 
+              signalBot.send(SignalSendMessage(List[String](), s"Conversation not found for $m", signalConf.signalPhone, List(m.phone)))
+
+        }
+     
+      
+      
+     
+    } */
     def processKeywords(k: SignalSimpleMessage): EitherT[IO, Exception, String] = {
       EitherT(k match 
         case  m: SignalSimpleMessage if m.text.toLowerCase().contains("https://maps.google.com") => 
           ???//openAIAgent.keywords(m.text.split("\\|")(2))
           
-          )
-      EitherT(signalBot.send(SignalSendMessage(List[String](), s"I have extracted the following keywords: ${k.keywords.mkString(",")}", signalConf.signalPhone, List(k.phone))))
+      
+        case _ => signalBot.send(SignalSendMessage(List[String](), s"I have extracted the following keywords: ${k.keywords.mkString(",")}", signalConf.signalPhone, List(k.phone)))
+      )
      }
 
     (for
@@ -260,6 +301,8 @@ class Services()(using logger: Logger[IO]):
     yield s).value
 
 object Main extends IOApp.Simple:   
+  //override protected def blockedThreadDetectionEnabled = true
+
   given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   val pollingInterval: FiniteDuration = 10.seconds

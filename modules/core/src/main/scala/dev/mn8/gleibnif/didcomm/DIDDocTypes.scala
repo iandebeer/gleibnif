@@ -1,4 +1,4 @@
-package dev.mn8.gleibnif
+package dev.mn8.gleibnif.didcomm
 import org.didcommx.didcomm.exceptions.DIDDocException
 import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
 

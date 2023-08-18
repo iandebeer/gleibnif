@@ -1,6 +1,6 @@
 package dev.mn8.gleibnif
 
-import java.util.concurrent.atomic.AtomicReference
+/* import java.util.concurrent.atomic.AtomicReference
 import scala.collection.concurrent.TrieMap
 
 class StateManager {
@@ -19,4 +19,25 @@ class StateManager {
     }
   }
 }
+ */
+import cats.effect.IO
+import cats.effect.kernel.Ref
+import java.util.UUID
+import scala.collection.immutable.HashMap
+import didcomm.DIDTypes.*
 
+trait State
+case class Context(id: String)
+
+class StateManager private (ref: Ref[IO, HashMap[String, String]]) {
+  def getState(context: String): IO[Option[String]] =
+    ref.get.map(_.get(context))
+
+  def updateState(context: String, state: String): IO[Unit] =
+    ref.update(_ + (context -> state))
+}
+
+object StateManager {
+  def create(): IO[StateManager] =
+    Ref.of[IO, HashMap[String, String]](HashMap.empty[String, String]).map(new StateManager(_))
+}

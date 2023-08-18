@@ -191,7 +191,7 @@ A ColouredPetriNet is traversable using a state monad to step from an initial st
 
 The resulting state changes can be visualized with a PetriPrinter.
 
-```scala
+```scala mdoc
     PetriPrinter(fileName = "petrinet1", petriNet = pn).print(Option(m3))
     val steps: State[Step, Unit] =
       for

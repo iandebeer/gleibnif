@@ -11,8 +11,6 @@ import cats.syntax.all._
 import cats.FunctorFilter.ops.toAllFunctorFilterOps
 import cats.syntax.traverse._
 import fs2.Compiler.Target.forSync
-
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.*
 import Constants.*
@@ -20,9 +18,6 @@ import Constants.*
 import javax.security.auth.login.AppConfigurationEntry
 import java.net.URL
 import java.util.concurrent.Executor
-
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
 
 import io.circe.parser.*
 import io.circe._, io.circe.parser._, io.circe.syntax._
@@ -55,141 +50,12 @@ import dev.mn8.gleibnif.connection.RedisStorage.*
 import dev.mn8.gleibnif.dawn.ConversationAgent
 import dev.mn8.gleibnif.didcomm.DID
 import dev.mn8.gleibnif.dawn.Aspects.Action
+import dev.mn8.gleibnif.config.ConfigReaders.*
 
-class Services()(using logger: Logger[IO]):
-  type ErrorOr[A] = EitherT[IO, Exception, A]
- // type LoggedEitherT[F[_], E, A] = WriterT[EitherT[F, E, *], Logger[F], A]
-
-  
-  def info[T](value: T)(using logger: Logger[IO]): IO[Unit] =
-    println(s"Main: $value")
-    logger.info(s"$value")
-  
-  def err[T](value: T)(using logger: Logger[IO]): IO[Unit] =
-    println(s"Main: $value")
-    logger.error(s"$value") 
-
-  case class AppConf(
-      redisUrl: URL,
-      redisTimeout: Int,
-      ipfsClusterUrl: URL,
-      universalResolverUrl: URL,
-      universalResolverTimeout: Int,
-      ipfsClusterTimeout: Int,
-      pollingInterval: Int,
-      prismUrl: URL,
-      prismToken: String,
-      dawnUrl: URL,
-      dawnControllerDID: String,
-      dawnServiceUrls: Set[URI],
-      dawnWelcomeMessage: String,
-      protocolsEnabled: List[String],
-  ) derives ConfigReader:
-    override def toString(): String =
-      s"""
-      |redisUrl: $redisUrl
-      |redisTimeout: $redisTimeout
-      |ipfsClusterUrl: $ipfsClusterUrl
-      |universalResolverUrl: $universalResolverUrl
-      |universalResolverTimeout: $universalResolverTimeout
-      |ipfsClusterTimeout: $ipfsClusterTimeout
-      |pollingInterval: $pollingInterval
-      |prismUrl: $prismUrl
-      |prismToken: $prismToken
-      |dawnUrl: $dawnUrl
-      |dawnControllerDID: $dawnControllerDID
-      |dawnServiceUrls: $dawnServiceUrls
-      |dawnWelcomeMessage: $dawnWelcomeMessage
-      |protocolsEnabled: $protocolsEnabled
-      |""".stripMargin
-
-  case class RegistryConf(
-      registrarUrl: URL,
-      registrarTimeout: Int,
-      apiKey: String,
-      didMethod: String
-  ) derives ConfigReader:
-    override def toString(): String =
-      s"""
-      |registryUrl: $registrarUrl
-      |registryTimeout: $registrarTimeout
-      |didMethod: $didMethod
-      |""".stripMargin
-
-  def getConf() =
-    val appConf: AppConf =
-      ConfigSource.default.at("app-conf").load[AppConf] match
-        case Left(error) =>
-          err(s"Error: $error")
-          AppConf(
-            new URL("http://localhost:8080"),
-            0,
-            new URL("http://localhost:8080"),
-            new URL("http://localhost:8080"),
-            0,
-            0,
-            0,
-            new URL("http://localhost:8080"),
-            "",
-            new URL("http://localhost:8080"),
-            "",
-            Set(new URI("http://localhost:8080")),
-            "WELCOME TO DAWN",
-            List()
-          )
-
-        case Right(conf) => conf
-    appConf
-  def getRegistryConf() =
-    val registryConf: RegistryConf =
-      ConfigSource.default.at("registry-conf").load[RegistryConf] match
-        case Left(error) =>
-          err(s"Error: $error")
-          RegistryConf(new URL("http://localhost:8080"), 0, "", "indy")
-        case Right(conf) => conf
-    registryConf
-  def getSignalConf() =
-    val signalConf: SignalConf =
-      ConfigSource.default.at("signal-conf").load[SignalConf] match
-        case Left(error) =>
-          err(s"Error: $error")
-          SignalConf(new URL("http://localhost:8080"), 0, "")
-        case Right(conf) => conf
-    signalConf
-
-  /*
-  proto {
-    places = ["start", "shopping-list", "payment", "delivery", "end"]
-    transitions = ["order", "pay", "deliver"]
-    start = { place = "start", weight = 2, initial-params = ["did","location"]}
-    end = "end"
-    weights = [
-      {start = "start", transition = "order", end = "shopping-order", action = "create-order", action-params = ["order-date","order-id", "order-name", "order-description", "order-amount"]},
-      {start = "shopping-list", transition = "pay", end = "payment", action = "pay-order", action-params = ["order-id", "order-amount"]},
-      {start = "payment", transition = "deliver", end = "delivery", action = "receive-order", action-params = ["order-id", "location"]},
-      {start = "delivery", transition = "deliver", end = "end",  action = "complete-order", action-params = ["order-id", "order-amount"]},
-    ]
-  */
-
-  
-
- 
-  case class SignalConf(
-      signalUrl: URL,
-      signalTimeout: Int,
-      signalPhone: String,
-  ) derives ConfigReader:
-    
-    override def toString(): String =
-      s"""
-      |signalUrl: $signalUrl
-      |signalTimeout: $signalTimeout
-      |signalPhone: $signalPhone
-      |""".stripMargin
-
-  val appConf = getConf()
-  val registryConf = getRegistryConf()
-  val signalConf = getSignalConf()
+class Services(using logger: Logger[IO]):
+  val appConf = getConf(using logger)
+  val registryConf = getRegistryConf(using logger)
+  val signalConf = getSignalConf(using logger)
   val registryClient = RegistryServiceClient(
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
@@ -197,7 +63,6 @@ class Services()(using logger: Logger[IO]):
   val redisStorage: Resource[cats.effect.IO, RedisStorage] = RedisStorage.create(appConf.redisUrl.toString())
   
   def callServices(backend:  SttpBackend[cats.effect.IO, Any]): IO[Either[Exception, List[String]]] =
-
 
   //def callServices(backend:  SttpBackend[cats.effect.IO, Any],redisStorage: Resource[cats.effect.IO, RedisStorage]): IO[Either[Exception, List[String]]] =
     val signalBot = SignalBot(backend)

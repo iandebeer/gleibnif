@@ -51,6 +51,8 @@ import dev.mn8.gleibnif.dawn.ConversationAgent
 import dev.mn8.gleibnif.didcomm.DID
 import dev.mn8.gleibnif.dawn.Aspects.Action
 import dev.mn8.gleibnif.config.ConfigReaders.*
+import dev.mn8.gleibnif.logging.LogWriter.{err, info, logNonEmptyList}
+
 
 class Services(using logger: Logger[IO]):
   val appConf = getConf(using logger)
@@ -68,15 +70,7 @@ class Services(using logger: Logger[IO]):
     val signalBot = SignalBot(backend)
     val openAIAgent = OpenAIAgent(backend)
 
-    def logNonEmptyList[T](result: Either[ResponseException[String,Error], List[T]])(using logger: Logger[IO]): IO[Unit] =
-      result match {
-        case Right(list) if list.nonEmpty =>
-          logger.info(s"Processing input: $list")
-        case Left(e) => 
-          logger.error(s"Error: $e")
-        case _ => 
-          IO.unit // Do nothing
-      }
+   
     val message = EitherT{signalBot.receive().flatTap(m => logNonEmptyList[SignalSimpleMessage](m))}
     def extractEmail(text: String): Option[String] = 
       val emailRegex = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}\\b".r

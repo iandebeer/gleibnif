@@ -9,20 +9,13 @@ import cats.data.EitherT
 import cats.effect.IO
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
+import sttp.client3.ResponseException
+import dev.mn8.gleibnif.logging.LogWriter.{err, info, logNonEmptyList}
 
 object ConfigReaders :
-   
-  type ErrorOr[A] = EitherT[IO, Exception, A]
- // type LoggedEitherT[F[_], E, A] = WriterT[EitherT[F, E, *], Logger[F], A]
   
-  def info[T](value: T)(using logger: Logger[IO]): IO[Unit] =
-    println(s"Main: $value")
-    logger.info(s"$value")
-  
-  def err[T](value: T)(using logger: Logger[IO]): IO[Unit] =
-    println(s"Main: $value")
-    logger.error(s"$value") 
+ 
+      
   case class AppConf(
     redisUrl: URL,
     redisTimeout: Int,

@@ -72,6 +72,7 @@ lazy val commonSettings = Seq(
     "com.softwaremill.sttp.tapir" %% "tapir-asyncapi-docs" % tapirVersion,
     "com.github.eikek" %% "emil-common" % emilVersion,
     "com.github.eikek" %% "emil-javamail" % emilVersion,
+    "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
 
     "com.softwaremill.sttp.apispec" %% "apispec-model" % "0.6.0",
     "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml" % "0.6.0",

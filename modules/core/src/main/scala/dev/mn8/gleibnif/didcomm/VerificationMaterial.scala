@@ -3,14 +3,14 @@ package dev.mn8.gleibnif.didcomm
 import io.circe.Decoder
 
 sealed trait VerificationMaterial
-  
+
 case class VerificationMaterialJWK(
     crv: String,
     x: String,
     kty: String,
     kid: String
 ) extends VerificationMaterial:
-  override def toString(): String = 
+  override def toString(): String =
     s"""{
       |  "crv": "$crv",
       |  "x": "$x",
@@ -18,7 +18,8 @@ case class VerificationMaterialJWK(
       |  "kid": "$kid"
       """
 
-case class VerificationMaterialMultibase(value: String) extends VerificationMaterial:
+case class VerificationMaterialMultibase(value: String)
+    extends VerificationMaterial:
   override def toString(): String = s"""{
     |  "publicKeyMultibase": "$value"
     |}""".stripMargin

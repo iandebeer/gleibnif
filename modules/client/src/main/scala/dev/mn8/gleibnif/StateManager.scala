@@ -39,5 +39,7 @@ class StateManager private (ref: Ref[IO, HashMap[String, String]]) {
 
 object StateManager {
   def create(): IO[StateManager] =
-    Ref.of[IO, HashMap[String, String]](HashMap.empty[String, String]).map(new StateManager(_))
+    Ref
+      .of[IO, HashMap[String, String]](HashMap.empty[String, String])
+      .map(new StateManager(_))
 }

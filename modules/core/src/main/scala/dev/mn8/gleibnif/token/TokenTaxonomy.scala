@@ -7,7 +7,7 @@ import scala.math._
 object TokenTaxonomy:
   enum Behaviour:
     case Attestable extends Behaviour
-      val script: String = ""
+    val script: String = ""
     case Burnable extends Behaviour
     case Compliant extends Behaviour
     case Credible extends Behaviour
@@ -34,14 +34,15 @@ object TokenTaxonomy:
     def evaluate(): Boolean =
       true
 
-  def printlnUppercaseImpl(str: Expr[String])(using q: Quotes) : Expr[Unit] = 
+  def printlnUppercaseImpl(str: Expr[String])(using q: Quotes): Expr[Unit] =
     val expr: Expr[String] = '{ $str.toUpperCase }
     '{ println($expr) }
-  
-  inline def printlnUppercase(str: String) : Unit = ${ printlnUppercaseImpl('str) }
 
-  def instantiateToken(behaviours: Behaviours): BaseToken =  ???
+  inline def printlnUppercase(str: String): Unit = ${
+    printlnUppercaseImpl('str)
+  }
 
+  def instantiateToken(behaviours: Behaviours): BaseToken = ???
 
   case class Behaviours(list: List[Behaviour]):
     def toStringList(): List[String] = list.map(b => b.toString())

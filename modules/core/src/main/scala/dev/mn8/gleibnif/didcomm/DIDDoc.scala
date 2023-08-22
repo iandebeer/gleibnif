@@ -13,7 +13,6 @@ import dev.mn8.gleibnif.didcomm.VerificationMethodType
 import dev.mn8.gleibnif.didcomm.DIDCodec
 import scala.util.matching.Regex
 
-
 //import foundation.identity.did.VerificationMethod
 
 /** DID DOC (https://www.w3.org/TR/did-core/#dfn-did-documents)
@@ -45,28 +44,29 @@ object DIDTypes {
 
   private val methodNamePattern: Regex = """[a-z0-9]+""".r
   private val methodSpecificIdPattern: Regex = """(:[a-z0-9]+)*[a-z0-9]+""".r
-  private val supportedMethods: List[String] = List("example", "ion", "key", "indy", "web", "prism")
-  def createMethodName(value: String): Option[Method] = 
+  private val supportedMethods: List[String] =
+    List("example", "ion", "key", "indy", "web", "prism")
+  def createMethodName(value: String): Option[Method] =
     methodNamePattern.findFirstIn(value) match {
       case Some(m) if supportedMethods.contains(m) => Some(m)
-      case _ => None
+      case _                                       => None
     }
 
-  def createMethodSpecificId(value: String): Option[MethodSpecificId] = 
+  def createMethodSpecificId(value: String): Option[MethodSpecificId] =
     methodSpecificIdPattern.findFirstIn(value).map(_ => value)
 
-  def extractMethodName(value: String): Option[Method] = 
+  def extractMethodName(value: String): Option[Method] =
     value.split(":").tail.headOption.flatMap(createMethodName)
-  def extractMethodSpecificId(value: String): Option[MethodSpecificId] = 
+  def extractMethodSpecificId(value: String): Option[MethodSpecificId] =
     value.split(":").tail.tail.headOption.flatMap(createMethodSpecificId)
- /*  def fromDIDUrl(didUrl: DIDUrl): Option[DID] = 
+  /*  def fromDIDUrl(didUrl: DIDUrl): Option[DID] =
     for {
       methodName <- extractMethodName(didUrl)
       methodSpecificId <- extractMethodSpecificId(didUrl)
     } yield DID(methodName, methodSpecificId) */
   def fromDIDUrl(value: DIDUrl): Option[DID] =
     value.split(":").toList match {
-      case "did" :: methodName :: methodSpecificId :: Nil => 
+      case "did" :: methodName :: methodSpecificId :: Nil =>
         for {
           methodName <- createMethodName(methodName)
           methodSpecificId <- createMethodSpecificId(methodSpecificId)
@@ -79,11 +79,9 @@ import DIDTypes._
 
 case class DID(methodName: Method, methodSpecificId: MethodSpecificId) {
   override def toString: String = s"did:$methodName:$methodSpecificId "
-  def  toDIDUrl : DIDUrl = toString.asInstanceOf[DIDUrl]
+  def toDIDUrl: DIDUrl = toString.asInstanceOf[DIDUrl]
 
 }
-
-
 
 case class DIDDoc(
     did: String = "",
@@ -91,26 +89,30 @@ case class DIDDoc(
     alsoKnownAs: Option[Set[String]] = None,
     verificationMethods: Option[Set[VerificationMethod]] = None,
     keyAgreements: Option[Set[KeyAgreement]] = None,
-    authentications: Option[Set[Authentication]]= None,
-    assertionMethods: Option[Set[Assertion]]= None,
-    capabilityInvocations: Option[Set[CapabilityInvocation]]= None,
-    capabilityDelegations: Option[Set[CapabilityDelegation]]= None, 
-    services: Option[Set[Service]]= None) :
+    authentications: Option[Set[Authentication]] = None,
+    assertionMethods: Option[Set[Assertion]] = None,
+    capabilityInvocations: Option[Set[CapabilityInvocation]] = None,
+    capabilityDelegations: Option[Set[CapabilityDelegation]] = None,
+    services: Option[Set[Service]] = None
+):
 
-  def findVerificationMethod(id: String): Either[DIDUrlNotFoundException, VerificationMethod] =
-    verificationMethods match 
-      case Some(v) => v.find(_.id == id) match
-        case Some(v: VerificationMethod) => Right(v)
-        case _                        => Left(DIDUrlNotFoundException(id, did))
+  def findVerificationMethod(
+      id: String
+  ): Either[DIDUrlNotFoundException, VerificationMethod] =
+    verificationMethods match
+      case Some(v) =>
+        v.find(_.id == id) match
+          case Some(v: VerificationMethod) => Right(v)
+          case _ => Left(DIDUrlNotFoundException(id, did))
       case _ => Left(DIDUrlNotFoundException(id, did))
 
   def findDIDCommService(id: String): Either[DIDDocException, Service] =
-    services match 
-      case Some(v:Service) => v.find(_.id.toString() == id) match
-        case Some(v: Service) => Right(v)
-        case _ => Left(DIDDocException("DIDComm service not found"))
+    services match
+      case Some(v: Service) =>
+        v.find(_.id.toString() == id) match
+          case Some(v: Service) => Right(v)
+          case _ => Left(DIDDocException("DIDComm service not found"))
       case _ => Left(DIDDocException("DIDComm service not found"))
-
 
   override def toString: String =
     s"""DIDDoc(
@@ -131,9 +133,14 @@ object DIDDoc:
   import DIDCodec.encodeDIDDoc
   import DIDCodec.decodeDIDDoc
 
-  //def apply(did: String, controller: Option[String], alsoKnownAs: Option[Set[String]], verificationMethods: Option[Set[VerificationMethod]], keyAgreements: Option[Set[KeyAgreement]], authentications: Option[Set[Authentication]], assertionMethods: Option[Set[Assertion]], capabilityInvocations: Option[Set[CapabilityInvocation]], capabilityDelegations: Option[Set[CapabilityDelegation]], services: Option[Set[Service]]): DIDDoc = new DIDDoc(did, controller, alsoKnownAs, verificationMethods, keyAgreements, authentications, assertionMethods, capabilityInvocations, capabilityDelegations, services)
+  // def apply(did: String, controller: Option[String], alsoKnownAs: Option[Set[String]], verificationMethods: Option[Set[VerificationMethod]], keyAgreements: Option[Set[KeyAgreement]], authentications: Option[Set[Authentication]], assertionMethods: Option[Set[Assertion]], capabilityInvocations: Option[Set[CapabilityInvocation]], capabilityDelegations: Option[Set[CapabilityDelegation]], services: Option[Set[Service]]): DIDDoc = new DIDDoc(did, controller, alsoKnownAs, verificationMethods, keyAgreements, authentications, assertionMethods, capabilityInvocations, capabilityDelegations, services)
 
-  def createDIDKeyDocument(did: String, controller: String, verificationMethod: VerificationMethod, service: Service): DIDDoc =
+  def createDIDKeyDocument(
+      did: String,
+      controller: String,
+      verificationMethod: VerificationMethod,
+      service: Service
+  ): DIDDoc =
     DIDDoc(
       did,
       Some(controller),
@@ -148,10 +155,9 @@ object DIDDoc:
     )
   def addContext(didDoc: DIDDoc, contexts: List[String]): DIDDoc =
     val didDocJson = didDoc.asJson
-    val didDocJsonWithContext = didDocJson.mapObject(_.add("@context", contexts.asJson))
+    val didDocJsonWithContext =
+      didDocJson.mapObject(_.add("@context", contexts.asJson))
     didDocJsonWithContext.as[DIDDoc].getOrElse(didDoc)
-
-
 
 /** DID DOC Verification method. It can be used in such verification
   * relationships as Authentication, KeyAgreement, etc. See
@@ -171,7 +177,6 @@ case class VerificationMethod(
        |  controller=$controller
        |)""".stripMargin
 
-
 /** DID DOC Service of 'DIDCommMessaging' type. see
   * https://www.w3.org/TR/did-core/#services and
   * https://identity.foundation/didcomm-messaging/spec/#did-document-service-endpoint.
@@ -189,18 +194,17 @@ case class VerificationMethod(
   *   didcomm specification versions.
   */
 
-case class Service (
+case class Service(
     id: URI,
     `type`: Set[String],
     serviceEndpoint: Set[ServiceEndpoint]
-    ):
+):
   override def toString: String =
     s"""Service(
        |  id=$id,
        |  type= ${`type`},
        |  serviceEndpoint=$serviceEndpoint
        |)""".stripMargin
-  
 
 sealed trait ServiceEndpoint
 
@@ -216,14 +220,19 @@ case class ServiceEndpointNodes(nodes: Set[URI]) extends ServiceEndpoint:
       |  nodes=$nodes
        |)""".stripMargin
 
-case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint:
+case class ServiceEndpointDIDURL(did: String, fragment: String)
+    extends ServiceEndpoint:
   override def toString: String =
     s"""ServiceEndpointDIDURL(
        |  did=$did,
        |  fragment=$fragment
        |)""".stripMargin
 
-case class ServiceEndpointDIDCommService(uri: URI, accept: Option[Set[String]], routingKeys: Option[Set[String]]) extends ServiceEndpoint:
+case class ServiceEndpointDIDCommService(
+    uri: URI,
+    accept: Option[Set[String]],
+    routingKeys: Option[Set[String]]
+) extends ServiceEndpoint:
   override def toString: String =
     s"""ServiceEndpointDIDCommService(
        |  uri=$uri,

@@ -5,7 +5,7 @@ import emil._, emil.builder._
 import emil.javamail._
 
 object MailAgent extends IOApp.Simple:
-    val htmlBody = """
+  val htmlBody = """
                      |<!DOCTYPE html>
                      |<html>
                      |<head>
@@ -22,29 +22,34 @@ object MailAgent extends IOApp.Simple:
                      |</body>
                      |</html>
         """.stripMargin
-    //println(s"##################### -> ${getClass.getResource("/").getPath()}")
-    val mail = MailBuilder.build(
-        From("dawn@didx.co.za"),
-        To("ian@didx.co.za"),
-        Subject("Invitation to DIDx-Go"),
-        CustomHeader(Header("User-Agent", "my-email-client")),
-       // TextBody[IO]("Hello, world!"),
-        HtmlBody[IO](htmlBody))
-        AttachUrl[IO](getClass.getResource("/pass.pkpass")).
-            withFilename("ian.pkpass").
-            withMimeType(MimeType.application("vnd-com.apple.pkpass")).
-            withInlinedContentId("ian.pkpass@42342343"). 
-            withDisposition(Disposition.Attachment)
-   /*  mail.asBuilder.add(
+  // println(s"##################### -> ${getClass.getResource("/").getPath()}")
+  val mail = MailBuilder.build(
+    From("dawn@didx.co.za"),
+    To("ian@didx.co.za"),
+    Subject("Invitation to DIDx-Go"),
+    CustomHeader(Header("User-Agent", "my-email-client")),
+    // TextBody[IO]("Hello, world!"),
+    HtmlBody[IO](htmlBody)
+  )
+  AttachUrl[IO](getClass.getResource("/pass.pkpass"))
+    .withFilename("ian.pkpass")
+    .withMimeType(MimeType.application("vnd-com.apple.pkpass"))
+    .withInlinedContentId("ian.pkpass@42342343")
+    .withDisposition(Disposition.Attachment)
+  /*  mail.asBuilder.add(
       AttachUrl[IO](getClass.getResource("/qr2.png"),mimeType = MimeType("image", "png"))).build
- */    
-    val conf = MailConfig("smtp://smtp.gmail.com:587", "dawn@didx.co.za", "fkifkurnmxwzjzar", SSLType.StartTLS)//fkifkurnmxwzjzar - vjccpgdijywmhglk
-    IO.println(s"conf = ${conf.urlParts}")
-   // val smtpConf = MailConfig("imaps:/" +
-      //smtp.gmail.com:465", "dawn@didx.co.za", "4uMj3<TY9UBA7yP=", SSLType.StartTLS)
-    val mailer = JavaMailEmil[IO]()
-    val sendIO: IO[NonEmptyList[String]] = mailer(conf).send(mail)
-    def run: IO[Unit] = sendIO.flatMap { result =>
-        IO.println(s"Result: $result")
-    }
-
+   */
+  val conf = MailConfig(
+    "smtp://smtp.gmail.com:587",
+    "dawn@didx.co.za",
+    "fkifkurnmxwzjzar",
+    SSLType.StartTLS
+  ) // fkifkurnmxwzjzar - vjccpgdijywmhglk
+  IO.println(s"conf = ${conf.urlParts}")
+  // val smtpConf = MailConfig("imaps:/" +
+  // smtp.gmail.com:465", "dawn@didx.co.za", "4uMj3<TY9UBA7yP=", SSLType.StartTLS)
+  val mailer = JavaMailEmil[IO]()
+  val sendIO: IO[NonEmptyList[String]] = mailer(conf).send(mail)
+  def run: IO[Unit] = sendIO.flatMap { result =>
+    IO.println(s"Result: $result")
+  }

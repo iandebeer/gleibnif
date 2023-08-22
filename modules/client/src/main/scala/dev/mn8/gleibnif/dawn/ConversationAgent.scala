@@ -30,8 +30,6 @@ import io.circe.*
 
 import scala.deriving.*
 
-
-
 object Aspects {
   opaque type Location = String
   opaque type TimeFrame = String
@@ -55,89 +53,99 @@ object Aspects {
   }
 }
 
-case class TimeBox(timeLapse:Long, lastPing:Instant = Instant.now):
-  def isExpired: Boolean = 
+case class TimeBox(timeLapse: Long, lastPing: Instant = Instant.now):
+  def isExpired: Boolean =
     val now = Instant.now
     Duration.between(lastPing, now).toSeconds > timeLapse
-  def ping: TimeBox = 
+  def ping: TimeBox =
     val now = Instant.now
     TimeBox(timeLapse, now)
 
-
-
-case class LocationConversation(place: String, did:DID) ://derives SerialDescriptor:
+case class LocationConversation(
+    place: String,
+    did: DID
+): // derives SerialDescriptor:
   enum LocationRequest:
-    def question: String = 
+    def question: String =
       this match
-        case Home => "Where is your home? Please drop a pin when you are at home"
-        case Work => "Where is your work? Please drop a pin when you are at work"
-        case Delivery => "Where do you want your delivery - Please drop a pin and indicatehome, work or other?"
+        case Home =>
+          "Where is your home? Please drop a pin when you are at home"
+        case Work =>
+          "Where is your work? Please drop a pin when you are at work"
+        case Delivery =>
+          "Where do you want your delivery - Please drop a pin and indicatehome, work or other?"
         case Other => "What is your current location?"
     case Home extends LocationRequest
-    case Work 
-    case Delivery 
-    case Other 
+    case Work
+    case Delivery
+    case Other
 
     val s = Home.question
-    def reply: String = 
+    def reply: String =
       this match
-        case Home => "Home"
-        case Work => "Work"
+        case Home     => "Home"
+        case Work     => "Work"
         case Delivery => "Delivery"
-        case Other => "Other"
-    def isResolved: Boolean = 
+        case Other    => "Other"
+    def isResolved: Boolean =
       this match
-        case Home => true
-        case Work => true
+        case Home     => true
+        case Work     => true
         case Delivery => true
-        case Other => true
-
+        case Other    => true
 
 case class InviteConversation():
   enum InviteRequest:
-    def question: String = 
+    def question: String =
       this match
         case Email => "What is your email address?"
         case Other => "What is your email address?"
     case Email extends InviteRequest
-    case Other 
+    case Other
 
-
-  
-    def reply: String = 
+    def reply: String =
       this match
         case Email => "Email"
         case Other => "Other"
-    def isResolved: Boolean = 
+    def isResolved: Boolean =
       this match
         case Email => true
         case Other => true
-    def extractEmail(text: String): Option[String] = 
-      val emailRegex = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}\\b".r
+    def extractEmail(text: String): Option[String] =
+      val emailRegex =
+        "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}\\b".r
       emailRegex.findFirstIn(text)
-    
+
 object ConversationCodec:
-  given encodeLocationConversation: Encoder[LocationConversation]  = new Encoder[LocationConversation] :
-    final def apply(c:LocationConversation): Json = 
-      Json.obj(
-        ("did",Json.fromString(c.did.toString))
-      )
-  given decodeLocationConversation: Decoder[LocationConversation] = new Decoder[LocationConversation]:
-    final def apply(c: HCursor): Result[LocationConversation] = 
-      for {
-        did <- c.downField("did").as[String]
-      } yield LocationConversation("", fromDIDUrl(did.asInstanceOf[DIDUrl]).get)
+  given encodeLocationConversation: Encoder[LocationConversation] =
+    new Encoder[LocationConversation]:
+      final def apply(c: LocationConversation): Json =
+        Json.obj(
+          ("did", Json.fromString(c.did.toString))
+        )
+  given decodeLocationConversation: Decoder[LocationConversation] =
+    new Decoder[LocationConversation]:
+      final def apply(c: HCursor): Result[LocationConversation] =
+        for {
+          did <- c.downField("did").as[String]
+        } yield LocationConversation(
+          "",
+          fromDIDUrl(did.asInstanceOf[DIDUrl]).get
+        )
 
-final case class ConversationAgent(signalPhone: String)(using redis: RedisCommands[cats.effect.IO, String, String], logger: Logger[cats.effect.IO], backend: SttpBackend[cats.effect.IO, Any]):
-  
+final case class ConversationAgent(signalPhone: String)(using
+    redis: RedisCommands[cats.effect.IO, String, String],
+    logger: Logger[cats.effect.IO],
+    backend: SttpBackend[cats.effect.IO, Any]
+):
+
   import Aspects._
-  //given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  // given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  val redisStorage: Resource[cats.effect.IO, RedisStorage] = RedisStorage.create("localhost:6379")
+  val redisStorage: Resource[cats.effect.IO, RedisStorage] =
+    RedisStorage.create("localhost:6379")
   val signalBot = SignalBot(backend)
   val openAIAgent = OpenAIAgent(backend)
 
   def handleConversation(m: SignalSimpleMessage) = ???
-  val timeBox:TimeBox = TimeBox(5, Instant.now)
-
-
+  val timeBox: TimeBox = TimeBox(5, Instant.now)

@@ -25,25 +25,24 @@ lazy val ipfsVersion = "1.4.4"
 lazy val log4catsVersion = "2.6.0"
 lazy val logbackVersion = "1.4.8"
 lazy val slf4jVersion = "1.7.36"
-lazy val shapelessVersion =   "3.3.0"
+lazy val shapelessVersion = "3.3.0"
 lazy val passkitVersion = "0.3.4-SNAPSHOT"
 lazy val tapirVersion = "1.6.4"
 lazy val http4sVersion = "0.23.23"
-lazy val refinedVersion =  "0.11.0"
+lazy val refinedVersion = "0.11.0"
 lazy val emilVersion = "0.14.0"
 lazy val xebiaVersion = "0.0.3-alpha.17"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
-        "github" at "https://maven.pkg.github.com/iandebeer",
-        Resolver.mavenLocal,
-        "jitpack" at "https://jitpack.io",
-        "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-        "releases" at "https://oss.sonatype.org/content/repositories/releases"
-
-      ),
+    "github" at "https://maven.pkg.github.com/iandebeer",
+    Resolver.mavenLocal,
+    "jitpack" at "https://jitpack.io",
+    "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+    "releases" at "https://oss.sonatype.org/content/repositories/releases"
+  ),
   libraryDependencies ++= Seq(
-   //m "org.scala-lang" %% "scala3-staging" % Scala3,
+    // m "org.scala-lang" %% "scala3-staging" % Scala3,
     "org.typelevel" %% "cats-core" % catsVersion,
     "co.fs2" %% "fs2-core" % fs2Version,
     "co.fs2" %% "fs2-io" % fs2Version,
@@ -73,18 +72,16 @@ lazy val commonSettings = Seq(
     "com.github.eikek" %% "emil-common" % emilVersion,
     "com.github.eikek" %% "emil-javamail" % emilVersion,
     "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
-
     "com.softwaremill.sttp.apispec" %% "apispec-model" % "0.6.0",
     "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml" % "0.6.0",
-
     "org.http4s" %% "http4s-blaze-server" % "0.23.15",
-    "org.http4s" %% "http4s-dsl"          % http4sVersion,
+    "org.http4s" %% "http4s-dsl" % http4sVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "com.xebia" %% "xef-scala" % xebiaVersion,
     "com.xebia" % "xef-pdf" % xebiaVersion % "runtime",
     "com.xebia" % "xef-reasoning-jvm" % xebiaVersion,
-     "com.xebia" % "xef-openai" % xebiaVersion % "runtime" pomOnly(),
-    //"org.slf4j" % "slf4j-api" % slf4jVersion,
+    "com.xebia" % "xef-openai" % xebiaVersion % "runtime" pomOnly (),
+    // "org.slf4j" % "slf4j-api" % slf4jVersion,
     // "org.slf4j" % "slf4j-nop" % slf4jVersion ,
     "org.scalameta" %% "munit" % munitVersion % Test,
     "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
@@ -92,7 +89,7 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= Seq(
     // "io.circe" %% "circe-yaml",
-    "io.circe"  %% "circe-core",
+    "io.circe" %% "circe-core",
     "io.circe" %% "circe-generic",
     "io.circe" %% "circe-parser"
   ).map(_ % circeVersion)
@@ -162,7 +159,7 @@ lazy val core = project
     ),
     // crossScalaVersions := List(scala3, scala212),
     libraryDependencies ++= Seq(
-   //   "org.scala-lang" %% "scala3-staging" % Scala3,
+      //   "org.scala-lang" %% "scala3-staging" % Scala3,
       "org.didcommx" % "didcomm" % didCommVersion,
       "com.apicatalog" % "titanium-json-ld" % titaniumVersion,
       "org.glassfish" % "jakarta.json" % "2.0.1",
@@ -176,14 +173,13 @@ lazy val protocol = project
   .settings(
     name := "gleipnifProtocol",
     description := "Protobuf definitions",
-   /*  Compile / PB.targets := Seq(
+    /*  Compile / PB.targets := Seq(
       //PB.gens.java -> (Compile / sourceManaged).value,
       scalapb.gen() -> (Compile / sourceManaged).value,
       scalapb.gen(flatPackage = true) -> (Compile / sourceManaged).value
     ), */
     libraryDependencies ++= Seq(
-      "com.google.protobuf" % "protobuf-java" % googleProtoVersion % "protobuf",
-      
+      "com.google.protobuf" % "protobuf-java" % googleProtoVersion % "protobuf"
     )
   )
   .enablePlugins(Fs2Grpc)
@@ -199,17 +195,16 @@ lazy val client = project
       "jitpack" at "https://jitpack.io",
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "releases" at "https://oss.sonatype.org/content/repositories/releases"
-
     ),
     libraryDependencies ++= Seq(
       /*
       <groupId>com.github.kenglxn.QRGen</groupId>
             <artifactId>javase</artifactId>
             <version>3.0.1</version>
-      */
+       */
       "com.github.kenglxn.QRGen" % "javase" % "3.0.1",
-    //  "org.scala-lang" %% "scala3-staging" % Scala3,
-     // "decentralized-identity" % "did-common-java" % didCommonVersion,
+      //  "org.scala-lang" %% "scala3-staging" % Scala3,
+      // "decentralized-identity" % "did-common-java" % didCommonVersion,
       "com.softwaremill.sttp.client3" %% "core" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "circe" % sttpVersion,
       "com.softwaremill.sttp.client3" %% "cats" % sttpVersion,
@@ -220,7 +215,7 @@ lazy val client = project
       "io.cequence" %% "openai-scala-client" % openAIVersion,
       "de.brendamour" % "jpasskit" % passkitVersion,
       "com.google.crypto.tink" % "tink" % tinkVersion,
-      "org.typelevel" %% "shapeless3-deriving"  % shapelessVersion
+      "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
     ),
     scalapbCodeGeneratorOptions += CodeGeneratorOption.FlatPackage
   )
@@ -229,10 +224,10 @@ lazy val client = project
   .enablePlugins(Fs2Grpc)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(
-      dockerBaseImage := "openjdk:21-jdk-slim",
-      Docker / packageName := "dawnpatrol",
-      Docker / version := "latest"
-    )
+    dockerBaseImage := "openjdk:21-jdk-slim",
+    Docker / packageName := "dawnpatrol",
+    Docker / version := "latest"
+  )
   .dependsOn(protocol)
   .dependsOn(core)
   .dependsOn(protocol % "protobuf")
@@ -262,9 +257,9 @@ lazy val server = project
   .enablePlugins(Fs2Grpc)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(
-      dockerBaseImage := "openjdk:21-jdk-slim",
-      Docker / packageName := "dwn-grpc-server",
-      Docker / version := "latest"
-    )
+    dockerBaseImage := "openjdk:21-jdk-slim",
+    Docker / packageName := "dwn-grpc-server",
+    Docker / version := "latest"
+  )
   .dependsOn(protocol)
   .dependsOn(protocol % "protobuf")

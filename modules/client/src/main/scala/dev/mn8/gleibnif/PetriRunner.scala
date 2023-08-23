@@ -47,7 +47,7 @@ import io.circe.Decoder.state
   * @param logger
   */
 
-object PetriRunner extends IOApp :
+object PetriRunner extends IOApp:
   // given logger[F[_]: Sync]: Logger[F] = Slf4jLogger.getLogger[F]
   given logger: org.log4s.Logger = org.log4s.getLogger
   given ec: ExecutionContext =
@@ -72,10 +72,11 @@ object PetriRunner extends IOApp :
       }
       .as(ExitCode.Success)
 
-case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Logger) :
+case class PetriRunner[F[_]](interfaceName: String)(using
+    logger: org.log4s.Logger
+):
 
   val x = this.getClass()
- 
 
   val protocolConf: ProtocolConf = ConfigManager.protocolConf(interfaceName)
 
@@ -216,10 +217,10 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
     Files.readAllBytes(Paths.get(s"${interfaceName}.png"))
   }
 
-  val stateManager: IO[StateManager] =  StateManager.create()
-  for 
+  val stateManager: IO[StateManager] = StateManager.create()
+  for
     sm <- stateManager
-   // _ <- IO(stateManager.updateState("context1", "1")
+    // _ <- IO(stateManager.updateState("context1", "1")
     _ <- IO(sm.updateState("123", "AAw="))
     _ <- IO(sm.updateState("124", "AAABgA=="))
     _ <- IO(sm.updateState("125", "Afw="))
@@ -227,8 +228,8 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
     _ <- IO(sm.updateState("125", "AAA="))
   yield ()
 
-  def peek(context: String): IO[(Set[String], Set[String])] = 
-    for 
+  def peek(context: String): IO[(Set[String], Set[String])] =
+    for
       sm <- stateManager
       state <- sm.getState(context)
       markers = state match
@@ -236,7 +237,7 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
         case None    => Markers(cpn)
       tuple = cpn.peek(Step(markers))
     yield (tuple._1.map(_.name), tuple._2.map(_.name))
-   /*  IO {
+  /*  IO {
     logger.info(s"Peeking Petri Net for context $context")
     val state = stateManager.getState(context)
 
@@ -245,10 +246,9 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
       case None    => Markers(cpn)
     val tuple = cpn.peek(Step(markers))
     (tuple._1.map(_.name), tuple._2.map(_.name)) }*/
-  
 
-  def step(context: String): IO[String] = 
-    for 
+  def step(context: String): IO[String] =
+    for
       sm <- stateManager
       state <- sm.getState(context)
       markers = state match
@@ -260,7 +260,7 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
       step = steps.run(Step(markers)).value._1.markers.serialize
       _ <- sm.updateState(context, step)
     yield s"Stepped Petri Net for context $context"
-   /*  IO {
+  /*  IO {
     val state = stateManager.getCurrentState(context)
 
     val markers = state.match
@@ -272,7 +272,6 @@ case class PetriRunner[F[_]](interfaceName: String) (using logger: org.log4s.Log
     val step = steps.run(Step(markers)).value._1.markers.serialize
     stateManager.updateState(context, step)
     s"Stepped Petri Net for context $context" }*/
-  
 
   val contextStore =
     new AtomicReference[Map[String, String]](Map.empty[String, String])

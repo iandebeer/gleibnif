@@ -6,5 +6,5 @@ import com.google.crypto.tink.KeysetHandle
 
 class KeyGenService() {
   val conf = TinkConfig.register()
-  def genKeySet():String = ???
+  def genKeySet(): String = ???
 }

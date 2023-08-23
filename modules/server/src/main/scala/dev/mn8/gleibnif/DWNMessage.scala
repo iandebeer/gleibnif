@@ -11,19 +11,20 @@ trait DWNMessage {
     "method": "FeatureDetectionRead"
   }
 }
-*/
+ */
 trait Descriptor {
   val method: String
 }
 
-/* 
+/*
 {
   "type": "FeatureDetection",
   "interfaces": { ... }
 }
-*/
+ */
 type Interface = String
 
-case class FeatureDetection(`type`: String, interfaces: Map[String, Interface])  {
-
-}
+case class FeatureDetection(
+    `type`: String,
+    interfaces: Map[String, Interface]
+) {}

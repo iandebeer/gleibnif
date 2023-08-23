@@ -8,7 +8,6 @@ import io.circe.Decoder.Result
 import io.circe.syntax.*
 import io.circe.*
 
-
 /*
 {
   "jobId": null,
@@ -69,75 +68,72 @@ import io.circe.*
     }
   }
 }
-*/
+ */
 case class RegistryResponse(
-  jobId: Option[String],
-  didState: DIDState,
-  didRegistrationMetadata: DIDRegistrationMetadata,
-  didDocumentMetadata: DIDDocumentMetadata
+    jobId: Option[String],
+    didState: DIDState,
+    didRegistrationMetadata: DIDRegistrationMetadata,
+    didDocumentMetadata: DIDDocumentMetadata
 )
 
 case class DIDState(
-  state: String,
-  secret: Option[Json],
-  did: String
+    state: String,
+    secret: Option[Json],
+    did: String
 )
 
 case class DIDRegistrationMetadata(
-  duration: Int,
-  method: String
+    duration: Int,
+    method: String
 )
 
 case class DIDDocumentMetadata(
-  network: String,
-  poolVersion: Int,
-  submitterDid: String,
-  ledgerResult: LedgerResult
+    network: String,
+    poolVersion: Int,
+    submitterDid: String,
+    ledgerResult: LedgerResult
 )
 
 case class LedgerResult(
-  result: Result
-
+    result: Result
 )
 
 case class Result(
-  reqSignature: ReqSignature,
-  txn: Txn,
-  rootHash: String,
-  ver: String
+    reqSignature: ReqSignature,
+    txn: Txn,
+    rootHash: String,
+    ver: String
 )
 
 case class ReqSignature(
-  `type`: String,
-  values: List[Values]
-) 
+    `type`: String,
+    values: List[Values]
+)
 
 case class Values(
-  value: String,
-  from: String
+    value: String,
+    from: String
 )
 
 case class Txn(
-  data: Data,
-  `type`: String,
-  protocolVersion: Int,
-  metadata: Metadata
+    data: Data,
+    `type`: String,
+    protocolVersion: Int,
+    metadata: Metadata
 )
 
 case class Data(
-  raw: String,
-  dest: String
+    raw: String,
+    dest: String
 )
 
 case class Metadata(
-  from: String,
-  digest: String
+    from: String,
+    digest: String
 )
-
 
 case class RegistryRequest(
-  didDocument: DIDDoc,
-  options: Map[String, String] = Map("network" -> "danube"),
-  secret: Map[String, String] = Map.empty
+    didDocument: DIDDoc,
+    options: Map[String, String] = Map("network" -> "danube"),
+    secret: Map[String, String] = Map.empty
 )
-

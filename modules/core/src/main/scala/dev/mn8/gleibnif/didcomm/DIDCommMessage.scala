@@ -3,20 +3,19 @@ package dev.mn8.gleibnif.didcomm
 import java.net.URI
 import java.util.UUID
 
-
 final case class DIDCommMessage(
-  id: String,
-  `type`: String,
-  from: Option[URI],
-  to: Option[List[URI]],
-  thid: Option[String],
-  pthid: Option[String],
-  createdTime: Option[String],
-  expiresTime: Option[String],
-  body: String,
-  attachments: Option[List[DIDCommAttachment]]
+    id: String,
+    `type`: String,
+    from: Option[URI],
+    to: Option[List[URI]],
+    thid: Option[String],
+    pthid: Option[String],
+    createdTime: Option[String],
+    expiresTime: Option[String],
+    body: String,
+    attachments: Option[List[DIDCommAttachment]]
 ):
-  override def toString(): String = 
+  override def toString(): String =
     s"""DIDCommMessage(
       |  id: $id,
       |  type: ${`type`},
@@ -28,12 +27,12 @@ final case class DIDCommMessage(
       |  expiresTime: $expiresTime,
       |  body: $body,
       |  attachments: $attachments
-      |)""".stripMargin 
+      |)""".stripMargin
 
 final case class DIDCommBody(
     value: String
 ):
-  override def toString(): String = 
+  override def toString(): String =
     s"""Body(
       |  value: $value
       |)""".stripMargin
@@ -47,7 +46,7 @@ final case class DIDCommAttachment(
     data: Option[DIDCommData],
     byteCount: Option[Int]
 ):
-  override def toString(): String = 
+  override def toString(): String =
     s"""Attachment(
       |  id: $id,
       |  mediaType: $mediaType,
@@ -59,13 +58,13 @@ final case class DIDCommAttachment(
       |)""".stripMargin
 
 final case class DIDCommData(
-  jws: Option[String],
-  hash: Option[String],
-  links: Option[List[URI]],
-  base64: Option[String],
-  json: Option[String],
+    jws: Option[String],
+    hash: Option[String],
+    links: Option[List[URI]],
+    base64: Option[String],
+    json: Option[String]
 ):
-  override def toString(): String = 
+  override def toString(): String =
     s"""Data(
       |  jws: $jws,
       |  hash: $hash,
@@ -73,7 +72,6 @@ final case class DIDCommData(
       |  base64: $base64,
       |  json: $json
       |)""".stripMargin
-
 
 enum Role:
   case Inviter, Invitee
@@ -87,8 +85,23 @@ trait DidExchangeMessage:
   def `@id`: UUID
   def `@type`: String
 
-case class Invitation(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage
+case class Invitation(
+    `@id`: UUID,
+    `@type`: String,
+    label: String,
+    recipientKeys: Seq[String]
+) extends DidExchangeMessage
 
-case class Request(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage
+case class Request(
+    `@id`: UUID,
+    `@type`: String,
+    label: String,
+    recipientKeys: Seq[String]
+) extends DidExchangeMessage
 
-case class Response(`@id`: UUID, `@type`: String, label: String, recipientKeys: Seq[String]) extends DidExchangeMessage
+case class Response(
+    `@id`: UUID,
+    `@type`: String,
+    label: String,
+    recipientKeys: Seq[String]
+) extends DidExchangeMessage

@@ -12,9 +12,8 @@ import dev.mn8.gleibnif.DWNodeCodec.encodeDWNodeMessage
 import sttp.client3.*
 import dev.mn8.gleibnif.didcomm.DIDCommCodec
 
+class DWNodeSpec extends FunSuite {
 
-class DWNodeSpec extends FunSuite  {
-  
   val jsonString = """ 
 {
   "messages": [ 
@@ -83,22 +82,22 @@ class DWNodeSpec extends FunSuite  {
 """
 
   test("DIDDoc should be encoded to JSON") {
-    import dev.mn8.gleibnif.didcomm.DIDCommCodec.* 
+    import dev.mn8.gleibnif.didcomm.DIDCommCodec.*
     println("\n\n*******************\nDIDDoc as JSON:\n*******************\n")
     testParse(jsonString)
-    
+
   }
-  def testParse(jsonString:String) =
-     val didDocJsonString = parse(jsonString) match {
-      case Left(failure) => 
+  def testParse(jsonString: String) =
+    val didDocJsonString = parse(jsonString) match {
+      case Left(failure) =>
         println(s"Invalid JSON String :( $failure)")
-      case Right(json) => 
+      case Right(json) =>
         val dDoc = json.as[DWNodeMessage]
         println("\nJSonString:\n" + json)
-        dDoc match 
-          case Left(failure) => 
+        dDoc match
+          case Left(failure) =>
             println(s"Failed decoding Json :( $failure)")
-          case Right(didDoc) => 
+          case Right(didDoc) =>
             println("\nJSonString as DWNMessage:\n" + didDoc)
             println("\nDIDDoc as JSonString:\n" + didDoc.asJson.spaces2)
     }

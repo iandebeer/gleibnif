@@ -14,16 +14,15 @@ import cats.implicits._
 object ConfigManager {
   given Logger[IO] = Slf4jLogger.getLogger[IO]
   def info[F[_]: Sync: Logger](value: String) =
-    for 
+    for
       _ <- Logger[F].info("Logging at start of passForEasierUse")
       something <- Sync[F].delay(println("I could do anything"))
-     // .onError{case e => Logger[F].error(e)("Something Went Wrong in passForEasierUse")}
+      // .onError{case e => Logger[F].error(e)("Something Went Wrong in passForEasierUse")}
       _ <- Logger[F].info(s"$value")
-    
     yield something
-     
-   // println(s"Main: $value")
-   // logger.info(s"$value"
+
+  // println(s"Main: $value")
+  // logger.info(s"$value"
 
   def err[T](value: T)(using logger: Logger[IO]): IO[Unit] =
     println(s"Main: $value")
@@ -73,11 +72,11 @@ object ConfigManager {
         |weights: $weights
         |""".stripMargin
 
-  def protocolConf(interfaceName:String): ProtocolConf =
+  def protocolConf(interfaceName: String): ProtocolConf =
     ConfigSource.default.at(s"$interfaceName-proto").load[ProtocolConf] match
       case Left(error) =>
         err(s"Error: $error")
         ProtocolConf(List(), List(), StartConf("", 0, List()), "", List())
       case Right(conf) => conf
-  
+
 }

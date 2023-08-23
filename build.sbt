@@ -113,6 +113,13 @@ ThisBuild / organizationName := "MN8 Technology ÖU"
 ThisBuild / organizationHomepage := Some(url("https://mn8.dev"))
 Global / scalaVersion := Scala3
 
+inThisBuild(
+  List(
+    scalaVersion := Scala3,
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision
+  )
+)
 /*
 ThisBuild / scmInfo := Some(
   ScmInfo(

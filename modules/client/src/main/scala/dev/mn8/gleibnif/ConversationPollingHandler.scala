@@ -62,16 +62,11 @@ class ConversationPollingHandler(using logger: Logger[IO]):
               signalBot.send(SignalSendMessage(List[String](), s"Conversation not found for $m", signalConf.signalPhone, List(m.phone)))
 
         }
-     
-      
-      
-     
     } */
     def processKeywords(k: SignalSimpleMessage): EitherT[IO, Exception, String] = {
       EitherT(k match 
         case  m: SignalSimpleMessage if m.text.toLowerCase().contains("https://maps.google.com") => 
           ???//openAIAgent.keywords(m.text.split("\\|")(2))
-          
       
         case _ => signalBot.send(SignalSendMessage(List[String](), s"I have extracted the following keywords: ${k.keywords.mkString(",")}", signalConf.signalPhone, List(k.phone)))
       )

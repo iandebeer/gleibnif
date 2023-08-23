@@ -3,7 +3,7 @@ package dev.mn8.gleipnif
 import TokenTaxonomy._
 
 object Main {
-  def main (args: Array[String]): Unit =
+  def main(args: Array[String]): Unit =
     val serialToken =
       """
         |

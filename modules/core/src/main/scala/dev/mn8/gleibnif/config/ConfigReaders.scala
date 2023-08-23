@@ -12,26 +12,24 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sttp.client3.ResponseException
 import dev.mn8.gleibnif.logging.LogWriter.{err, info, logNonEmptyList}
 
-object ConfigReaders :
-  
- 
-      
+object ConfigReaders:
+
   case class AppConf(
-    redisUrl: URL,
-    redisTimeout: Int,
-    ipfsClusterUrl: URL,
-    universalResolverUrl: URL,
-    universalResolverTimeout: Int,
-    ipfsClusterTimeout: Int,
-    pollingInterval: Int,
-    prismUrl: URL,
-    prismToken: String,
-    dawnUrl: URL,
-    dawnControllerDID: String,
-    dawnServiceUrls: Set[URI],
-    dawnWelcomeMessage: String,
-    protocolsEnabled: List[String]
-    ) derives ConfigReader:
+      redisUrl: URL,
+      redisTimeout: Int,
+      ipfsClusterUrl: URL,
+      universalResolverUrl: URL,
+      universalResolverTimeout: Int,
+      ipfsClusterTimeout: Int,
+      pollingInterval: Int,
+      prismUrl: URL,
+      prismToken: String,
+      dawnUrl: URL,
+      dawnControllerDID: String,
+      dawnServiceUrls: Set[URI],
+      dawnWelcomeMessage: String,
+      protocolsEnabled: List[String]
+  ) derives ConfigReader:
     override def toString(): String =
       s"""
       |redisUrl: $redisUrl
@@ -63,7 +61,7 @@ object ConfigReaders :
       |didMethod: $didMethod
       |""".stripMargin
 
-  def getConf(using logger:Logger[IO]) =
+  def getConf(using logger: Logger[IO]) =
     val appConf: AppConf =
       ConfigSource.default.at("app-conf").load[AppConf] match
         case Left(error) =>
@@ -87,7 +85,7 @@ object ConfigReaders :
 
         case Right(conf) => conf
     appConf
-  def getRegistryConf(using logger:Logger[IO])  =
+  def getRegistryConf(using logger: Logger[IO]) =
     val registryConf: RegistryConf =
       ConfigSource.default.at("registry-conf").load[RegistryConf] match
         case Left(error) =>
@@ -95,7 +93,7 @@ object ConfigReaders :
           RegistryConf(new URL("http://localhost:8080"), 0, "", "indy")
         case Right(conf) => conf
     registryConf
-  def getSignalConf(using logger:Logger[IO])  =
+  def getSignalConf(using logger: Logger[IO]) =
     val signalConf: SignalConf =
       ConfigSource.default.at("signal-conf").load[SignalConf] match
         case Left(error) =>
@@ -103,13 +101,13 @@ object ConfigReaders :
           SignalConf(new URL("http://localhost:8080"), 0, "")
         case Right(conf) => conf
     signalConf
- 
+
   case class SignalConf(
       signalUrl: URL,
       signalTimeout: Int,
-      signalPhone: String,
+      signalPhone: String
   ) derives ConfigReader:
-    
+
     override def toString(): String =
       s"""
       |signalUrl: $signalUrl

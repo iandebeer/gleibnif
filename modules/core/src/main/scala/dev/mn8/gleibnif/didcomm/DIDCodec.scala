@@ -6,7 +6,16 @@ import io.circe.Decoder.Result
 import io.circe.*
 
 import java.net.URI
-import dev.mn8.gleibnif.didcomm.{ServiceEndpointURI, ServiceEndpointDIDURL, Service, ServiceEndpoint, ServiceEndpointDIDCommService, ServiceEndpointNodes, VerificationMethod, DIDDoc}
+import dev.mn8.gleibnif.didcomm.{
+  ServiceEndpointURI,
+  ServiceEndpointDIDURL,
+  Service,
+  ServiceEndpoint,
+  ServiceEndpointDIDCommService,
+  ServiceEndpointNodes,
+  VerificationMethod,
+  DIDDoc
+}
 import dev.mn8.gleibnif.didcomm.VerificationMethodType
 
 //import summon.{Decoder => _, _}
@@ -16,20 +25,75 @@ object DIDCodec:
     new Encoder[DIDDoc]:
       final def apply(a: DIDDoc): Json =
         Json.obj(
-          ("didDocument", Json.obj(
-            ("id", Json.fromString(a.did)),
-            ("controller", Json.fromString(a.controller.getOrElse(""))),
-            ("alsoKnownAs", Json.fromValues(a.alsoKnownAs.getOrElse(Set.empty).map(Json.fromString))),
-            ("verificationMethod", Json.fromValues(a.verificationMethods.getOrElse(Set.empty).map(encodeVerificationMethod.apply))),
-            ("keyAgreement", Json.fromValues(a.keyAgreements.getOrElse(Set.empty).map(encodeKeyAgreement.apply))),
-            ("authentication", Json.fromValues(a.authentications.getOrElse(Set.empty).map(encodeAuthentication.apply))),
-            ("assertionMethod", Json.fromValues(a.assertionMethods.getOrElse(Set.empty).map(encodeAssertion.apply))),
-            ("capabilityInvocation", Json.fromValues(a.capabilityInvocations.getOrElse(Set.empty).map(encodeCapabilityInvocation.apply))),
-            ("capabilityDelegations", Json.fromValues(a.capabilityDelegations.getOrElse(Set.empty).map(encodeCapabilityDelegation.apply))),
-            ("service", Json.fromValues(a.services.getOrElse(Set.empty).map(encodeService.apply)))
-          ))
+          (
+            "didDocument",
+            Json.obj(
+              ("id", Json.fromString(a.did)),
+              ("controller", Json.fromString(a.controller.getOrElse(""))),
+              (
+                "alsoKnownAs",
+                Json.fromValues(
+                  a.alsoKnownAs.getOrElse(Set.empty).map(Json.fromString)
+                )
+              ),
+              (
+                "verificationMethod",
+                Json.fromValues(
+                  a.verificationMethods
+                    .getOrElse(Set.empty)
+                    .map(encodeVerificationMethod.apply)
+                )
+              ),
+              (
+                "keyAgreement",
+                Json.fromValues(
+                  a.keyAgreements
+                    .getOrElse(Set.empty)
+                    .map(encodeKeyAgreement.apply)
+                )
+              ),
+              (
+                "authentication",
+                Json.fromValues(
+                  a.authentications
+                    .getOrElse(Set.empty)
+                    .map(encodeAuthentication.apply)
+                )
+              ),
+              (
+                "assertionMethod",
+                Json.fromValues(
+                  a.assertionMethods
+                    .getOrElse(Set.empty)
+                    .map(encodeAssertion.apply)
+                )
+              ),
+              (
+                "capabilityInvocation",
+                Json.fromValues(
+                  a.capabilityInvocations
+                    .getOrElse(Set.empty)
+                    .map(encodeCapabilityInvocation.apply)
+                )
+              ),
+              (
+                "capabilityDelegations",
+                Json.fromValues(
+                  a.capabilityDelegations
+                    .getOrElse(Set.empty)
+                    .map(encodeCapabilityDelegation.apply)
+                )
+              ),
+              (
+                "service",
+                Json.fromValues(
+                  a.services.getOrElse(Set.empty).map(encodeService.apply)
+                )
+              )
+            )
+          )
         )
-  
+
   given encodeVerificationMethod: Encoder[VerificationMethod] =
     new Encoder[VerificationMethod]:
       final def apply(a: VerificationMethod): Json =
@@ -37,8 +101,9 @@ object DIDCodec:
           ("id", Json.fromString(a.id)),
           ("type", Json.fromString(a.`type`.toString())),
           ("controller", Json.fromString(a.controller)),
-          ("public", encodeVerificationMaterial.apply(a.verificationMaterial)))
-  
+          ("public", encodeVerificationMaterial.apply(a.verificationMaterial))
+        )
+
   given encodeVerificationMaterial: Encoder[VerificationMaterial] =
     new Encoder[VerificationMaterial]:
       final def apply(a: VerificationMaterial): Json =
@@ -52,7 +117,7 @@ object DIDCodec:
             )
           case VerificationMaterialMultibase(value) =>
             Json.fromString(value)
-  
+
   given encodeKeyAgreement: Encoder[KeyAgreement] =
     new Encoder[KeyAgreement]:
       final def apply(a: KeyAgreement): Json =
@@ -67,8 +132,8 @@ object DIDCodec:
           case KeyAgreementReference(value) =>
             Json.fromString(value)
         }
-  
-  given encoderKeyAgreementInstance : Encoder[KeyAgreementInstance] =
+
+  given encoderKeyAgreementInstance: Encoder[KeyAgreementInstance] =
     new Encoder[KeyAgreementInstance]:
       final def apply(a: KeyAgreementInstance): Json =
         Json.obj(
@@ -77,7 +142,7 @@ object DIDCodec:
           ("controller", Json.fromString(a.controller)),
           ("publicKeyMultibase", Json.fromString(a.publicKeyMultibase))
         )
-  
+
   given encodeAuthentication: Encoder[Authentication] =
     new Encoder[Authentication]:
       final def apply(a: Authentication): Json =
@@ -92,7 +157,7 @@ object DIDCodec:
           case AuthenticationReference(value) =>
             Json.fromString(value)
         }
-  
+
   given encodeAssertion: Encoder[Assertion] =
     new Encoder[Assertion]:
       final def apply(a: Assertion): Json =
@@ -106,7 +171,7 @@ object DIDCodec:
             )
           case AssertionReference(value) =>
             Json.fromString(value)
-        } 
+        }
 
   given encodeCapabilityInvocation: Encoder[CapabilityInvocation] =
     new Encoder[CapabilityInvocation]:
@@ -137,44 +202,63 @@ object DIDCodec:
           case CapabilityDelegationReference(value) =>
             Json.fromString(value)
         }
-  
-  given  encodeURI: Encoder[URI] = 
+
+  given encodeURI: Encoder[URI] =
     new Encoder[URI]:
       final def apply(u: URI): Json = Json.fromString(u.toString)
-
 
   given encodeService: Encoder[Service] =
     new Encoder[Service]:
       final def apply(a: Service): Json =
         Json.obj(
           ("id", Json.fromString(a.id.toString)),
-          ("type", Json.fromValues(a.`type`.map(_.toString).map(Json.fromString))),
-          ("serviceEndpoint", Json.fromValues(a.serviceEndpoint.map(encodeDIDCommServiceEndpoint.apply))))
-        
+          (
+            "type",
+            Json.fromValues(a.`type`.map(_.toString).map(Json.fromString))
+          ),
+          (
+            "serviceEndpoint",
+            Json.fromValues(
+              a.serviceEndpoint.map(encodeDIDCommServiceEndpoint.apply)
+            )
+          )
+        )
+
   given encodeDIDCommServiceEndpoint: Encoder[ServiceEndpoint] =
-    new Encoder[ServiceEndpoint]: 
-      final def apply(a: ServiceEndpoint): Json = 
+    new Encoder[ServiceEndpoint]:
+      final def apply(a: ServiceEndpoint): Json =
         a match {
           case ServiceEndpointURI(value) => Json.fromString(value.toString)
-          case ServiceEndpointDIDURL(did,fragment) => Json.obj(
-            "did" -> Json.fromString(did), 
-            "fragment" -> Json.fromString(fragment))
-          case ServiceEndpointDIDCommService(uri, accept, routingKeys) => Json.obj(
-            "uri" -> Json.fromString(uri.toString),
-            "accept" -> Json.fromValues(accept.map(_.toString).map(Json.fromString)),
-            "routingKeys" -> Json.fromValues(routingKeys.map(_.toString).map(Json.fromString)))
-            case ServiceEndpointNodes(nodes) => Json.obj(
-              "nodes" -> Json.fromValues(nodes.map(n => n.toString).map(Json.fromString)))
+          case ServiceEndpointDIDURL(did, fragment) =>
+            Json.obj(
+              "did" -> Json.fromString(did),
+              "fragment" -> Json.fromString(fragment)
+            )
+          case ServiceEndpointDIDCommService(uri, accept, routingKeys) =>
+            Json.obj(
+              "uri" -> Json.fromString(uri.toString),
+              "accept" -> Json.fromValues(
+                accept.map(_.toString).map(Json.fromString)
+              ),
+              "routingKeys" -> Json.fromValues(
+                routingKeys.map(_.toString).map(Json.fromString)
+              )
+            )
+          case ServiceEndpointNodes(nodes) =>
+            Json.obj(
+              "nodes" -> Json.fromValues(
+                nodes.map(n => n.toString).map(Json.fromString)
+              )
+            )
         }
-      
-  
+
   given decodeDIDDoc: Decoder[DIDDoc] =
-    new Decoder[DIDDoc]:                                        
+    new Decoder[DIDDoc]:
       final def apply(cur: HCursor): Decoder.Result[DIDDoc] =
-        val c = cur.downField(("didDocument")).success match 
+        val c = cur.downField(("didDocument")).success match
           case Some(c) => c
-          case None => cur
-        
+          case None    => cur
+
         for {
           did <- c.downField("id").as[Option[String]]
           controller <- c
@@ -262,7 +346,6 @@ object DIDCodec:
       .widen[VerificationMaterial] or decodeVerificationMaterialMultibase
       .widen[VerificationMaterial]
 
-
   given decodeAuthenticationReference: Decoder[AuthenticationReference] =
     new Decoder[AuthenticationReference]:
       final def apply(
@@ -282,7 +365,6 @@ object DIDCodec:
       .widen[Authentication] or decodeAuthenticationInstance
       .widen[Authentication]
 
-  
   given decodeAssertionInstance: Decoder[AssertionInstance] =
     new Decoder[AssertionInstance]:
       final def apply(c: HCursor): Decoder.Result[AssertionInstance] =
@@ -295,7 +377,8 @@ object DIDCodec:
             .as[String]
             .orElse(
               c.downField("publicKeyBase58")
-                .as[String])
+                .as[String]
+            )
         } yield AssertionInstance(
           id,
           `type`,
@@ -308,12 +391,11 @@ object DIDCodec:
       final def apply(c: HCursor): Decoder.Result[AssertionReference] =
         for {
           value <- c.value.as[String]
-        } yield AssertionReference(value) 
+        } yield AssertionReference(value)
 
   given decodeAssertion: Decoder[Assertion] =
     decodeAssertionInstance.widen[Assertion] or decodeAssertionReference
       .widen[Assertion]
-
 
   given decodeKeyAgreementMethod: Decoder[KeyAgreementInstance] =
     new Decoder[KeyAgreementInstance]:
@@ -327,14 +409,15 @@ object DIDCodec:
             .as[String]
             .orElse(
               c.downField("publicKeyBase58")
-                .as[String])
+                .as[String]
+            )
         } yield KeyAgreementInstance(
           id,
           `type`,
           controller,
           publicKeyMultibase
         )
-   
+
   given decodeKeyAgreementReference: Decoder[KeyAgreementReference] =
     new Decoder[KeyAgreementReference]:
       final def apply(c: HCursor): Decoder.Result[KeyAgreementReference] =
@@ -346,11 +429,12 @@ object DIDCodec:
     decodeKeyAgreementReference.widen[KeyAgreement] or decodeKeyAgreementMethod
       .widen[KeyAgreement]
 
-
   given decodeCapabilityInvocationInstance
       : Decoder[CapabilityInvocationInstance] =
     new Decoder[CapabilityInvocationInstance]:
-      final def apply(c: HCursor): Decoder.Result[CapabilityInvocationInstance] =
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[CapabilityInvocationInstance] =
         for {
           id <- c.downField("id").as[String]
           `type` <- c.downField("type").as[String]
@@ -360,7 +444,8 @@ object DIDCodec:
             .as[String]
             .orElse(
               c.downField("publicKeyBase58")
-                .as[String])
+                .as[String]
+            )
         } yield CapabilityInvocationInstance(
           id,
           `type`,
@@ -378,14 +463,17 @@ object DIDCodec:
           value <- c.value.as[String]
         } yield CapabilityInvocationReference(value)
 
-  given decodeCapabilityInvocation : Decoder[CapabilityInvocation] =
+  given decodeCapabilityInvocation: Decoder[CapabilityInvocation] =
     decodeCapabilityInvocationInstance
       .widen[CapabilityInvocation] or decodeCapabilityInvocationReference
       .widen[CapabilityInvocation]
 
-  given decodeCapabilityDelegationInstance : Decoder[CapabilityDelegationInstance]=
+  given decodeCapabilityDelegationInstance
+      : Decoder[CapabilityDelegationInstance] =
     new Decoder[CapabilityDelegationInstance]:
-      final def apply(c: HCursor): Decoder.Result[CapabilityDelegationInstance] =
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[CapabilityDelegationInstance] =
         for {
           id <- c.downField("id").as[String]
           `type` <- c.downField("type").as[String]
@@ -395,7 +483,8 @@ object DIDCodec:
             .as[String]
             .orElse(
               c.downField("publicKeyBase58")
-                .as[String])
+                .as[String]
+            )
         } yield CapabilityDelegationInstance(
           id,
           `type`,
@@ -403,7 +492,8 @@ object DIDCodec:
           publicKeyMultibase
         )
 
-  given decodeCapabilityDelegationReference : Decoder[CapabilityDelegationReference] =
+  given decodeCapabilityDelegationReference
+      : Decoder[CapabilityDelegationReference] =
     new Decoder[CapabilityDelegationReference]:
       final def apply(
           c: HCursor
@@ -412,11 +502,10 @@ object DIDCodec:
           value <- c.value.as[String]
         } yield CapabilityDelegationReference(value)
 
-  given decodeCapabilityDelegation : Decoder[CapabilityDelegation] =
+  given decodeCapabilityDelegation: Decoder[CapabilityDelegation] =
     decodeCapabilityDelegationInstance
       .widen[CapabilityDelegation] or decodeCapabilityDelegationReference
       .widen[CapabilityDelegation]
-      
 
   given decodeServiceEndpointURI: Decoder[ServiceEndpointURI] =
     new Decoder[ServiceEndpointURI]:
@@ -431,48 +520,59 @@ object DIDCodec:
         for {
           did <- c.downField("did").as[String]
           fragment <- c.value.as[String]
-        } 
-        yield ServiceEndpointDIDURL(did, fragment)
-  
-  given decodeServiceEndpointDIDCommService: Decoder[ServiceEndpointDIDCommService] =
+        } yield ServiceEndpointDIDURL(did, fragment)
+
+  given decodeServiceEndpointDIDCommService
+      : Decoder[ServiceEndpointDIDCommService] =
     new Decoder[ServiceEndpointDIDCommService]:
-      final def apply(c: HCursor): Decoder.Result[ServiceEndpointDIDCommService] =
+      final def apply(
+          c: HCursor
+      ): Decoder.Result[ServiceEndpointDIDCommService] =
         for {
           uri <- c.downField("uri").as[URI]
           accept <- c.downField("accept").as[Option[Set[String]]]
           routingKeys <- c.downField("routingKeys").as[Option[Set[String]]]
-        } 
-        yield ServiceEndpointDIDCommService(uri, accept, routingKeys)
-  
+        } yield ServiceEndpointDIDCommService(uri, accept, routingKeys)
+
   given decodeServiceEndpointNodes: Decoder[ServiceEndpointNodes] =
     new Decoder[ServiceEndpointNodes]:
       final def apply(c: HCursor): Decoder.Result[ServiceEndpointNodes] =
         for {
           nodes <- c.downField("nodes").as[Set[URI]]
-        } 
-        yield ServiceEndpointNodes(nodes)
-
+        } yield ServiceEndpointNodes(nodes)
 
   given decodeServiceEndpoint: Decoder[ServiceEndpoint] =
-    decodeServiceEndpointURI.widen[ServiceEndpoint] or decodeServiceEndpointDIDURL
+    decodeServiceEndpointURI
+      .widen[ServiceEndpoint] or decodeServiceEndpointDIDURL
       .widen[ServiceEndpoint] or decodeServiceEndpointDIDCommService
-      .widen[ServiceEndpoint] or decodeServiceEndpointNodes.widen[ServiceEndpoint]
-
+      .widen[ServiceEndpoint] or decodeServiceEndpointNodes
+      .widen[ServiceEndpoint]
 
   given decodeService: Decoder[Service] =
     new Decoder[Service]:
       final def apply(c: HCursor): Result[Service] =
         for {
           id <- c.downField("id").as[String].orElse(Right("did:sov:123"))
-          `type` <- c.downField("type").focus match 
-            case Some(value) if value.isString => Right(Set[String](value.asString.getOrElse("")))
-            case Some(values) if values.isArray => Right(values.asArray.map(_.map(_.asString.getOrElse("")).toSet).getOrElse(Set.empty[String]))
+          `type` <- c.downField("type").focus match
+            case Some(value) if value.isString =>
+              Right(Set[String](value.asString.getOrElse("")))
+            case Some(values) if values.isArray =>
+              Right(
+                values.asArray
+                  .map(_.map(_.asString.getOrElse("")).toSet)
+                  .getOrElse(Set.empty[String])
+              )
             case _ => Right(Set.empty[String])
           serviceEndpoint <- c.downField("serviceEndpoint").focus match
-            case Some(value) if value.isString => Right(Set(ServiceEndpointURI(new URI(value.asString.getOrElse("")))))
-            case Some(values) if values.isArray => values.as[Set[ServiceEndpoint]]
-            case Some(value) if value.isObject => value.as[ServiceEndpoint].map(Set(_)) 
-            case _ =>  Right(Set(ServiceEndpointURI(new URI(""))))
+            case Some(value) if value.isString =>
+              Right(
+                Set(ServiceEndpointURI(new URI(value.asString.getOrElse(""))))
+              )
+            case Some(values) if values.isArray =>
+              values.as[Set[ServiceEndpoint]]
+            case Some(value) if value.isObject =>
+              value.as[ServiceEndpoint].map(Set(_))
+            case _ => Right(Set(ServiceEndpointURI(new URI(""))))
         } yield Service(
           new URI(id),
           `type`,

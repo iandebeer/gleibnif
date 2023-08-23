@@ -34,11 +34,16 @@ object MultipleEndpointsDocumentationHttp4sServer extends IOApp {
     )
 
   // server-side logic
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val ec: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
 
   val books = new AtomicReference(
     Vector(
-      Book("The Sorrows of Young Werther", 1774, Author("Johann Wolfgang von Goethe")),
+      Book(
+        "The Sorrows of Young Werther",
+        1774,
+        Author("Johann Wolfgang von Goethe")
+      ),
       Book("Iliad", -8000, Author("Homer")),
       Book("Nad Niemnem", 1888, Author("Eliza Orzeszkowa")),
       Book("The Colour of Magic", 1983, Author("Terry Pratchett")),
@@ -48,19 +53,28 @@ object MultipleEndpointsDocumentationHttp4sServer extends IOApp {
   )
 
   val booksListingRoutes: HttpRoutes[IO] =
-    Http4sServerInterpreter[IO]().toRoutes(booksListing.serverLogicSuccess(_ => IO(books.get())))
+    Http4sServerInterpreter[IO]().toRoutes(
+      booksListing.serverLogicSuccess(_ => IO(books.get()))
+    )
   val addBookRoutes: HttpRoutes[IO] =
     Http4sServerInterpreter[IO]().toRoutes(
-      addBook.serverLogicSuccess(book => IO((books.getAndUpdate(books => books :+ book): Unit)))
+      addBook.serverLogicSuccess(book =>
+        IO((books.getAndUpdate(books => books :+ book): Unit))
+      )
     )
 
   // generating and exposing the documentation in yml
   val swaggerUIRoutes: HttpRoutes[IO] =
     Http4sServerInterpreter[IO]().toRoutes(
-      SwaggerInterpreter().fromEndpoints[IO](List(booksListing, addBook), "The tapir library", "1.0.0")
+      SwaggerInterpreter().fromEndpoints[IO](
+        List(booksListing, addBook),
+        "The tapir library",
+        "1.0.0"
+      )
     )
 
-  val routes: HttpRoutes[IO] = booksListingRoutes <+> addBookRoutes <+> swaggerUIRoutes
+  val routes: HttpRoutes[IO] =
+    booksListingRoutes <+> addBookRoutes <+> swaggerUIRoutes
 
   override def run(args: List[String]): IO[ExitCode] = {
     // starting the server

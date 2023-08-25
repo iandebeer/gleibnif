@@ -18,12 +18,6 @@ case class SignalSendMessage(
       attachments: ${attachments.mkString(",")}
     )"""
 
-case class SignalMessages(messages: List[SignalMessage]):
-  override def toString(): String =
-    s"""SignalMessages(
-      messages: $messages
-    )"""
-
 case class SignalMessage(val envelope: SignalEnvelope, account: String):
   override def toString(): String =
     s"""SignalMessage(

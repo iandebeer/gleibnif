@@ -1,10 +1,15 @@
-package dev.mn8.gleibnif.signal
+package dev.mn8.gleibnif.signal.messages
 
-import io.circe.Decoder.Result
-import io.circe.*
-import io.circe.{Decoder, Json, Encoder}
 import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
+import dev.mn8.gleibnif.signal.messages.Member
+import dev.mn8.gleibnif.signal.messages.SignalMessage
+import dev.mn8.gleibnif.signal.messages.SignalSendMessage
+import io.circe.Decoder
+import io.circe.Decoder.Result
+import io.circe.Encoder
+import io.circe.Json
+import io.circe.*
 import io.circe.syntax._
 
 object SignalMessageCodec:

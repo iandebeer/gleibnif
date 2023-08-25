@@ -1,29 +1,4 @@
-package dev.mn8.gleibnif.signal
-import cats.effect.IO
-import io.circe.parser.*
-
-case class Member(name: String, number: String)
-
-case class SignalSendMessage(
-    attachments: List[String],
-    message: String,
-    number: String,
-    recipients: List[String]
-):
-  override def toString(): String =
-    s"""SignalSendMessage(
-      message: $message,
-      number: $number,
-      recipients: $recipients,
-      attachments: ${attachments.mkString(",")}
-    )"""
-
-case class SignalMessage(val envelope: SignalEnvelope, account: String):
-  override def toString(): String =
-    s"""SignalMessage(
-      envelope: $envelope,
-      account: $account
-    )"""
+package dev.mn8.gleibnif.signal.messages
 
 case class SignalEnvelope(
     source: String,
@@ -66,16 +41,6 @@ case class SignalDataMessage(
       expiresInSeconds: $expiresInSeconds,
       viewOnce: $viewOnce,
       groupInfo: $groupInfo
-    )"""
-
-case class SignalGroupInfo(
-    groupId: String,
-    `type`: String // DELIVER, UPDATE, QUIT, REQUEST_INFO, INFO
-):
-  override def toString(): String =
-    s"""SignalGroupInfo(
-      groupId: $groupId,
-      type: ${`type`}
     )"""
 
 case class SignalReceiptMessage(
@@ -138,18 +103,4 @@ case class SignalReadMessage(
       senderNumber: $senderNumber,
       senderUuid: $senderUuid,
       timestamp: $timestamp
-    )"""
-
-case class SignalSimpleMessage(
-    phone: String,
-    name: String,
-    text: String,
-    keywords: List[String] = List[String]()
-) extends Message:
-  override def toString(): String =
-    s"""SignalSimpleMessage(
-      phone: $phone,
-      name: $name,
-      text: $text,
-      keywords: ${keywords.mkString(",")}
     )"""

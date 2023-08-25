@@ -48,9 +48,9 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>
-          Right(s"Signalbot verify: $s ")
+          Right(s"Signalbot register: $s")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot register: $s"))
     )
 
   def verify(pin: String): IO[Either[Exception, String]] =
@@ -62,9 +62,9 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>
-          Right(s"Signalbot verify: $s ")
+          Right(s"Signalbot verify: $s")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot verify: $s"))
     )
 
   def send(message: SignalSendMessage): IO[Either[Exception, String]] =
@@ -79,7 +79,7 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
         case s: StatusCode if s.isSuccess =>
           Right(s"Signalbot Send: $s - Message sent")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot Send: $s"))
     )
 
   def receive(): IO[

@@ -72,10 +72,7 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .contentType("application/json")
       .body(message.asJson.noSpaces)
       .post(uri"${signalConf.signalUrl}/v2/send")
-    val curl = request.toCurl
 
-    // request.headers.foreach(println)
-    println(s"curl: \n $curl")
     val response = request.send(backend)
     response.map(c =>
       c.code match
@@ -94,10 +91,6 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .get(
         uri"${signalConf.signalUrl}/v1/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}"
       )
-    // val messages: EitherT[IO, ResponseException[String, Error], List[SignalMessage]] = EitherT(IO(request.send(backendA).map(b =>
-    // val curl = request.toCurl
-    // request.headers.foreach(println)
-    // println(s"curl: \n $curl")
 
     val response = request.send(backend)
     response map (r =>

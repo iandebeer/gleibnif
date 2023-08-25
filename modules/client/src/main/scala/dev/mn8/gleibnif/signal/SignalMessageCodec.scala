@@ -15,7 +15,6 @@ object SignalMessageCodec:
         number <- c.downField("number").as[String]
       yield Member(name, number)
 
-// '{"message": "Welcome to D@WNPatrol, the DIDx bot!", "number": "+27659747833", "recipients": [ "+27828870926","+27832582698" ]}
   given signalSendMessage: Encoder[SignalSendMessage] =
     new Encoder[SignalSendMessage]:
       def apply(a: SignalSendMessage): Json = Json.obj(
@@ -53,8 +52,6 @@ object SignalMessageCodec:
                   case Right(value) => Some(value)
                   case Left(error)  => None
               case None => Option.empty[SignalDataMessage]
-
-          // dataMessage <- c.downField("dataMessage").as[Option[SignalDataMessage]]
           receiptMessage <- c
             .downField("receiptMessage")
             .as[Option[SignalReceiptMessage]]

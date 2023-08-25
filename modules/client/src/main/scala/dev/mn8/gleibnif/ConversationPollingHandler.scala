@@ -91,7 +91,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
           )
       )
     }
-  
+
     (for
       mt <- message.map(
         _.filter(_.text.length > 0)

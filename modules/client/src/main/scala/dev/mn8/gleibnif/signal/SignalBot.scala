@@ -23,17 +23,15 @@ case class SignalConfig(
     signalTimeout: Int = 5
 ) derives ConfigReader:
   override def toString: String =
-    s"SignalConfig(url: ${signalUrl.toString}, user: ${signalUser.toString}, phone: ${signalPhone.toString})"
+    s"SignalConfig(url: $signalUrl, user: $signalUser, phone: $signalPhone)"
 
 case class SignalBot(backend: SttpBackend[IO, Any]):
   type ErrorOr[A] = EitherT[IO, Exception, A]
-  def getConf() =
-    val signalConf: SignalConfig =
-      ConfigSource.default.at("signal-conf").load[SignalConfig] match
-        case Left(error) =>
-          SignalConfig("", "", "")
-        case Right(conf) => conf
-    signalConf
+  def getConf(): SignalConfig =
+    ConfigSource.default.at("signal-conf").load[SignalConfig] match
+      case Left(error) =>
+        SignalConfig("", "", "")
+      case Right(conf) => conf
 
   val signalConf = getConf()
 
@@ -44,7 +42,9 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .contentType("application/json")
       .body(s"""{"use_voice": $voiceMode}""")
       .post(uri"${signalConf.signalUrl}/register/${signalConf.signalPhone}")
+
     val response = request.send(backend)
+
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>

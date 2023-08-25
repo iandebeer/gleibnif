@@ -3,18 +3,21 @@ package dev.mn8.gleibnif.signal
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits.*
-import dev.mn8.gleibnif.signal.SignalMessageCodec.signalMessageDecoder
-import dev.mn8.gleibnif.signal.SignalMessageCodec.signalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalMessage
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.signalMessageDecoder
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.signalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
 import io.circe.*
 import io.circe.parser.*
 import io.circe.syntax.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
 import sttp.client3.*
 import sttp.client3.circe.*
 import sttp.model.*
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 case class SignalConfig(
     signalUrl: String,
@@ -23,17 +26,15 @@ case class SignalConfig(
     signalTimeout: Int = 5
 ) derives ConfigReader:
   override def toString: String =
-    s"SignalConfig(url: ${signalUrl.toString}, user: ${signalUser.toString}, phone: ${signalPhone.toString})"
+    s"SignalConfig(url: $signalUrl, user: $signalUser, phone: $signalPhone)"
 
 case class SignalBot(backend: SttpBackend[IO, Any]):
   type ErrorOr[A] = EitherT[IO, Exception, A]
-  def getConf() =
-    val signalConf: SignalConfig =
-      ConfigSource.default.at("signal-conf").load[SignalConfig] match
-        case Left(error) =>
-          SignalConfig("", "", "")
-        case Right(conf) => conf
-    signalConf
+  def getConf(): SignalConfig =
+    ConfigSource.default.at("signal-conf").load[SignalConfig] match
+      case Left(error) =>
+        SignalConfig("", "", "")
+      case Right(conf) => conf
 
   val signalConf = getConf()
 
@@ -44,13 +45,15 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .contentType("application/json")
       .body(s"""{"use_voice": $voiceMode}""")
       .post(uri"${signalConf.signalUrl}/register/${signalConf.signalPhone}")
+
     val response = request.send(backend)
+
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>
-          Right(s"Signalbot verify: $s ")
+          Right(s"Signalbot register: $s")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot register: $s"))
     )
 
   def verify(pin: String): IO[Either[Exception, String]] =
@@ -62,9 +65,9 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>
-          Right(s"Signalbot verify: $s ")
+          Right(s"Signalbot verify: $s")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot verify: $s"))
     )
 
   def send(message: SignalSendMessage): IO[Either[Exception, String]] =
@@ -72,17 +75,14 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .contentType("application/json")
       .body(message.asJson.noSpaces)
       .post(uri"${signalConf.signalUrl}/v2/send")
-    val curl = request.toCurl
 
-    // request.headers.foreach(println)
-    println(s"curl: \n $curl")
     val response = request.send(backend)
     response.map(c =>
       c.code match
         case s: StatusCode if s.isSuccess =>
           Right(s"Signalbot Send: $s - Message sent")
         case s: StatusCode =>
-          Left(new Exception(s"Signalbot Send: $s "))
+          Left(new Exception(s"Signalbot Send: $s"))
     )
 
   def receive(): IO[
@@ -94,10 +94,6 @@ case class SignalBot(backend: SttpBackend[IO, Any]):
       .get(
         uri"${signalConf.signalUrl}/v1/receive/${signalConf.signalPhone}?timeout=${signalConf.signalTimeout}"
       )
-    // val messages: EitherT[IO, ResponseException[String, Error], List[SignalMessage]] = EitherT(IO(request.send(backendA).map(b =>
-    // val curl = request.toCurl
-    // request.headers.foreach(println)
-    // println(s"curl: \n $curl")
 
     val response = request.send(backend)
     response map (r =>

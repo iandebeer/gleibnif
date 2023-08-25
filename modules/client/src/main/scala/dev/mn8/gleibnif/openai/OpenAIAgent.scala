@@ -1,23 +1,19 @@
 package dev.mn8.gleibnif.openai
 
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
-
-import io.circe.*
-import io.circe.syntax.*
-
-import sttp.client3.*
-import sttp.client3.circe.*
-import cats.implicits._
-
+import cats.data.EitherT
 import cats.effect.IO
-import dev.mn8.gleibnif.signal.SignalSimpleMessage
 import cats.effect.Sync
 import cats.implicits._
-import cats.data.EitherT
-
+import cats.implicits._
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
+import io.circe.*
+import io.circe.syntax.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import pureconfig.*
+import pureconfig.generic.derivation.default.*
+import sttp.client3.*
+import sttp.client3.circe.*
 
 case class APIConf(apiKey: String, orgId: String) derives ConfigReader:
   override def toString: String =

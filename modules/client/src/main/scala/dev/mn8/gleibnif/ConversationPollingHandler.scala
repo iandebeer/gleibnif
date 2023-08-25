@@ -1,32 +1,37 @@
 package dev.mn8.gleibnif
 
-import dev.mn8.gleibnif.signal.SignalBot
-import dev.mn8.gleibnif.openai.OpenAIAgent
 import cats.data.EitherT
+import cats.effect.IO
 import cats.effect.kernel.Resource
 import cats.syntax.traverse._
-
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
-import cats.effect.IO
-import io.circe.parser.*
-import io.circe._, io.circe.parser._, io.circe.syntax._
 import dev.mn8.gleibnif.config.ConfigReaders.*
-import dev.mn8.gleibnif.logging.LogWriter.{err, info, logNonEmptyList}
-import dev.mn8.gleibnif.didops.RegistryServiceClient
 import dev.mn8.gleibnif.connection.RedisStorage
-import sttp.client3.SttpBackend
-
-import dev.mn8.gleibnif.signal.Member
-import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
-import java.net.URI
-import dev.mn8.gleibnif.didops.RegistryRequest
-import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
-import dev.mn8.gleibnif.passkit.PasskitAgent
 import dev.mn8.gleibnif.didcomm.DIDDoc
 import dev.mn8.gleibnif.didcomm.Service
+import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
+import dev.mn8.gleibnif.didops.RegistryRequest
+import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
+import dev.mn8.gleibnif.didops.RegistryServiceClient
+import dev.mn8.gleibnif.logging.LogWriter.err
+import dev.mn8.gleibnif.logging.LogWriter.info
+import dev.mn8.gleibnif.logging.LogWriter.logNonEmptyList
+import dev.mn8.gleibnif.openai.OpenAIAgent
+import dev.mn8.gleibnif.passkit.PasskitAgent
+import dev.mn8.gleibnif.signal.SignalBot
 import dev.mn8.gleibnif.signal.*
-import SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.signal.messages.Member
+import dev.mn8.gleibnif.signal.messages.SignalMessage
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.signal.messages.SignalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
+import io.circe._
+import io.circe.parser.*
+import io.circe.syntax._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import sttp.client3.SttpBackend
+
+import java.net.URI
 
 class ConversationPollingHandler(using logger: Logger[IO]):
   val appConf = getConf(using logger)

@@ -1,14 +1,16 @@
 package dev.mn8.gleibnif
 
-import munit.FunSuite
-import dev.mn8.gleibnif.signal.*
-import dev.mn8.gleibnif.openai.OpenAIAgent
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
-import dev.mn8.gleibnif.signal.SignalSimpleMessage
-import io.circe._, io.circe.parser._, io.circe.syntax._
-
-import dev.mn8.gleibnif.signal.SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.openai.OpenAIAgent
+import dev.mn8.gleibnif.signal.*
+import dev.mn8.gleibnif.signal.messages.Member
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import munit.FunSuite
 
 class SignalSpec extends FunSuite {
   /*  val openAIAgent = OpenAIAgent()

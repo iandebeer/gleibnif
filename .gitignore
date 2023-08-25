@@ -25,3 +25,5 @@ build/
 .idea
 *.conf
 meta.json
+metals.sbt
+project/project

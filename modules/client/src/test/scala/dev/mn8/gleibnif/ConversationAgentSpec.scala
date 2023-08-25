@@ -69,12 +69,10 @@ class ConversationAgentSpec extends CatsEffectSuite {
   }
   test("pdf reasoning") {
 
-    val x = sys.env.get("OPENAI_TOKEN")
-    println(s"open api key: $x")
-    // val openAI: OpenAI = OpenAI("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")
+    println(s"open api key: ${sys.env.get("OPENAI_TOKEN")}")
 
     val pdfUrl =
-      "https://people.cs.ksu.edu/~schmidt/705a/Scala/Programming-in-Scala.pdf"
+      "https://www.commercebank.com/-/media/cb/pdf/personal/bank/statement_sample1.pdf"
     conversation {
       val pdf = PDF(
         OpenAI.FromEnvironment.DEFAULT_CHAT,

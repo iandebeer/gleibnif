@@ -23,8 +23,6 @@ import java.nio.charset.StandardCharsets
 import java.io.FileWriter
 import cats.implicits.*
 
-
-
 case class PetriCompiler[F[_]](interfaceName: String)(using
     logger: org.log4s.Logger
 ):

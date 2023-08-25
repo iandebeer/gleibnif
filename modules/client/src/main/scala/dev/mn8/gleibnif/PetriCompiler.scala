@@ -11,7 +11,7 @@ import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe._
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
-import cats.effect.IO
+import cats.effect.{IO,Resource}
 import sttp.client3.{HttpURLConnectionBackend, SttpBackend}
 import sttp.model.*
 import java.nio.file.{Files, Paths}
@@ -19,6 +19,9 @@ import java.util.concurrent.atomic.AtomicReference
 import cats.syntax.all.toSemigroupKOps
 import cats.data.StateT
 import cats.data.State
+import java.nio.charset.StandardCharsets
+import java.io.FileWriter
+import cats.implicits.*
 
 
 
@@ -53,6 +56,17 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
           .filter(w => w.end == p)
           .foldRight[Int](0)((w, l) => w.actionParams.length)
     (p -> Place(p, capacity))
+  }.toMap
+
+  val placeParams: Map[String, List[String]] = protocolConf.places.map { p =>
+    val capacity: List[String]  =
+      if (p == protocolConf.start.place) then
+        protocolConf.start.initialParams
+      else
+        protocolConf.weights
+          .filter(w => w.end == p)
+          .flatMap(w => w.actionParams)
+    (p -> capacity)
   }.toMap
   // println(s"places -> $places")
 
@@ -263,3 +277,62 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
       <+> stepEndpointRoutes
       <+> peekEndpointRoutes
       <+> showEndpointRoutes
+  val conversations: IO[List[String]] = generateConversationAgents()
+
+  def writerIO(path:String): IO[FileWriter] = 
+    IO(new FileWriter(path))
+  def writeLines(writer: FileWriter, content: String): IO[Unit] =
+    IO(writer.write(content))
+
+  def closeWriteFile(writer: FileWriter): IO[Unit] =
+    IO(writer.close())
+  
+  def writeCode(writer: FileWriter, chatbotCode:String) = 
+        IO(writer.write(chatbotCode))
+
+  def makeResourceForWrite(path:String): Resource[IO, FileWriter] = Resource.make(writerIO(path))(fw => closeWriteFile(fw))
+
+  def dashToCamelCase(l: List[String]): List[String] = 
+    l.map(r =>
+      val words = r.split("-")
+      val camelCaseWords = words.tail.map(_.capitalize)
+      (words.head +: camelCaseWords).mkString)
+  
+  def dashToCapitalize(str: String): String = 
+    val words = str.split("-")
+    val camelCaseWords = words.map(_.capitalize)
+    camelCaseWords.mkString
+
+
+  def generateConversationAgents(): IO[List[String]] =
+    placeParams.map { p => 
+      val params: (String, String) = (dashToCapitalize(p._1) -> s"${dashToCamelCase(p._2).map(s => s"$s: String").mkString(", ") }")
+      val chatBotCode =
+      s"""
+        |package dev.mn8.gleibnif
+        |import com.xebia.functional.xef.scala.agents.DefaultSearch
+        |import com.xebia.functional.xef.scala.auto.*
+        |object ChatBot:
+        |  case class ${dashToCapitalize(p._1) }(${params._2}) 
+        |  private def getQuestionAnswer(question: String)(using scope: AIScope): List[String] =
+        |    contextScope(DefaultSearch.search("Weather in Cádiz, Spain")) {
+        |      promptMessage(question)
+        |  }
+        |
+        |  @main def runWeather: Unit = ai {
+        |    val question = "Knowing this forecast, what clothes do you recommend I should wear if I live in Cádiz?"
+        |    println(getQuestionAnswer(question).mkString("\\n"))
+        |  }.getOrElse(ex => println(ex.getMessage))
+        |""".stripMargin
+
+      val filePath = s"${params._1}.scala"
+     
+      for 
+        _ <- IO.println(s"Chatbot code written to file: $filePath")
+        _ <- makeResourceForWrite(filePath).use(writeCode(_, chatBotCode))
+        p <- IO(filePath)
+      yield p
+      }.toList.sequence
+
+    
+

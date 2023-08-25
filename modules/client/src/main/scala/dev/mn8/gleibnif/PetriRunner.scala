@@ -19,14 +19,14 @@ object PetriRunner extends IOApp:
     scala.concurrent.ExecutionContext.Implicits.global
 
   def run(args: List[String]): IO[ExitCode] = // starting the server
-
-    val interfaceName = PetriCompiler(args.headOption.getOrElse("purchase"))
-    logger.info("This will be logged to both the console and the file.")
-
+    
+    val interfaceName = args.headOption.getOrElse("purchase")
+    val compiler = PetriCompiler[IO](interfaceName)
+    compiler.generateConversationAgents() >>
     BlazeServerBuilder[IO]
       .withExecutionContext(ec)
       .bindHttp(8080, "localhost")
-      .withHttpApp(Router("/" -> (interfaceName.routes)).orNotFound)
+      .withHttpApp(Router("/" -> (compiler.routes)).orNotFound)
       .resource
       .use { _ =>
         IO {

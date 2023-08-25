@@ -32,7 +32,7 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.docs.openapi._
 import scala.concurrent.ExecutionContext
 import java.util.UUID
-import dev.mn8.gleibnif.PetriRunner
+import dev.mn8.gleibnif.PetriCompiler
 import fs2.grpc.syntax.serverBuilder
 import scodec.bits.{Bases, BitVector, ByteOrdering}
 
@@ -47,7 +47,7 @@ class PetriSpec extends CatsEffectSuite {
   given logger: org.log4s.Logger = org.log4s.getLogger
 
   import DWNContext.*
-  val s = PetriRunner("purchase")
+  val s = PetriCompiler("purchase")
   val cpn = s.cpn
   test("build net") {
 

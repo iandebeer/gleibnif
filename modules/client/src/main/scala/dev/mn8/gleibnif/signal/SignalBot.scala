@@ -3,18 +3,21 @@ package dev.mn8.gleibnif.signal
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits.*
-import dev.mn8.gleibnif.signal.SignalMessageCodec.signalMessageDecoder
-import dev.mn8.gleibnif.signal.SignalMessageCodec.signalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalMessage
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.signalMessageDecoder
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.signalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalSendMessage
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
 import io.circe.*
 import io.circe.parser.*
 import io.circe.syntax.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
 import sttp.client3.*
 import sttp.client3.circe.*
 import sttp.model.*
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 case class SignalConfig(
     signalUrl: String,

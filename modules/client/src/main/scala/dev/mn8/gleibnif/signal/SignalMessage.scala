@@ -11,16 +11,25 @@ case class SignalSendMessage(
     recipients: List[String]
 ):
   override def toString(): String =
-    s"""SignalSendMessage(message: $message, number: $number, recipients: $recipients, attachments: ${attachments
-        .mkString(",")})"""
+    s"""SignalSendMessage(
+      message: $message,
+      number: $number,
+      recipients: $recipients,
+      attachments: ${attachments.mkString(",")}
+    )"""
 
 case class SignalMessages(messages: List[SignalMessage]):
   override def toString(): String =
-    s"""SignalMessages(messages: $messages)"""
+    s"""SignalMessages(
+      messages: $messages
+    )"""
 
 case class SignalMessage(val envelope: SignalEnvelope, account: String):
   override def toString(): String =
-    s"""SignalMessage(envelope: $envelope, account: $account)"""
+    s"""SignalMessage(
+      envelope: $envelope,
+      account: $account
+    )"""
 
 case class SignalEnvelope(
     source: String,
@@ -36,16 +45,16 @@ case class SignalEnvelope(
 ):
   override def toString(): String =
     s"""SignalEnvelope(source: $source,
-      sourceNumber: $sourceNumber, 
-      sourceUuid: $sourceUuid, 
-      sourceName: $sourceName, 
-      sourceDevice: $sourceDevice, 
-      timestamp: $timestamp, 
+      sourceNumber: $sourceNumber,
+      sourceUuid: $sourceUuid,
+      sourceName: $sourceName,
+      sourceDevice: $sourceDevice,
+      timestamp: $timestamp,
       dataMessage: $dataMessage,
       receiptMessage: $receiptMessage,
       syncMessage: $syncMessage,
-      sentMessage: $sentMessage)
-      """
+      sentMessage: $sentMessage
+    )"""
 
 sealed trait Message
 
@@ -57,19 +66,23 @@ case class SignalDataMessage(
     groupInfo: Option[SignalGroupInfo]
 ) extends Message:
   override def toString(): String =
-    s"""SignalDataMessage(timestamp: $timestamp, 
-       message: $message, 
-       expiresInSeconds: $expiresInSeconds, 
-       viewOnce: $viewOnce, 
-       groupInfo: $groupInfo)"""
+    s"""SignalDataMessage(
+      timestamp: $timestamp,
+      message: $message,
+      expiresInSeconds: $expiresInSeconds,
+      viewOnce: $viewOnce,
+      groupInfo: $groupInfo
+    )"""
 
 case class SignalGroupInfo(
     groupId: String,
     `type`: String // DELIVER, UPDATE, QUIT, REQUEST_INFO, INFO
 ):
   override def toString(): String =
-    s"""SignalGroupInfo(groupId: $groupId, 
-     type: ${`type`}"""
+    s"""SignalGroupInfo(
+      groupId: $groupId,
+      type: ${`type`}
+    )"""
 
 case class SignalReceiptMessage(
     when: Long,
@@ -79,18 +92,23 @@ case class SignalReceiptMessage(
     timestamps: List[Long]
 ) extends Message:
   override def toString(): String =
-    s"""SignalReceiptMessage(when: $when, 
-       isDelivery: $isDelivery, 
-       isRead: $isRead, 
-       isViewed: $isViewed, 
-       timestamps: $timestamps)"""
+    s"""SignalReceiptMessage(
+      when: $when,
+      isDelivery: $isDelivery,
+      isRead: $isRead,
+      isViewed: $isViewed,
+      timestamps: $timestamps
+    )"""
 
 case class SignalSyncMessage(
     sentMessage: Option[SignalSentMessage],
     readMessages: Option[List[SignalReadMessage]]
 ) extends Message:
   override def toString(): String =
-    s"""SignalSyncMessage(sentMessage: $sentMessage)"""
+    s"""SignalSyncMessage(
+      sentMessage: $sentMessage,
+      readMessages: ${readMessages.mkString(",")}
+    )"""
 
 case class SignalSentMessage(
     destination: String,
@@ -103,14 +121,16 @@ case class SignalSentMessage(
     groupInfo: Option[SignalGroupInfo]
 ) extends Message:
   override def toString(): String =
-    s"""SignalSentMessage(destination: $destination, 
-     destinationNumber: $destinationNumber, 
-     destinationUuid: $destinationUuid, 
-     timestamp: $timestamp, 
-     message: $message, 
-     expiresInSeconds: $expiresInSeconds, 
-     viewOnce: $viewOnce, 
-     groupInfo: $groupInfo)"""
+    s"""SignalSentMessage(
+      destination: $destination,
+      destinationNumber: $destinationNumber,
+      destinationUuid: $destinationUuid,
+      timestamp: $timestamp,
+      message: $message,
+      expiresInSeconds: $expiresInSeconds,
+      viewOnce: $viewOnce,
+      groupInfo: $groupInfo
+    )"""
 
 case class SignalReadMessage(
     sender: String,
@@ -119,10 +139,12 @@ case class SignalReadMessage(
     timestamp: Long
 ) extends Message:
   override def toString(): String =
-    s"""readMessage(sender: $sender, 
-       senderNumber: $senderNumber, 
-       senderUuid: $senderUuid, 
-       timestamp: $timestamp)"""
+    s"""SignalReadMessage(
+      sender: $sender,
+      senderNumber: $senderNumber,
+      senderUuid: $senderUuid,
+      timestamp: $timestamp
+    )"""
 
 case class SignalSimpleMessage(
     phone: String,
@@ -131,7 +153,9 @@ case class SignalSimpleMessage(
     keywords: List[String] = List[String]()
 ) extends Message:
   override def toString(): String =
-    s"""SignalSimpleMessage(phone: $phone, 
-     name: $name, 
-     text: $text)
-     keywords: ${keywords.mkString(", ")}"""
+    s"""SignalSimpleMessage(
+      phone: $phone,
+      name: $name,
+      text: $text,
+      keywords: ${keywords.mkString(",")}
+    )"""

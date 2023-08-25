@@ -129,8 +129,7 @@ case class SignalSimpleMessage(
     name: String,
     text: String,
     keywords: List[String] = List[String]()
-):
-
+) extends Message:
   override def toString(): String =
     s"""SignalSimpleMessage(phone: $phone, 
      name: $name, 

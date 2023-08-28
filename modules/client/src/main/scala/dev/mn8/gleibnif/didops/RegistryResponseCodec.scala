@@ -19,7 +19,7 @@ object RegistryResponseCodec:
     new Decoder[RegistryResponse] {
       final def apply(c: HCursor): Decoder.Result[RegistryResponse] =
         for {
-          jobId <- c.downField("jobId").as[Option[String]]
+          jobId    <- c.downField("jobId").as[Option[String]]
           didState <- c.downField("didState").as[DIDState]
           didRegistrationMetadata <- c
             .downField("didRegistrationMetadata")
@@ -46,9 +46,9 @@ object RegistryResponseCodec:
     final def apply(c: HCursor): Decoder.Result[Result] =
       for {
         reqSignature <- c.downField("reqSignature").as[ReqSignature]
-        txn <- c.downField("txn").as[Txn]
-        rootHash <- c.downField("rootHash").as[String]
-        ver <- c.downField("ver").as[String]
+        txn          <- c.downField("txn").as[Txn]
+        rootHash     <- c.downField("rootHash").as[String]
+        ver          <- c.downField("ver").as[String]
       } yield Result(reqSignature, txn, rootHash, ver)
   }
 
@@ -64,24 +64,24 @@ object RegistryResponseCodec:
     final def apply(c: HCursor): Decoder.Result[Values] =
       for {
         value <- c.downField("value").as[String]
-        from <- c.downField("from").as[String]
+        from  <- c.downField("from").as[String]
       } yield Values(value, from)
   }
 
   given Decoder[Txn] = new Decoder[Txn] {
     final def apply(c: HCursor): Decoder.Result[Txn] =
       for {
-        data <- c.downField("data").as[Data]
-        `type` <- c.downField("type").as[String]
+        data            <- c.downField("data").as[Data]
+        `type`          <- c.downField("type").as[String]
         protocolVersion <- c.downField("protocolVersion").as[Int]
-        metadata <- c.downField("metadata").as[Metadata]
+        metadata        <- c.downField("metadata").as[Metadata]
       } yield Txn(data, `type`, protocolVersion, metadata)
   }
 
   given Decoder[Data] = new Decoder[Data] {
     final def apply(c: HCursor): Decoder.Result[Data] =
       for {
-        raw <- c.downField("raw").as[String]
+        raw  <- c.downField("raw").as[String]
         dest <- c.downField("dest").as[String]
       } yield Data(raw, dest)
   }
@@ -89,7 +89,7 @@ object RegistryResponseCodec:
   given Decoder[Metadata] = new Decoder[Metadata] {
     final def apply(c: HCursor): Decoder.Result[Metadata] =
       for {
-        from <- c.downField("from").as[String]
+        from   <- c.downField("from").as[String]
         digest <- c.downField("digest").as[String]
       } yield Metadata(from, digest)
   }

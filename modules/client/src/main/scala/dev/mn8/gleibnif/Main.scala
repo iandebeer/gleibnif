@@ -14,21 +14,21 @@ import sttp.client3.SttpBackend
 
 object Main extends IOApp.Simple:
   // override protected def blockedThreadDetectionEnabled = true
-  given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  given logger: Logger[IO]            = Slf4jLogger.getLogger[IO]
   val pollingInterval: FiniteDuration = 10.seconds
-  val pollingHandler = new ConversationPollingHandler(using logger)
+  val pollingHandler                  = new ConversationPollingHandler(using logger)
   val run = Dispatcher[IO].use { dispatcher =>
     val pollingStream = for {
       backend: SttpBackend[cats.effect.IO, Any] <- Stream.resource(
         AsyncHttpClientCatsBackend.resource[IO]()
       )
-      _ <- Stream.fixedRate[IO](10.seconds) // Poll every 10 seconds
+      _    <- Stream.fixedRate[IO](10.seconds) // Poll every 10 seconds
       data <- Stream.eval(pollingHandler.converse(backend))
     } yield data
 
     val pollingWithLogging = pollingStream.compile.drain
     for {
       fiber <- pollingWithLogging.start
-      _ <- fiber.join
+      _     <- fiber.join
     } yield ()
   }

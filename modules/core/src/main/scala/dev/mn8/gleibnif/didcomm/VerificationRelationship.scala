@@ -46,9 +46,7 @@ case class AssertionInstance(
 ) extends VerificationInstance(id, `type`, controller, publicKeyMultibase)
     with Assertion
 
-case class AssertionReference(ref: String)
-    extends VerificationReference(ref)
-    with Assertion
+case class AssertionReference(ref: String) extends VerificationReference(ref) with Assertion
 
 case class CapabilityDelegationInstance(
     id: String,
@@ -82,6 +80,4 @@ case class KeyAgreementInstance(
 ) extends VerificationInstance(id, `type`, controller, publicKeyMultibase)
     with KeyAgreement
 
-case class KeyAgreementReference(ref: String)
-    extends VerificationReference(ref)
-    with KeyAgreement
+case class KeyAgreementReference(ref: String) extends VerificationReference(ref) with KeyAgreement

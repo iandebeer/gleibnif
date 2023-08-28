@@ -22,15 +22,13 @@ class ConversationAgentSpec extends CatsEffectSuite {
     createMethodName("example").get,
     createMethodSpecificId("123456789abcdefghi").get
   ).toDIDUrl
-  private final case class AIResponse(answer: String)
-      derives SerialDescriptor,
-        Decoder
+  private final case class AIResponse(answer: String) derives SerialDescriptor, Decoder
 
   test("writeToRedis should store words as JSON") {
     val aspect1 = "Location"
     val aspect2 = "Time"
-    val words1 = List("New York", "Los Angeles")
-    val words2 = List("today", "next week")
+    val words1  = List("New York", "Los Angeles")
+    val words2  = List("today", "next week")
 
     RedisStorage.create(s"redis://localhost:6379").use { storage =>
       for {
@@ -82,7 +80,7 @@ class ConversationAgentSpec extends CatsEffectSuite {
       addContext(Array(pdf.readPDFFromUrl.readPDFFromUrl(pdfUrl).get()))
       while (true) {
         println("Enter your question: ")
-        val line = scala.io.StdIn.readLine()
+        val line     = scala.io.StdIn.readLine()
         val response = prompt[AIResponse](line)
         println(s"${response.answer}\n---\n")
       }

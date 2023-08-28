@@ -28,9 +28,9 @@ import dev.mn8.gleibnif.didcomm.DIDCodec
 
 class DidDocSpec extends FunSuite {
 
-  val did = uri"did:ex:1234"
+  val did               = uri"did:ex:1234"
   val didString: String = did.toString()
-  val didDocJson = """
+  val didDocJson        = """
 {
    "id": "did:example:123456789abcdefghi",
     "controller": "did:example:bcehfew7h32f32h7af3",
@@ -121,7 +121,7 @@ class DidDocSpec extends FunSuite {
 }  
   """
 
-  val contextLD = """ {"@context": [
+  val contextLD    = """ {"@context": [
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/jws-2020/v1",
       "https://w3id.org/security/suites/ed25519-2020/v1"
@@ -231,7 +231,7 @@ class DidDocSpec extends FunSuite {
   val CHARLIE_DID = "did:example:charlie"
   val charlieDID = URI.create(CHARLIE_DID) */
 
-  val apiKey = "c2850992-32fd-4ccf-9352-77aa329eef13"
+  val apiKey  = "c2850992-32fd-4ccf-9352-77aa329eef13"
   val baseURL = "https://api.godiddy.com/0.1.0/universal-resolver/identifiers/"
 
   def testParse(jsonString: String) =

@@ -19,30 +19,28 @@ import scala.util.matching.Regex
   * @property
   *   did a DID for the given DID Doc
   * @property
-  *   keyAgreements Key IDs (DID URLs) of all verification methods from the
-  *   'keyAgreement' verification relationship in this DID DOC. See
+  *   keyAgreements Key IDs (DID URLs) of all verification methods from the 'keyAgreement'
+  *   verification relationship in this DID DOC. See
   *   https://www.w3.org/TR/did-core/#verification-methods.
   * @property
-  *   authentications Key IDs (DID URLs) of all verification methods from the
-  *   'authentication' verification relationship in this DID DOC. See
-  *   https://www.w3.org/TR/did-core/#authentication.
+  *   authentications Key IDs (DID URLs) of all verification methods from the 'authentication'
+  *   verification relationship in this DID DOC. See https://www.w3.org/TR/did-core/#authentication.
   * @property
-  *   verificationMethods Returns all local verification methods including
-  *   embedded to key agreement and authentication sections. See
-  *   https://www.w3.org/TR/did-core/#verification-methods.
+  *   verificationMethods Returns all local verification methods including embedded to key agreement
+  *   and authentication sections. See https://www.w3.org/TR/did-core/#verification-methods.
   * @property
-  *   didCommServices All services of 'DIDCommMessaging' type in this DID DOC.
-  *   Empty list is returned if there are no services of 'DIDCommMessaging'
-  *   type. See https://www.w3.org/TR/did-core/#services and
+  *   didCommServices All services of 'DIDCommMessaging' type in this DID DOC. Empty list is
+  *   returned if there are no services of 'DIDCommMessaging' type. See
+  *   https://www.w3.org/TR/did-core/#services and
   *   https://identity.foundation/didcomm-messaging/spec/#did-document-service-endpoint.
   */
 
 object DIDTypes {
-  opaque type DIDUrl = String
-  opaque type Method = String
+  opaque type DIDUrl           = String
+  opaque type Method           = String
   opaque type MethodSpecificId = String
 
-  private val methodNamePattern: Regex = """[a-z0-9]+""".r
+  private val methodNamePattern: Regex       = """[a-z0-9]+""".r
   private val methodSpecificIdPattern: Regex = """(:[a-z0-9]+)*[a-z0-9]+""".r
   private val supportedMethods: List[String] =
     List("example", "ion", "key", "indy", "web", "prism")
@@ -68,7 +66,7 @@ object DIDTypes {
     value.split(":").toList match {
       case "did" :: methodName :: methodSpecificId :: Nil =>
         for {
-          methodName <- createMethodName(methodName)
+          methodName       <- createMethodName(methodName)
           methodSpecificId <- createMethodSpecificId(methodSpecificId)
         } yield DID(methodName, methodSpecificId)
       case _ => None
@@ -79,7 +77,7 @@ import DIDTypes._
 
 case class DID(methodName: Method, methodSpecificId: MethodSpecificId) {
   override def toString: String = s"did:$methodName:$methodSpecificId "
-  def toDIDUrl: DIDUrl = toString.asInstanceOf[DIDUrl]
+  def toDIDUrl: DIDUrl          = toString.asInstanceOf[DIDUrl]
 
 }
 
@@ -103,7 +101,7 @@ case class DIDDoc(
       case Some(v) =>
         v.find(_.id == id) match
           case Some(v: VerificationMethod) => Right(v)
-          case _ => Left(DIDUrlNotFoundException(id, did))
+          case _                           => Left(DIDUrlNotFoundException(id, did))
       case _ => Left(DIDUrlNotFoundException(id, did))
 
   def findDIDCommService(id: String): Either[DIDDocException, Service] =
@@ -111,7 +109,7 @@ case class DIDDoc(
       case Some(v: Service) =>
         v.find(_.id.toString() == id) match
           case Some(v: Service) => Right(v)
-          case _ => Left(DIDDocException("DIDComm service not found"))
+          case _                => Left(DIDDocException("DIDComm service not found"))
       case _ => Left(DIDDocException("DIDComm service not found"))
 
   override def toString: String =
@@ -159,9 +157,8 @@ object DIDDoc:
       didDocJson.mapObject(_.add("@context", contexts.asJson))
     didDocJsonWithContext.as[DIDDoc].getOrElse(didDoc)
 
-/** DID DOC Verification method. It can be used in such verification
-  * relationships as Authentication, KeyAgreement, etc. See
-  * https://www.w3.org/TR/did-core/#verification-methods.
+/** DID DOC Verification method. It can be used in such verification relationships as
+  * Authentication, KeyAgreement, etc. See https://www.w3.org/TR/did-core/#verification-methods.
   */
 case class VerificationMethod(
     id: String,
@@ -177,21 +174,20 @@ case class VerificationMethod(
        |  controller=$controller
        |)""".stripMargin
 
-/** DID DOC Service of 'DIDCommMessaging' type. see
-  * https://www.w3.org/TR/did-core/#services and
+/** DID DOC Service of 'DIDCommMessaging' type. see https://www.w3.org/TR/did-core/#services and
   * https://identity.foundation/didcomm-messaging/spec/#did-document-service-endpoint.
   *
   * @property
   *   id Service's 'id' field
   * @property
-  *   serviceEndpoint A service endpoint. It can be either a URI to be used for
-  *   transport or a mediator's DID in case of alternative endpoints.
+  *   serviceEndpoint A service endpoint. It can be either a URI to be used for transport or a
+  *   mediator's DID in case of alternative endpoints.
   * @property
-  *   routingKeys A possibly empty ordered array of strings referencing keys to
-  *   be used when preparing the message for transmission.
+  *   routingKeys A possibly empty ordered array of strings referencing keys to be used when
+  *   preparing the message for transmission.
   * @property
-  *   accept A possibly empty ordered array of strings representing accepted
-  *   didcomm specification versions.
+  *   accept A possibly empty ordered array of strings representing accepted didcomm specification
+  *   versions.
   */
 
 case class Service(
@@ -220,8 +216,7 @@ case class ServiceEndpointNodes(nodes: Set[URI]) extends ServiceEndpoint:
       |  nodes=$nodes
        |)""".stripMargin
 
-case class ServiceEndpointDIDURL(did: String, fragment: String)
-    extends ServiceEndpoint:
+case class ServiceEndpointDIDURL(did: String, fragment: String) extends ServiceEndpoint:
   override def toString: String =
     s"""ServiceEndpointDIDURL(
        |  did=$did,

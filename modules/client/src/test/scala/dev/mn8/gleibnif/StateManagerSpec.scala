@@ -17,16 +17,16 @@ class StateManagerTests extends CatsEffectSuite {
     val stateManager = StateManager.create()
 
     for {
-      sm <- stateManager
-      _ <- sm.updateState("context1", "1")
+      sm     <- stateManager
+      _      <- sm.updateState("context1", "1")
       state1 <- sm.getState("context1")
-      _ <- IO.println(s"state1 = $state1")
+      _      <- IO.println(s"state1 = $state1")
 
       _ = assertIO(IO(state1), Some("1"))
 
-      _ <- sm.updateState("context1", "2")
+      _      <- sm.updateState("context1", "2")
       state2 <- sm.getState("context1")
-      _ <- IO.println(s"state2 = $state2")
+      _      <- IO.println(s"state2 = $state2")
       _ = assertIO(IO(state2), Some("2"))
 
       state3 <- sm.getState("context2")
@@ -50,8 +50,8 @@ class StateManagerTests extends CatsEffectSuite {
     // updates.parSequenceN(10)
     val state = for
       sm <- stateManager
-      _ <- updates(sm)
-      s <- sm.getState("1")
+      _  <- updates(sm)
+      s  <- sm.getState("1")
       _ <- IO.println(
         s"after concurrent updates state = ${s.getOrElse("None")}"
       )
@@ -69,7 +69,7 @@ class StateManagerTests extends CatsEffectSuite {
 
   test("parSequenceN test") {
     val operations = (1 to 100).toList.map(someIOOperation)
-    val result = operations.parSequenceN(10)
+    val result     = operations.parSequenceN(10)
     for
       r <- result
       _ = IO.println(s"list = $r")

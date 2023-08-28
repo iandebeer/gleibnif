@@ -102,8 +102,8 @@ object DWNodeCodec:
           case Some(c) => c
           case None    => cur
         for {
-          recordId <- c.downField("recordId").as[String]
-          data <- c.downField("data").as[Option[String]]
+          recordId   <- c.downField("recordId").as[String]
+          data       <- c.downField("data").as[Option[String]]
           descriptor <- c.downField("descriptor").as[DWNodeDescriptor]
           processing <- c.downField("processing").as[DWNodeProcessing]
           attestations <- c
@@ -125,8 +125,8 @@ object DWNodeCodec:
     new Decoder[DWNodeDescriptor]:
       final def apply(c: HCursor): Result[DWNodeDescriptor] =
         for
-          method <- c.downField("method").as[String]
-          dataCid <- c.downField("dataCid").as[String]
+          method     <- c.downField("method").as[String]
+          dataCid    <- c.downField("dataCid").as[String]
           dataFormat <- c.downField("dataFormat").as[String]
         yield DWNodeDescriptor(method, dataCid, dataFormat)
 
@@ -134,8 +134,8 @@ object DWNodeCodec:
     new Decoder[DWNodeProcessing]:
       final def apply(c: HCursor): Result[DWNodeProcessing] =
         for
-          nonce <- c.downField("nonce").as[String]
-          author <- c.downField("author").as[String]
+          nonce     <- c.downField("nonce").as[String]
+          author    <- c.downField("author").as[String]
           recipient <- c.downField("recipient").as[String]
         yield DWNodeProcessing(nonce, author, recipient)
 
@@ -143,7 +143,7 @@ object DWNodeCodec:
     new Decoder[DWNodeAttestation]:
       final def apply(c: HCursor): Result[DWNodeAttestation] =
         for
-          payload <- c.downField("payload").as[String]
+          payload    <- c.downField("payload").as[String]
           signatures <- c.downField("signatures").as[List[DWNodeSignature]]
         yield DWNodeAttestation(payload, signatures)
 
@@ -151,7 +151,7 @@ object DWNodeCodec:
     new Decoder[DWNodeAuthorization]:
       final def apply(c: HCursor): Result[DWNodeAuthorization] =
         for
-          payload <- c.downField("payload").as[String]
+          payload    <- c.downField("payload").as[String]
           signatures <- c.downField("signatures").as[List[DWNodeSignature]]
         yield DWNodeAuthorization(payload, signatures)
 
@@ -160,5 +160,5 @@ object DWNodeCodec:
       final def apply(c: HCursor): Result[DWNodeSignature] =
         for
           `protected` <- c.downField("protected").as[String]
-          signature <- c.downField("signature").as[String]
+          signature   <- c.downField("signature").as[String]
         yield DWNodeSignature(`protected`, signature)

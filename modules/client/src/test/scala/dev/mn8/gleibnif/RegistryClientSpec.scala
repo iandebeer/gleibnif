@@ -1,27 +1,30 @@
 package dev.mn8.gleibnif
 
-import munit.FunSuite
-import dev.mn8.gleibnif.signal.*
-import dev.mn8.gleibnif.openai.OpenAIAgent
+import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
-import dev.mn8.gleibnif.signal.SignalSimpleMessage
-import io.circe._, io.circe.parser._, io.circe.syntax._
-
-import dev.mn8.gleibnif.signal.SignalMessageCodec.memberDecoder
-import dev.mn8.gleibnif.didops.RegistryServiceClient
-import java.net.URI
-import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec
 import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
 import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.Service
+import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
 import dev.mn8.gleibnif.didops.RegistryRequest
 import dev.mn8.gleibnif.didops.RegistryResponseCodec.encodeRegistryRequest
-import sttp.client3.HttpURLConnectionBackend
+import dev.mn8.gleibnif.didops.RegistryServiceClient
+import dev.mn8.gleibnif.openai.OpenAIAgent
+import dev.mn8.gleibnif.signal.*
+import dev.mn8.gleibnif.signal.messages.SignalMessageCodec.memberDecoder
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
 import munit.Clue.generate
+import munit.FunSuite
+import sttp.client3.HttpURLConnectionBackend
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import cats.data.EitherT
-import dev.mn8.gleibnif.didcomm.{Service, ServiceEndpointNodes}
-import dev.mn8.gleibnif.didcomm.DIDCodec
+
+import java.net.URI
 
 class RegistryClientSpec extends FunSuite {
   val baseURL = "https://api.godiddy.com/0.1.0/universal-registrar/"

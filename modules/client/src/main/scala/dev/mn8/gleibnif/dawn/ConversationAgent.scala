@@ -1,33 +1,30 @@
 package dev.mn8.gleibnif.dawn
 
+import cats.*
 import cats.effect._
 import cats.implicits._
-import dev.profunktor.redis4cats.Redis
-import dev.profunktor.redis4cats.RedisCommands
-
-import dev.profunktor.redis4cats.effect.Log.Stdout._
-import dev.mn8.gleibnif.didcomm.DID
-import dev.mn8.gleibnif.didcomm.DIDTypes.*
-import java.time.*
-import io.circe.syntax.*
-import dev.mn8.gleibnif.signal.SignalSimpleMessage
-import dev.mn8.gleibnif.connection.RedisStorage
-import sttp.client3.SttpBackend
-import dev.mn8.gleibnif.signal.SignalBot
-import dev.mn8.gleibnif.openai.OpenAIAgent
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
-import dev.mn8.gleibnif.signal.*
-import com.xebia.functional.xef.scala.auto.*
-
-import cats.*
 import cats.implicits.catsSyntaxApplicativeId
 import cats.syntax.all.*
+import com.xebia.functional.xef.scala.auto.*
+import dev.mn8.gleibnif.connection.RedisStorage
+import dev.mn8.gleibnif.didcomm.DID
+import dev.mn8.gleibnif.didcomm.DIDTypes.*
+import dev.mn8.gleibnif.openai.OpenAIAgent
+import dev.mn8.gleibnif.signal.SignalBot
+import dev.mn8.gleibnif.signal.*
+import dev.mn8.gleibnif.signal.messages.SignalSimpleMessage
+import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.RedisCommands
+import dev.profunktor.redis4cats.effect.Log.Stdout._
 import io.circe.Decoder.Result
+import io.circe.*
 import io.circe.parser.*
 import io.circe.syntax.*
-import io.circe.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import sttp.client3.SttpBackend
 
+import java.time.*
 import scala.deriving.*
 
 object Aspects {

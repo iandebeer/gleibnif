@@ -1,10 +1,15 @@
-package dev.mn8.gleibnif.signal
+package dev.mn8.gleibnif.signal.messages
 
-import io.circe.Decoder.Result
-import io.circe.*
-import io.circe.{Decoder, Json, Encoder}
 import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
+import dev.mn8.gleibnif.signal.messages.Member
+import dev.mn8.gleibnif.signal.messages.SignalMessage
+import dev.mn8.gleibnif.signal.messages.SignalSendMessage
+import io.circe.Decoder
+import io.circe.Decoder.Result
+import io.circe.Encoder
+import io.circe.Json
+import io.circe.*
 import io.circe.syntax._
 
 object SignalMessageCodec:
@@ -15,7 +20,6 @@ object SignalMessageCodec:
         number <- c.downField("number").as[String]
       yield Member(name, number)
 
-// '{"message": "Welcome to D@WNPatrol, the DIDx bot!", "number": "+27659747833", "recipients": [ "+27828870926","+27832582698" ]}
   given signalSendMessage: Encoder[SignalSendMessage] =
     new Encoder[SignalSendMessage]:
       def apply(a: SignalSendMessage): Json = Json.obj(
@@ -53,8 +57,6 @@ object SignalMessageCodec:
                   case Right(value) => Some(value)
                   case Left(error)  => None
               case None => Option.empty[SignalDataMessage]
-
-          // dataMessage <- c.downField("dataMessage").as[Option[SignalDataMessage]]
           receiptMessage <- c
             .downField("receiptMessage")
             .as[Option[SignalReceiptMessage]]

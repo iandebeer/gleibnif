@@ -42,9 +42,8 @@ final case class OpenAIAgent(backend: SttpBackend[IO, Any])(using
   def extractKeywords(
       message: SignalSimpleMessage
   ): EitherT[IO, ResponseException[String, Error], SignalSimpleMessage] =
-    val openAIRequest = OpenAIRequest(prompt =
-      s"Extract keywords from this text: ${message.text}"
-    ).asJson.noSpaces
+    val openAIRequest =
+      OpenAIRequest(prompt = s"Extract keywords from this text: ${message.text}").asJson.noSpaces
     val request = basicRequest
       .contentType("application/json")
       .header(
@@ -68,9 +67,7 @@ final case class OpenAIAgent(backend: SttpBackend[IO, Any])(using
           Left(error)
         case Right(openAIResponse) =>
           val keys = openAIResponse.choices.map(choice => choice.text)
-          response.flatTap(t =>
-            logger.info(s"Keywords: ${keys.mkString(", ")}}}")
-          )
+          response.flatTap(t => logger.info(s"Keywords: ${keys.mkString(", ")}}}"))
 
           Right(message.copy(keywords = keys))
     })

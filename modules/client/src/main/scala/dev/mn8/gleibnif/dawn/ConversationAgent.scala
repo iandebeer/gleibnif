@@ -28,10 +28,10 @@ import java.time.*
 import scala.deriving.*
 
 object Aspects {
-  opaque type Location = String
+  opaque type Location  = String
   opaque type TimeFrame = String
-  opaque type Action = String
-  opaque type Entity = String
+  opaque type Action    = String
+  opaque type Entity    = String
 
   object Location {
     def apply(value: String): Location = value
@@ -141,8 +141,8 @@ final case class ConversationAgent(signalPhone: String)(using
 
   val redisStorage: Resource[cats.effect.IO, RedisStorage] =
     RedisStorage.create("localhost:6379")
-  val signalBot = SignalBot(backend)
+  val signalBot   = SignalBot(backend)
   val openAIAgent = OpenAIAgent(backend)
 
   def handleConversation(m: SignalSimpleMessage) = ???
-  val timeBox: TimeBox = TimeBox(5, Instant.now)
+  val timeBox: TimeBox                           = TimeBox(5, Instant.now)

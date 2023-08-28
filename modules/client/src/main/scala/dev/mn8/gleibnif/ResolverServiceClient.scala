@@ -22,6 +22,6 @@ case class ResolverServiceClient(
         .header("Accept", contentType)
         .header("Authorization", s"Bearer ${apiKey}")
         .response(asJson[DIDDoc])
-    val backend = HttpClientSyncBackend()
+    val backend  = HttpClientSyncBackend()
     val response = request.send(backend)
     IO.delay(response.body)

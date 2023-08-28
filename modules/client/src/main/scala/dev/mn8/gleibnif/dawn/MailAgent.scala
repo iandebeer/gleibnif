@@ -48,7 +48,7 @@ object MailAgent extends IOApp.Simple:
   IO.println(s"conf = ${conf.urlParts}")
   // val smtpConf = MailConfig("imaps:/" +
   // smtp.gmail.com:465", "dawn@didx.co.za", "4uMj3<TY9UBA7yP=", SSLType.StartTLS)
-  val mailer = JavaMailEmil[IO]()
+  val mailer                           = JavaMailEmil[IO]()
   val sendIO: IO[NonEmptyList[String]] = mailer(conf).send(mail)
   def run: IO[Unit] = sendIO.flatMap { result =>
     IO.println(s"Result: $result")

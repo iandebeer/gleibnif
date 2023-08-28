@@ -22,7 +22,7 @@ object OpportunityGenerator extends App {
     "UNICEF South Africa"
   )
   val categories = List("Learning", "Learning", "Task")
-  val languages = List("English", "English", "English", "French", "Spanish")
+  val languages  = List("English", "English", "English", "French", "Spanish")
   val locations =
     List("South Africa", "Nigeria", "Kenya", "Morocco", "Ethiopia")
 

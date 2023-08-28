@@ -34,9 +34,9 @@ import sttp.client3.SttpBackend
 import java.net.URI
 
 class ConversationPollingHandler(using logger: Logger[IO]):
-  val appConf = getConf(using logger)
+  val appConf      = getConf(using logger)
   val registryConf = getRegistryConf(using logger)
-  val signalConf = getSignalConf(using logger)
+  val signalConf   = getSignalConf(using logger)
   val registryClient = RegistryServiceClient(
     registryConf.registrarUrl.toString(),
     registryConf.apiKey
@@ -49,7 +49,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
   ): IO[Either[Exception, List[String]]] =
 
     // def callServices(backend:  SttpBackend[cats.effect.IO, Any],redisStorage: Resource[cats.effect.IO, RedisStorage]): IO[Either[Exception, List[String]]] =
-    val signalBot = SignalBot(backend)
+    val signalBot   = SignalBot(backend)
     val openAIAgent = OpenAIAgent(backend)
 
     val message = EitherT {
@@ -81,8 +81,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
         k: SignalSimpleMessage
     ): EitherT[IO, Exception, String] = {
       EitherT(k match
-        case m: SignalSimpleMessage
-            if m.text.toLowerCase().contains("https://maps.google.com") =>
+        case m: SignalSimpleMessage if m.text.toLowerCase().contains("https://maps.google.com") =>
           ??? // openAIAgent.keywords(m.text.split("\\|")(2))
 
         case _ =>
@@ -110,8 +109,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
           val doc = DIDDoc(
             did = "",
             controller = Some(s"${appConf.dawnControllerDID}"),
-            alsoKnownAs =
-              Some(Set(s"tel:${member.number}.};name=${member.name}")),
+            alsoKnownAs = Some(Set(s"tel:${member.number}.};name=${member.name}")),
             services = Some(
               Set(
                 Service(
@@ -126,7 +124,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
               )
             )
           )
-          val reg = RegistryRequest(doc)
+          val reg      = RegistryRequest(doc)
           val document = reg.asJson.spaces2
           for
             did <- EitherT( // (backend.use { b =>
@@ -134,7 +132,7 @@ class ConversationPollingHandler(using logger: Logger[IO]):
                 .createDID(registryConf.didMethod, document, backend)
             )
             member <- EitherT.fromEither(decode[Member](m.text.split("\\|")(2)))
-            pass <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
+            pass   <- PasskitAgent(member.name, did, appConf.dawnUrl).signPass()
             r <- EitherT( // backend.use { b =>
               signalBot.send(
                 SignalSendMessage(

@@ -47,7 +47,7 @@ class PetriSpec extends CatsEffectSuite {
   given logger: org.log4s.Logger = org.log4s.getLogger
 
   import DWNContext.*
-  val s = PetriCompiler("purchase")
+  val s   = PetriCompiler("purchase")
   val cpn = s.cpn
   test("build net") {
 
@@ -96,12 +96,12 @@ class PetriSpec extends CatsEffectSuite {
 
   }
   test("create a server with end points for each param") {
-    val st1 = bin"00000000000011".toBase64
-    val st2 = bin"0000000000000000000000011".toBase64
-    val st3 = bin"00000001111111".toBase64
-    val st4 = bin"00000000011100".toBase64
-    val st5 = bin"00000000000000".toBase64
-    val places = cpn.elements.values.collect { case p: Place => p }
+    val st1           = bin"00000000000011".toBase64
+    val st2           = bin"0000000000000000000000011".toBase64
+    val st3           = bin"00000001111111".toBase64
+    val st4           = bin"00000000011100".toBase64
+    val st5           = bin"00000000000000".toBase64
+    val places        = cpn.elements.values.collect { case p: Place => p }
     val start: NodeId = places.find(_.name == "start").get.id
     println(s"places = ${places.mkString(",")}")
     val dimensions = (places.size, places.maxBy(p => p.capacity).capacity)

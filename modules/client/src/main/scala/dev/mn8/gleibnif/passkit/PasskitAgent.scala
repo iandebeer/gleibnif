@@ -142,7 +142,7 @@ object PasskitAgent:
       out: File
   ): Resource[IO, (InputStream, OutputStream)] =
     for {
-      inStream <- inputStream(in)
+      inStream  <- inputStream(in)
       outStream <- outputStream(out)
     } yield (inStream, outStream)
 

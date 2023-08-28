@@ -231,7 +231,7 @@ object DIDCodec:
           case ServiceEndpointURI(value) => Json.fromString(value.toString)
           case ServiceEndpointDIDURL(did, fragment) =>
             Json.obj(
-              "did" -> Json.fromString(did),
+              "did"      -> Json.fromString(did),
               "fragment" -> Json.fromString(fragment)
             )
           case ServiceEndpointDIDCommService(uri, accept, routingKeys) =>
@@ -306,8 +306,8 @@ object DIDCodec:
     new Decoder[VerificationMethod]:
       final def apply(c: HCursor): Decoder.Result[VerificationMethod] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
+          id         <- c.downField("id").as[String]
+          `type`     <- c.downField("type").as[String]
           controller <- c.downField("controller").as[String]
           verificationMaterial <- c
             .downField("publicKeyJwk")
@@ -331,8 +331,7 @@ object DIDCodec:
   given decodeVerificationMaterialJWK: Decoder[VerificationMaterialJWK] =
     Decoder.forProduct4("crv", "x", "kty", "kid")(VerificationMaterialJWK.apply)
 
-  given decodeVerificationMaterialMultibase
-      : Decoder[VerificationMaterialMultibase] =
+  given decodeVerificationMaterialMultibase: Decoder[VerificationMaterialMultibase] =
     new Decoder[VerificationMaterialMultibase]:
       final def apply(
           c: HCursor
@@ -369,8 +368,8 @@ object DIDCodec:
     new Decoder[AssertionInstance]:
       final def apply(c: HCursor): Decoder.Result[AssertionInstance] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
+          id         <- c.downField("id").as[String]
+          `type`     <- c.downField("type").as[String]
           controller <- c.downField("controller").as[String]
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
@@ -401,8 +400,8 @@ object DIDCodec:
     new Decoder[KeyAgreementInstance]:
       final def apply(c: HCursor): Decoder.Result[KeyAgreementInstance] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
+          id         <- c.downField("id").as[String]
+          `type`     <- c.downField("type").as[String]
           controller <- c.downField("controller").as[String]
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
@@ -429,15 +428,14 @@ object DIDCodec:
     decodeKeyAgreementReference.widen[KeyAgreement] or decodeKeyAgreementMethod
       .widen[KeyAgreement]
 
-  given decodeCapabilityInvocationInstance
-      : Decoder[CapabilityInvocationInstance] =
+  given decodeCapabilityInvocationInstance: Decoder[CapabilityInvocationInstance] =
     new Decoder[CapabilityInvocationInstance]:
       final def apply(
           c: HCursor
       ): Decoder.Result[CapabilityInvocationInstance] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
+          id         <- c.downField("id").as[String]
+          `type`     <- c.downField("type").as[String]
           controller <- c.downField("controller").as[String]
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
@@ -453,8 +451,7 @@ object DIDCodec:
           publicKeyMultibase
         )
 
-  given decodeCapabilityInvocationReference
-      : Decoder[CapabilityInvocationReference] =
+  given decodeCapabilityInvocationReference: Decoder[CapabilityInvocationReference] =
     new Decoder[CapabilityInvocationReference]:
       final def apply(
           c: HCursor
@@ -468,15 +465,14 @@ object DIDCodec:
       .widen[CapabilityInvocation] or decodeCapabilityInvocationReference
       .widen[CapabilityInvocation]
 
-  given decodeCapabilityDelegationInstance
-      : Decoder[CapabilityDelegationInstance] =
+  given decodeCapabilityDelegationInstance: Decoder[CapabilityDelegationInstance] =
     new Decoder[CapabilityDelegationInstance]:
       final def apply(
           c: HCursor
       ): Decoder.Result[CapabilityDelegationInstance] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
+          id         <- c.downField("id").as[String]
+          `type`     <- c.downField("type").as[String]
           controller <- c.downField("controller").as[String]
           publicKeyMultibase <- c
             .downField("publicKeyMultibase")
@@ -492,8 +488,7 @@ object DIDCodec:
           publicKeyMultibase
         )
 
-  given decodeCapabilityDelegationReference
-      : Decoder[CapabilityDelegationReference] =
+  given decodeCapabilityDelegationReference: Decoder[CapabilityDelegationReference] =
     new Decoder[CapabilityDelegationReference]:
       final def apply(
           c: HCursor
@@ -518,19 +513,18 @@ object DIDCodec:
     new Decoder[ServiceEndpointDIDURL]:
       final def apply(c: HCursor): Decoder.Result[ServiceEndpointDIDURL] =
         for {
-          did <- c.downField("did").as[String]
+          did      <- c.downField("did").as[String]
           fragment <- c.value.as[String]
         } yield ServiceEndpointDIDURL(did, fragment)
 
-  given decodeServiceEndpointDIDCommService
-      : Decoder[ServiceEndpointDIDCommService] =
+  given decodeServiceEndpointDIDCommService: Decoder[ServiceEndpointDIDCommService] =
     new Decoder[ServiceEndpointDIDCommService]:
       final def apply(
           c: HCursor
       ): Decoder.Result[ServiceEndpointDIDCommService] =
         for {
-          uri <- c.downField("uri").as[URI]
-          accept <- c.downField("accept").as[Option[Set[String]]]
+          uri         <- c.downField("uri").as[URI]
+          accept      <- c.downField("accept").as[Option[Set[String]]]
           routingKeys <- c.downField("routingKeys").as[Option[Set[String]]]
         } yield ServiceEndpointDIDCommService(uri, accept, routingKeys)
 

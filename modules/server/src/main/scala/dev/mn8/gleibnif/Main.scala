@@ -27,8 +27,7 @@ case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
     println(s"$msg: ${requestHeaders.get(Constants.AuthorizationMetadataKey)}")
     next.startCall(call, requestHeaders)
 
-class HookServiceImpl(using logger: org.log4s.Logger)
-    extends HookServiceFs2Grpc[IO, Metadata] {
+class HookServiceImpl(using logger: org.log4s.Logger) extends HookServiceFs2Grpc[IO, Metadata] {
   def log[T](value: T)(implicit logger: org.log4s.Logger) =
     logger.info(s"HookServiceImpl: $value")
   override def updateHook(
@@ -69,8 +68,7 @@ class HookServiceImpl(using logger: org.log4s.Logger)
     HookImpl().registerHook(request)
 }
 
-class KeyServiceImpl(using logger: org.log4s.Logger)
-    extends KeyServiceFs2Grpc[IO, Metadata]:
+class KeyServiceImpl(using logger: org.log4s.Logger) extends KeyServiceFs2Grpc[IO, Metadata]:
   def log[T](value: T)(implicit logger: org.log4s.Logger) =
     logger.info(s"HookSeKeyServiceImplrviceImpl: $value")
   def verifyMessageAttestation(
@@ -82,8 +80,7 @@ class KeyServiceImpl(using logger: org.log4s.Logger)
     )
     IO(VerifyMessageAttestationResponse())
 
-class RecordServiceImpl(using logger: org.log4s.Logger)
-    extends RecordServiceFs2Grpc[IO, Metadata]:
+class RecordServiceImpl(using logger: org.log4s.Logger) extends RecordServiceFs2Grpc[IO, Metadata]:
   def log[T](value: T)(implicit logger: org.log4s.Logger) =
     logger.info(s"HookServiceImpl: $value")
   def createSchema(

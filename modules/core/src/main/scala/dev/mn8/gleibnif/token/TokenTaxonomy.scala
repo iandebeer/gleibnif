@@ -8,26 +8,26 @@ object TokenTaxonomy:
   enum Behaviour:
     case Attestable extends Behaviour
     val script: String = ""
-    case Burnable extends Behaviour
-    case Compliant extends Behaviour
-    case Credible extends Behaviour
-    case Delegable extends Behaviour
-    case Divisible extends Behaviour
-    case Encumberable extends Behaviour
-    case Fabricteable extends Behaviour
-    case Holdable extends Behaviour
-    case Issuable extends Behaviour
-    case Logable extends Behaviour
-    case Mintable extends Behaviour
-    case Offsetable extends Behaviour
-    case Overdraftable extends Behaviour
-    case Pauseable extends Behaviour
-    case Processable extends Behaviour
-    case Redeemable extends Behaviour
-    case Revocable extends Behaviour
-    case Roles extends Behaviour
-    case Singleton extends Behaviour
-    case NonTransferable extends Behaviour
+    case Burnable           extends Behaviour
+    case Compliant          extends Behaviour
+    case Credible           extends Behaviour
+    case Delegable          extends Behaviour
+    case Divisible          extends Behaviour
+    case Encumberable       extends Behaviour
+    case Fabricteable       extends Behaviour
+    case Holdable           extends Behaviour
+    case Issuable           extends Behaviour
+    case Logable            extends Behaviour
+    case Mintable           extends Behaviour
+    case Offsetable         extends Behaviour
+    case Overdraftable      extends Behaviour
+    case Pauseable          extends Behaviour
+    case Processable        extends Behaviour
+    case Redeemable         extends Behaviour
+    case Revocable          extends Behaviour
+    case Roles              extends Behaviour
+    case Singleton          extends Behaviour
+    case NonTransferable    extends Behaviour
     case UniqueTransferable extends Behaviour
 
   object Behaviour:
@@ -46,7 +46,7 @@ object TokenTaxonomy:
 
   case class Behaviours(list: List[Behaviour]):
     def toStringList(): List[String] = list.map(b => b.toString())
-    override def toString = toStringList().mkString(",")
+    override def toString            = toStringList().mkString(",")
   object Behaviours:
     def apply(bits: Int) =
       new Behaviours(asList(bits))
@@ -68,24 +68,24 @@ object TokenTaxonomy:
 
   trait Attestable extends TokenType:
     def attest(contract: String): Boolean
-  trait Fungible extends TokenType
+  trait Fungible    extends TokenType
   trait NonFungible extends TokenType
-  trait TokenUnit extends Token
-  trait Fractional extends TokenUnit
-  trait Whole extends TokenUnit
-  trait TokenValue extends Token
-  trait Intrinsic extends TokenValue
-  trait Reference extends TokenValue
+  trait TokenUnit   extends Token
+  trait Fractional  extends TokenUnit
+  trait Whole       extends TokenUnit
+  trait TokenValue  extends Token
+  trait Intrinsic   extends TokenValue
+  trait Reference   extends TokenValue
   // trait TokenRepresentation(name:String) extends Token(name: String)
   trait Burnable extends Token:
     def burn() = println(s"burn $name")
   // trait Unique extends TokenRepresentation
-  trait TokenSupply extends Token
-  trait Fixed extends TokenSupply
-  trait CappedVariable extends TokenSupply
-  trait Gated extends TokenSupply
-  trait Infinite extends TokenSupply
-  trait TokenTemplate extends Token
-  trait Single extends TokenTemplate
-  trait Hybrid extends TokenTemplate
+  trait TokenSupply                           extends Token
+  trait Fixed                                 extends TokenSupply
+  trait CappedVariable                        extends TokenSupply
+  trait Gated                                 extends TokenSupply
+  trait Infinite                              extends TokenSupply
+  trait TokenTemplate                         extends Token
+  trait Single                                extends TokenTemplate
+  trait Hybrid                                extends TokenTemplate
   case class BaseToken(name: String = "blah") extends Token

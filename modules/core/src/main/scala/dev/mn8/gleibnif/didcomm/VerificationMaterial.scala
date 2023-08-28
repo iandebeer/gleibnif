@@ -18,8 +18,7 @@ case class VerificationMaterialJWK(
       |  "kid": "$kid"
       """
 
-case class VerificationMaterialMultibase(value: String)
-    extends VerificationMaterial:
+case class VerificationMaterialMultibase(value: String) extends VerificationMaterial:
   override def toString(): String = s"""{
     |  "publicKeyMultibase": "$value"
     |}""".stripMargin

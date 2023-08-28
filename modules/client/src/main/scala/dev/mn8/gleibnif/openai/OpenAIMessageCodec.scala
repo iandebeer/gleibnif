@@ -11,12 +11,12 @@ object OpenAIMessageCodec {
     new Decoder[OpenAIResponse] {
       def apply(c: HCursor): Result[OpenAIResponse] =
         for
-          id <- c.downField("id").as[String]
+          id       <- c.downField("id").as[String]
           `object` <- c.downField("object").as[String]
-          created <- c.downField("created").as[Int]
-          model <- c.downField("model").as[String]
-          choices <- c.downField("choices").as[List[OpenAIResponseChoice]]
-          usage <- c.downField("usage").as[OpenAIResponseUsage]
+          created  <- c.downField("created").as[Int]
+          model    <- c.downField("model").as[String]
+          choices  <- c.downField("choices").as[List[OpenAIResponseChoice]]
+          usage    <- c.downField("usage").as[OpenAIResponseUsage]
         yield OpenAIResponse(id, `object`, created, model, choices, usage)
     }
 
@@ -24,7 +24,7 @@ object OpenAIMessageCodec {
     new Decoder[OpenAIResponseChoice] {
       def apply(c: HCursor): Result[OpenAIResponseChoice] =
         for
-          text <- c.downField("text").as[String]
+          text  <- c.downField("text").as[String]
           index <- c.downField("index").as[Int]
           logprobs <- c
             .downField("logprobs")
@@ -57,9 +57,9 @@ object OpenAIMessageCodec {
     new Decoder[OpenAIResponseUsage] {
       def apply(c: HCursor): Result[OpenAIResponseUsage] =
         for
-          promptTokens <- c.downField("prompt_tokens").as[Int]
+          promptTokens     <- c.downField("prompt_tokens").as[Int]
           completionTokens <- c.downField("completion_tokens").as[Int]
-          totalTokens <- c.downField("total_tokens").as[Int]
+          totalTokens      <- c.downField("total_tokens").as[Int]
         yield OpenAIResponseUsage(promptTokens, completionTokens, totalTokens)
     }
 

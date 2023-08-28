@@ -39,7 +39,7 @@ final case class HookImpl():
           )
         )
 
-  def updateHook(request: UpdateHookRequest) = ???
-  def getHooksForRecord(request: GetHooksForRecordRequest) = ???
-  def getHookByRecordId(request: GetHookByRecordIdRequest) = ???
+  def updateHook(request: UpdateHookRequest)                             = ???
+  def getHooksForRecord(request: GetHooksForRecordRequest)               = ???
+  def getHookByRecordId(request: GetHookByRecordIdRequest)               = ???
   def notifyHooksOfRecordEvent(request: NotifyHooksOfRecordEventRequest) = ???

@@ -23,7 +23,6 @@ build/
 *.ipr
 *.iws
 .idea
-*.conf
 meta.json
 metals.sbt
 project/project

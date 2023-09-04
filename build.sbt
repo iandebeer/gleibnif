@@ -30,7 +30,7 @@ lazy val tapirVersion        = "1.6.4"
 lazy val http4sVersion       = "0.23.23"
 lazy val refinedVersion      = "0.11.0"
 lazy val emilVersion         = "0.14.0"
-lazy val xebiaVersion        = "0.0.3-alpha.17"
+lazy val xebiaVersion        = "0.0.3"
 //lazy val didCommonVersion = "1.0.0"
 
 lazy val commonSettings = Seq(

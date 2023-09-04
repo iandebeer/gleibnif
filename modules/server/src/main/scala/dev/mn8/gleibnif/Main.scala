@@ -1,4 +1,4 @@
-package dev.mn8.gleipnif
+package dev.mn8.gleibnif
 
 import cats.effect.*
 import _root_.io.grpc.*

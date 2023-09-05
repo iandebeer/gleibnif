@@ -22,7 +22,7 @@ import scala.concurrent.Future
 
 class PrismClientSpec extends CatsEffectSuite {
   val baseURL = "http://13.244.55.248:8080/prism-agent"
-  val apiKey = "kxr9i@6XgKBUxe%O"
+  val apiKey  = "kxr9i@6XgKBUxe%O"
 
   val backendR: Resource[IO, SttpBackend[IO, Any]] =
     AsyncHttpClientCatsBackend.resource[IO]()

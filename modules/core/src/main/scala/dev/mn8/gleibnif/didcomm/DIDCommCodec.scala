@@ -107,10 +107,10 @@ object DIDCommCodec:
     new Decoder[DIDCommMessage]:
       final def apply(c: HCursor): Result[DIDCommMessage] =
         for {
-          id <- c.downField("id").as[String]
-          `type` <- c.downField("type").as[String]
-          from <- c.downField("from").as[Option[URI]]
-          to <- c.downField("to").as[Option[List[URI]]]
+          id          <- c.downField("id").as[String]
+          `type`      <- c.downField("type").as[String]
+          from        <- c.downField("from").as[Option[URI]]
+          to          <- c.downField("to").as[Option[List[URI]]]
           createdTime <- c.downField("created_time").as[Option[String]]
           expiresTime <- c.downField("expires_time").as[Option[String]]
           body <- c
@@ -137,11 +137,11 @@ object DIDCommCodec:
   given decodeData: Decoder[DIDCommData] = new Decoder[DIDCommData]:
     final def apply(c: HCursor): Result[DIDCommData] =
       for {
-        jws <- c.downField("jws").as[Option[String]]
-        hash <- c.downField("hash").as[Option[String]]
-        links <- c.downField("links").as[Option[List[String]]]
+        jws    <- c.downField("jws").as[Option[String]]
+        hash   <- c.downField("hash").as[Option[String]]
+        links  <- c.downField("links").as[Option[List[String]]]
         base64 <- c.downField("base64").as[Option[String]]
-        json <- c.downField("json").focus.map(s => s.noSpaces).pure[Result]
+        json   <- c.downField("json").focus.map(s => s.noSpaces).pure[Result]
       } yield DIDCommData(
         jws,
         hash,
@@ -154,13 +154,13 @@ object DIDCommCodec:
     new Decoder[DIDCommAttachment]:
       final def apply(c: HCursor): Result[DIDCommAttachment] =
         for {
-          id <- c.downField("id").as[String]
-          mediaType <- c.downField("media_type").as[Option[String]]
+          id          <- c.downField("id").as[String]
+          mediaType   <- c.downField("media_type").as[Option[String]]
           description <- c.downField("description").as[Option[String]]
-          filename <- c.downField("filename").as[Option[String]]
+          filename    <- c.downField("filename").as[Option[String]]
           lastmodTime <- c.downField("lastmod_time").as[Option[String]]
-          data <- c.downField("data").as[Option[DIDCommData]]
-          byteCount <- c.downField("byte_count").as[Option[Int]]
+          data        <- c.downField("data").as[Option[DIDCommData]]
+          byteCount   <- c.downField("byte_count").as[Option[Int]]
         } yield DIDCommAttachment(
           id,
           mediaType,

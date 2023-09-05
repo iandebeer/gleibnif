@@ -16,7 +16,7 @@ object SignalMessageCodec:
   given memberDecoder: Decoder[Member] = new Decoder[Member]:
     def apply(c: HCursor): Result[Member] =
       for
-        name <- c.downField("name").as[String]
+        name   <- c.downField("name").as[String]
         number <- c.downField("number").as[String]
       yield Member(name, number)
 
@@ -37,19 +37,19 @@ object SignalMessageCodec:
       def apply(c: HCursor): Result[SignalMessage] =
         for
           envelope <- c.downField("envelope").as[SignalEnvelope]
-          account <- c.downField("account").as[String]
+          account  <- c.downField("account").as[String]
         yield SignalMessage(envelope, account)
 
   given signalEnvelopeDecoder: Decoder[SignalEnvelope] =
     new Decoder[SignalEnvelope]:
       def apply(c: HCursor): Result[SignalEnvelope] =
         for {
-          source <- c.downField("source").as[String]
+          source       <- c.downField("source").as[String]
           sourceNumber <- c.downField("sourceNumber").as[String]
-          sourceUuid <- c.downField("sourceUuid").as[String]
-          sourceName <- c.downField("sourceName").as[String]
+          sourceUuid   <- c.downField("sourceUuid").as[String]
+          sourceName   <- c.downField("sourceName").as[String]
           sourceDevice <- c.downField("sourceDevice").as[Int]
-          timestamp <- c.downField("timestamp").as[Long]
+          timestamp    <- c.downField("timestamp").as[Long]
           dataMessage =
             c.downField("dataMessage").focus match
               case Some(json) =>
@@ -83,11 +83,11 @@ object SignalMessageCodec:
     new Decoder[SignalDataMessage]:
       def apply(c: HCursor): Result[SignalDataMessage] =
         for {
-          timestamp <- c.downField("timestamp").as[Long]
-          message <- c.downField("message").as[String]
+          timestamp        <- c.downField("timestamp").as[Long]
+          message          <- c.downField("message").as[String]
           expiresInSeconds <- c.downField("expiresInSeconds").as[Int]
-          viewOnce <- c.downField("viewOnce").as[Boolean]
-          groupInfo <- c.downField("groupInfo").as[Option[SignalGroupInfo]]
+          viewOnce         <- c.downField("viewOnce").as[Boolean]
+          groupInfo        <- c.downField("groupInfo").as[Option[SignalGroupInfo]]
         } yield SignalDataMessage(
           timestamp,
           message,
@@ -101,17 +101,17 @@ object SignalMessageCodec:
       def apply(c: HCursor): Result[SignalGroupInfo] =
         for
           groupId <- c.downField("groupId").as[String]
-          `type` <- c.downField("type").as[String]
+          `type`  <- c.downField("type").as[String]
         yield SignalGroupInfo(groupId, `type`)
 
   given signalReceiptMessageDecoder: Decoder[SignalReceiptMessage] =
     new Decoder[SignalReceiptMessage]:
       def apply(c: HCursor): Result[SignalReceiptMessage] =
         for
-          when <- c.downField("when").as[Long]
+          when       <- c.downField("when").as[Long]
           isDelivery <- c.downField("isDelivery").as[Boolean]
-          isRead <- c.downField("isRead").as[Boolean]
-          isViewed <- c.downField("isViewed").as[Boolean]
+          isRead     <- c.downField("isRead").as[Boolean]
+          isViewed   <- c.downField("isViewed").as[Boolean]
           timestamps <- c.downField("timestamps").as[List[Long]]
         yield SignalReceiptMessage(
           when,
@@ -137,14 +137,14 @@ object SignalMessageCodec:
     new Decoder[SignalSentMessage]:
       def apply(c: HCursor): Result[SignalSentMessage] = {
         for
-          destination <- c.downField("destination").as[String]
+          destination       <- c.downField("destination").as[String]
           destinationNumber <- c.downField("destinationNumber").as[String]
-          destinationUuid <- c.downField("destinationUuid").as[String]
-          timestamp <- c.downField("timestamp").as[Long]
-          message <- c.downField("message").as[String]
-          expiresInSeconds <- c.downField("expiresInSeconds").as[Int]
-          viewOnce <- c.downField("viewOnce").as[Boolean]
-          groupInfo <- c.downField("groupInfo").as[Option[SignalGroupInfo]]
+          destinationUuid   <- c.downField("destinationUuid").as[String]
+          timestamp         <- c.downField("timestamp").as[Long]
+          message           <- c.downField("message").as[String]
+          expiresInSeconds  <- c.downField("expiresInSeconds").as[Int]
+          viewOnce          <- c.downField("viewOnce").as[Boolean]
+          groupInfo         <- c.downField("groupInfo").as[Option[SignalGroupInfo]]
         yield SignalSentMessage(
           destination,
           destinationNumber,
@@ -161,18 +161,18 @@ object SignalMessageCodec:
     new Decoder[SignalReadMessage]:
       def apply(c: HCursor): Result[SignalReadMessage] =
         for
-          sender <- c.downField("sender").as[String]
+          sender       <- c.downField("sender").as[String]
           senderNumber <- c.downField("senderNumber").as[String]
-          senderUuid <- c.downField("senderUuid").as[String]
-          timestamp <- c.downField("timestamp").as[Long]
+          senderUuid   <- c.downField("senderUuid").as[String]
+          timestamp    <- c.downField("timestamp").as[Long]
         yield SignalReadMessage(sender, senderNumber, senderUuid, timestamp)
 
   given signalSimpleMessageDecoder: Decoder[SignalSimpleMessage] =
     new Decoder[SignalSimpleMessage]:
       def apply(c: HCursor): Result[SignalSimpleMessage] =
         for
-          message <- c.downField("message").as[String]
-          number <- c.downField("number").as[String]
-          text <- c.downField("text").as[String]
+          message  <- c.downField("message").as[String]
+          number   <- c.downField("number").as[String]
+          text     <- c.downField("text").as[String]
           keywords <- c.downField("keywords").as[List[String]]
         yield SignalSimpleMessage(message, number, text, keywords)

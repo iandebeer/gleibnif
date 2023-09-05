@@ -15,7 +15,7 @@ object ConfigManager {
   given Logger[IO] = Slf4jLogger.getLogger[IO]
   def info[F[_]: Sync: Logger](value: String) =
     for
-      _ <- Logger[F].info("Logging at start of passForEasierUse")
+      _         <- Logger[F].info("Logging at start of passForEasierUse")
       something <- Sync[F].delay(println("I could do anything"))
       // .onError{case e => Logger[F].error(e)("Something Went Wrong in passForEasierUse")}
       _ <- Logger[F].info(s"$value")

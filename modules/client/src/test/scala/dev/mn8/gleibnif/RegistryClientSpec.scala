@@ -28,7 +28,7 @@ import java.net.URI
 
 class RegistryClientSpec extends FunSuite {
   val baseURL = "https://api.godiddy.com/0.1.0/universal-registrar/"
-  val apiKey = "c2850992-32fd-4ccf-9352-77aa329eef13"
+  val apiKey  = "c2850992-32fd-4ccf-9352-77aa329eef13"
   val document1 = """{
   "didDocument": {
     "@context": [
@@ -58,7 +58,7 @@ class RegistryClientSpec extends FunSuite {
   "secret": {
   }
 }""".stripMargin
-  val client = RegistryServiceClient(baseURL, apiKey)
+  val client  = RegistryServiceClient(baseURL, apiKey)
   val backend = AsyncHttpClientCatsBackend.resource[IO]()
 
   test("RegistryClient should be able to create a DID") {
@@ -89,7 +89,7 @@ class RegistryClientSpec extends FunSuite {
         )
       )
     )
-    val reg = RegistryRequest(doc)
+    val reg      = RegistryRequest(doc)
     val document = reg.asJson.spaces2
     val dd: IO[String] = EitherT(backend.use { b =>
       client.createDID("indy", document, b)

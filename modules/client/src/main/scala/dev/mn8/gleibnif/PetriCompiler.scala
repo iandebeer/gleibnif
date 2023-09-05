@@ -11,7 +11,7 @@ import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe._
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
-import cats.effect.{IO,Resource}
+import cats.effect.{IO, Resource}
 import sttp.client3.{HttpURLConnectionBackend, SttpBackend}
 import sttp.model.*
 import java.nio.file.{Files, Paths}
@@ -38,8 +38,8 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
     .flatMap(w => protocolConf.start.initialParams)
   val paramList: ListSet[String] = (pl2 ++ pl1)
 
-  val colourMap: Map[Colour, String] = paramList.zipWithIndex.map {
-    case (k, v) => (Colour.fromOrdinal(v), k)
+  val colourMap: Map[Colour, String] = paramList.zipWithIndex.map { case (k, v) =>
+    (Colour.fromOrdinal(v), k)
   }.toMap
   val paramMap: Map[String, Colour] =
     colourMap.map(_.swap) // (m => m._2 -> m._1)
@@ -47,8 +47,7 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
 
   val places: Map[String, Place] = protocolConf.places.map { p =>
     val capacity: Int =
-      if (p == protocolConf.start.place) then
-        protocolConf.start.initialParams.length
+      if (p == protocolConf.start.place) then protocolConf.start.initialParams.length
       else
         protocolConf.weights
           .filter(w => w.end == p)
@@ -57,9 +56,8 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
   }.toMap
 
   val placeParams: Map[String, List[String]] = protocolConf.places.map { p =>
-    val capacity: List[String]  =
-      if (p == protocolConf.start.place) then
-        protocolConf.start.initialParams
+    val capacity: List[String] =
+      if (p == protocolConf.start.place) then protocolConf.start.initialParams
       else
         protocolConf.weights
           .filter(w => w.end == p)
@@ -72,7 +70,7 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
     .map(t => (t -> Transition(t, CastanetService(), RPC(t, "", ""))))
     .toMap
   val start = protocolConf.start
-  val end = protocolConf.end
+  val end   = protocolConf.end
   val cpn: ColouredPetriNet =
     val w1: Map[String, ListSet[Weight]] = protocolConf.weights.map { w =>
       (w.end -> ListSet(
@@ -147,8 +145,7 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
       e
     }
 
-  val peekEndpoint
-      : Endpoint[Unit, String, Unit, (Set[String], Set[String]), Any] =
+  val peekEndpoint: Endpoint[Unit, String, Unit, (Set[String], Set[String]), Any] =
     endpoint.get
       .in("petrinet")
       .in("peek")
@@ -192,7 +189,7 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
 
   def peek(context: String): IO[(Set[String], Set[String])] =
     for
-      sm <- stateManager
+      sm    <- stateManager
       state <- sm.getState(context)
       markers = state match
         case Some(m) => Markers(cpn, m)
@@ -211,7 +208,7 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
 
   def step(context: String): IO[String] =
     for
-      sm <- stateManager
+      sm    <- stateManager
       state <- sm.getState(context)
       markers = state match
         case Some(m) => Markers(cpn, m)
@@ -277,41 +274,44 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
       <+> showEndpointRoutes
   val conversations: IO[List[String]] = generateConversationAgents()
 
-  def writerIO(path:String): IO[FileWriter] = 
+  def writerIO(path: String): IO[FileWriter] =
     IO(new FileWriter(path))
   def writeLines(writer: FileWriter, content: String): IO[Unit] =
     IO(writer.write(content))
 
   def closeWriteFile(writer: FileWriter): IO[Unit] =
     IO(writer.close())
-  
-  def writeCode(writer: FileWriter, chatbotCode:String) = 
-        IO(writer.write(chatbotCode))
 
-  def makeResourceForWrite(path:String): Resource[IO, FileWriter] = Resource.make(writerIO(path))(fw => closeWriteFile(fw))
+  def writeCode(writer: FileWriter, chatbotCode: String) =
+    IO(writer.write(chatbotCode))
 
-  def dashToCamelCase(l: List[String]): List[String] = 
+  def makeResourceForWrite(path: String): Resource[IO, FileWriter] =
+    Resource.make(writerIO(path))(fw => closeWriteFile(fw))
+
+  def dashToCamelCase(l: List[String]): List[String] =
     l.map(r =>
-      val words = r.split("-")
+      val words          = r.split("-")
       val camelCaseWords = words.tail.map(_.capitalize)
-      (words.head +: camelCaseWords).mkString)
-  
-  def dashToCapitalize(str: String): String = 
-    val words = str.split("-")
+      (words.head +: camelCaseWords).mkString
+    )
+
+  def dashToCapitalize(str: String): String =
+    val words          = str.split("-")
     val camelCaseWords = words.map(_.capitalize)
     camelCaseWords.mkString
 
-
   def generateConversationAgents(): IO[List[String]] =
-    placeParams.map { p => 
-      val params: (String, String) = (dashToCapitalize(p._1) -> s"${dashToCamelCase(p._2).map(s => s"$s: String").mkString(", ") }")
-      val chatBotCode =
-      s"""
+    placeParams
+      .map { p =>
+        val params: (String, String) =
+          (dashToCapitalize(p._1) -> s"${dashToCamelCase(p._2).map(s => s"$s: String").mkString(", ")}")
+        val chatBotCode =
+          s"""
         |package dev.mn8.gleibnif
         |import com.xebia.functional.xef.scala.agents.DefaultSearch
         |import com.xebia.functional.xef.scala.auto.*
         |object ChatBot:
-        |  case class ${dashToCapitalize(p._1) }(${params._2}) 
+        |  case class ${dashToCapitalize(p._1)}(${params._2}) 
         |  private def getQuestionAnswer(question: String)(using scope: AIScope): List[String] =
         |    contextScope(DefaultSearch.search("Weather in Cádiz, Spain")) {
         |      promptMessage(question)
@@ -323,14 +323,13 @@ case class PetriCompiler[F[_]](interfaceName: String)(using
         |  }.getOrElse(ex => println(ex.getMessage))
         |""".stripMargin
 
-      val filePath = s"${params._1}.scala"
-     
-      for 
-        _ <- IO.println(s"Chatbot code written to file: $filePath")
-        _ <- makeResourceForWrite(filePath).use(writeCode(_, chatBotCode))
-        p <- IO(filePath)
-      yield p
-      }.toList.sequence
+        val filePath = s"${params._1}.scala"
 
-    
-
+        for
+          _ <- IO.println(s"Chatbot code written to file: $filePath")
+          _ <- makeResourceForWrite(filePath).use(writeCode(_, chatBotCode))
+          p <- IO(filePath)
+        yield p
+      }
+      .toList
+      .sequence

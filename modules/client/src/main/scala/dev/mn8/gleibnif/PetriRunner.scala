@@ -18,20 +18,20 @@ object PetriRunner extends IOApp:
     scala.concurrent.ExecutionContext.Implicits.global
 
   def run(args: List[String]): IO[ExitCode] = // starting the server
-    
+
     val interfaceName = args.headOption.getOrElse("purchase")
-    val compiler = PetriCompiler[IO](interfaceName)
+    val compiler      = PetriCompiler[IO](interfaceName)
     compiler.generateConversationAgents() >>
-    BlazeServerBuilder[IO]
-      .withExecutionContext(ec)
-      .bindHttp(8080, "localhost")
-      .withHttpApp(Router("/" -> (compiler.routes)).orNotFound)
-      .resource
-      .use { _ =>
-        IO {
-          println("Go to: http://localhost:8080/docs")
-          println("Press any key to exit ...")
-          scala.io.StdIn.readLine()
+      BlazeServerBuilder[IO]
+        .withExecutionContext(ec)
+        .bindHttp(8080, "localhost")
+        .withHttpApp(Router("/" -> (compiler.routes)).orNotFound)
+        .resource
+        .use { _ =>
+          IO {
+            println("Go to: http://localhost:8080/docs")
+            println("Press any key to exit ...")
+            scala.io.StdIn.readLine()
+          }
         }
-      }
-      .as(ExitCode.Success)
+        .as(ExitCode.Success)

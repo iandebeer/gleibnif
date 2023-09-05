@@ -58,9 +58,7 @@ object MultipleEndpointsDocumentationHttp4sServer extends IOApp {
     )
   val addBookRoutes: HttpRoutes[IO] =
     Http4sServerInterpreter[IO]().toRoutes(
-      addBook.serverLogicSuccess(book =>
-        IO((books.getAndUpdate(books => books :+ book): Unit))
-      )
+      addBook.serverLogicSuccess(book => IO((books.getAndUpdate(books => books :+ book): Unit)))
     )
 
   // generating and exposing the documentation in yml

@@ -10,11 +10,12 @@ import io.circe.syntax._
 import dev.mn8.gleibnif.didcomm.DID
 import dev.mn8.gleibnif.didcomm.DIDTypes.*
 
-import com.xebia.functional.xef.scala.auto.*
+import com.xebia.functional.xef.scala.conversation.*
 import com.xebia.functional.xef.reasoning.pdf.*
-import com.xebia.functional.xef.auto.llm.openai.OpenAI
+import com.xebia.functional.xef.conversation.llm.openai.OpenAI
 import io.circe.Decoder
 import scala.concurrent.duration.Duration
+import com.xebia.functional.xef.prompt.Prompt
 
 class ConversationAgentSpec extends CatsEffectSuite {
   override val munitTimeout = Duration(60 * 3, "s")
@@ -66,7 +67,6 @@ class ConversationAgentSpec extends CatsEffectSuite {
     }
   }
   test("pdf reasoning") {
-
     println(s"open api key: ${sys.env.get("OPENAI_TOKEN")}")
 
     val pdfUrl =
@@ -81,7 +81,7 @@ class ConversationAgentSpec extends CatsEffectSuite {
       while (true) {
         println("Enter your question: ")
         val line     = scala.io.StdIn.readLine()
-        val response = prompt[AIResponse](line)
+        val response = prompt[AIResponse](Prompt(line))
         println(s"${response.answer}\n---\n")
       }
     }

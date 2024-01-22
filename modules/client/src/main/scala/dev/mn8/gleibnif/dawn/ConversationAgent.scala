@@ -5,7 +5,7 @@ import cats.effect._
 import cats.implicits._
 import cats.implicits.catsSyntaxApplicativeId
 import cats.syntax.all.*
-import com.xebia.functional.xef.scala.auto.*
+import com.xebia.functional.xef.scala.conversation.*
 import dev.mn8.gleibnif.connection.RedisStorage
 import dev.mn8.gleibnif.didcomm.DID
 import dev.mn8.gleibnif.didcomm.DIDTypes.*

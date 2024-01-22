@@ -30,7 +30,7 @@ lazy val tapirVersion        = "1.6.4"
 lazy val http4sVersion       = "0.23.23"
 lazy val refinedVersion      = "0.11.0"
 lazy val emilVersion         = "0.14.0"
-lazy val xebiaVersion        = "0.0.3-alpha.17"
+lazy val xebiaVersion        = "0.0.3"
 //lazy val didCommonVersion = "1.0.0"
 
 lazy val commonSettings = Seq(
@@ -150,7 +150,7 @@ lazy val core = project
   .in(file("modules/core"))
   .settings(commonSettings: _*)
   .settings(
-    name             := "gleipnifCore",
+    name             := "gleibnifCore",
     crossPaths       := false,
     autoScalaLibrary := false,
     resolvers ++= Seq(
@@ -171,7 +171,7 @@ lazy val core = project
 lazy val protocol = project
   .in(file("modules/protocol"))
   .settings(
-    name        := "gleipnifProtocol",
+    name        := "gleibnifProtocol",
     description := "Protobuf definitions",
     /*  Compile / PB.targets := Seq(
       //PB.gens.java -> (Compile / sourceManaged).value,
@@ -187,9 +187,9 @@ lazy val protocol = project
 lazy val client = project
   .in(file("modules/client"))
   .settings(
-    name                := "gleipnifClient",
+    name                := "gleibnifClient",
     description         := "Protobuf Client",
-    Compile / mainClass := Some("dev.mn8.gleipnif.Main"),
+    Compile / mainClass := Some("dev.mn8.gleibnif.Main"),
     resolvers ++= Seq(
       Resolver.mavenLocal,
       "jitpack" at "https://jitpack.io",
@@ -238,10 +238,10 @@ lazy val server = project
   .settings(grpcSettings: _*)
   .settings(
     scalaVersion := Scala3,
-    name         := "gleipnifServer",
+    name         := "gleibnifServer",
     description  := "Protobuf Server",
     // nativeImageVersion := "21.2.0",
-    Compile / mainClass := Some("dev.mn8.gleipnif.Main"),
+    Compile / mainClass := Some("dev.mn8.gleibnif.Main"),
     libraryDependencies ++= List(
       "dev.mn8"       %% "castanet"          % castanetVersion,
       "org.typelevel" %% "cats-core"         % catsVersion,

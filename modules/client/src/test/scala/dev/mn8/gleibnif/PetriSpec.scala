@@ -1,4 +1,4 @@
-package dev.mn8.gleipnif
+package dev.mn8.gleibnif
 import cats.data.State
 import cats.syntax.functor.*
 import dev.mn8.castanet.*

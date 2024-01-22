@@ -12,7 +12,7 @@ addSbtPlugin("org.typelevel" % "sbt-fs2-grpc" % "2.5.12")
 
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.16")
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.0")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.1")
 
 // addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta42")
 

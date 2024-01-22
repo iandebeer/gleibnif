@@ -1,21 +1,21 @@
 package dev.mn8.gleibnif
 
-import munit.CatsEffectSuite
-import dev.profunktor.redis4cats.RedisCommands
-import cats.effect.kernel.Resource
 import cats.effect.IO
-import dev.profunktor.redis4cats.Redis
+import cats.effect.kernel.Resource
+import com.xebia.functional.xef.conversation.llm.openai.OpenAI
+import com.xebia.functional.xef.prompt.Prompt
+import com.xebia.functional.xef.reasoning.pdf.*
+import com.xebia.functional.xef.scala.conversation.*
 import dev.mn8.gleibnif.connection.RedisStorage
-import io.circe.syntax._
 import dev.mn8.gleibnif.didcomm.DID
 import dev.mn8.gleibnif.didcomm.DIDTypes.*
-
-import com.xebia.functional.xef.scala.conversation.*
-import com.xebia.functional.xef.reasoning.pdf.*
-import com.xebia.functional.xef.conversation.llm.openai.OpenAI
+import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.RedisCommands
 import io.circe.Decoder
+import io.circe.syntax._
+import munit.CatsEffectSuite
+
 import scala.concurrent.duration.Duration
-import com.xebia.functional.xef.prompt.Prompt
 
 class ConversationAgentSpec extends CatsEffectSuite {
   override val munitTimeout = Duration(60 * 3, "s")

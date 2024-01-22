@@ -1,15 +1,15 @@
 package dev.mn8.gleibnif
 
-import cats.effect.IO
-import cats.effect._
-import cats.effect.kernel.Sync
-import cats.implicits._
-import eu.timepit.refined.*
-import eu.timepit.refined.pureconfig.*
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import cats.effect.IO
+import eu.timepit.refined.*
+import eu.timepit.refined.pureconfig.*
+import cats.effect.kernel.Sync
+import cats.effect._
+import cats.implicits._
 
 object ConfigManager {
   given Logger[IO] = Slf4jLogger.getLogger[IO]

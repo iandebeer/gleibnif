@@ -1,17 +1,15 @@
 package dev.mn8.gleibnif
 
-import munit.*
-import io.circe.*
-import io.circe.syntax.*
-
-import io.circe.parser.*
-import dev.mn8.gleibnif.didcomm.DIDCommMessage
+import dev.mn8.gleibnif.didcomm.DIDCodec
+import dev.mn8.gleibnif.didcomm.DIDCommCodec
 import dev.mn8.gleibnif.didcomm.DIDCommCodec.decodeDIDCommMessage
 import dev.mn8.gleibnif.didcomm.DIDCommCodec.encodeDIDCommMessage
-
+import dev.mn8.gleibnif.didcomm.DIDCommMessage
+import io.circe.*
+import io.circe.parser.*
+import io.circe.syntax.*
+import munit.*
 import sttp.client3.*
-import dev.mn8.gleibnif.didcomm.DIDCommCodec
-import dev.mn8.gleibnif.didcomm.DIDCodec
 
 class DIDCommMessageSpec extends FunSuite {
 

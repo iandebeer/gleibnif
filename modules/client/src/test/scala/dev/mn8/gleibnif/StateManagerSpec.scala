@@ -1,12 +1,15 @@
 package dev.mn8.gleibnif
-import munit.CatsEffectSuite
-import cats.effect.{IO, unsafe, Concurrent}
-import cats.syntax.all._
-import cats.implicits._
-import java.util.UUID
-import cats.effect.implicits.concurrentParSequenceOps
-import cats.syntax.all._
 import cats.Traverse
+import cats.effect.Concurrent
+import cats.effect.IO
+import cats.effect.implicits.concurrentParSequenceOps
+import cats.effect.unsafe
+import cats.implicits._
+import cats.syntax.all._
+import cats.syntax.all._
+import munit.CatsEffectSuite
+
+import java.util.UUID
 import scala.concurrent.duration._
 
 class StateManagerTests extends CatsEffectSuite {

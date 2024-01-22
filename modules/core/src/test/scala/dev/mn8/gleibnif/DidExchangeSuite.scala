@@ -1,11 +1,10 @@
 package dev.mn8.gleibnif
 
-import munit.CatsEffectSuite
-import munit.FunSuite
-
-import munit.Assertions.*
 import cats.effect.IO
 import dev.mn8.gleibnif.didcomm.*
+import munit.Assertions.*
+import munit.CatsEffectSuite
+import munit.FunSuite
 
 class DidExchangeSuite extends CatsEffectSuite {
 

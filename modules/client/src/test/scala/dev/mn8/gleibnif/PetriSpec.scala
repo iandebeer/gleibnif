@@ -1,40 +1,40 @@
 package dev.mn8.gleibnif
 import cats.data.State
+import cats.effect.*
+import cats.effect._
+import cats.syntax.all.*
+import cats.syntax.all._
 import cats.syntax.functor.*
 import dev.mn8.castanet.*
+import dev.mn8.gleibnif.PetriCompiler
+import fs2.grpc.syntax.serverBuilder
 import io.circe.*
+import io.circe.generic.auto._
 import io.circe.parser.*
 import io.circe.parser.decode
 import io.circe.syntax.*
 import munit.*
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
-import cats.effect.*
-import cats.syntax.all.*
-
-import scodec.bits.*
-
-import scala.collection.immutable.ListSet
-import scala.io.Source
-import scala.quoted.*
-import cats.effect._
-import cats.syntax.all._
-import io.circe.generic.auto._
 import org.http4s.HttpRoutes
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import scodec.bits.Bases
+import scodec.bits.BitVector
+import scodec.bits.ByteOrdering
+import scodec.bits.*
 import sttp.tapir._
+import sttp.tapir.docs.openapi._
 import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe._
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-import sttp.tapir.docs.openapi._
-import scala.concurrent.ExecutionContext
 import java.util.UUID
-import dev.mn8.gleibnif.PetriCompiler
-import fs2.grpc.syntax.serverBuilder
-import scodec.bits.{Bases, BitVector, ByteOrdering}
+import scala.collection.immutable.ListSet
+import scala.concurrent.ExecutionContext
+import scala.io.Source
+import scala.quoted.*
 
 object DWNContext:
   class DID(val did: String)

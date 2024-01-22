@@ -1,30 +1,27 @@
 package dev.mn8.gleibnif
 
-import munit.*
-
-import java.net.URI
-import io.circe.*
-import io.circe.syntax.*
-
-import io.circe.parser.*
-import dev.mn8.gleibnif.didcomm.DIDDoc
-import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
-import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
-
-import sttp.client3.*
-import java.io.StringReader
-
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
-
-import com.apicatalog.jsonld.JsonLd
-import java.io.Reader
-import com.apicatalog.jsonld.document.JsonDocument
-import dev.mn8.gleibnif.jsonld.JsonLDP
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
-import dev.mn8.gleibnif.didcomm.{Service, ServiceEndpointNodes}
+import com.apicatalog.jsonld.JsonLd
+import com.apicatalog.jsonld.document.JsonDocument
 import dev.mn8.gleibnif.didcomm.DIDCodec
+import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.Service
+import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
+import dev.mn8.gleibnif.jsonld.JsonLDP
+import io.circe.*
+import io.circe.parser.*
+import io.circe.syntax.*
+import munit.*
+import sttp.client3.*
+
+import java.io.Reader
+import java.io.StringReader
+import java.net.URI
+import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 
 class DidDocSpec extends FunSuite {
 

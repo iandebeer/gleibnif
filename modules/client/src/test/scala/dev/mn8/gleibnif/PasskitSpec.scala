@@ -1,9 +1,13 @@
 package dev.mn8.gleibnif
+import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.Resource
+import cats.effect.unsafe.implicits._
 import dev.mn8.gleibnif.passkit.PasskitAgent
 import munit.*
 import net.glxn.qrgen.javase.QRCode
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import play.api.libs.json.JsonNaming.PascalCase
 
 import java.io.File
@@ -11,12 +15,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.file.Files
-import cats.effect.unsafe.implicits._
 import java.net.URL
-import cats.data.EitherT
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import java.nio.file.Files
 
 class PasskitSpec extends FunSuite:
   import PasskitAgent.*

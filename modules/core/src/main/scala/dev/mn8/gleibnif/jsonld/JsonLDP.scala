@@ -1,19 +1,19 @@
 package dev.mn8.gleibnif.jsonld
 
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
-import io.circe.parser.*
-
 import com.apicatalog.jsonld.JsonLd
-import java.io.Reader
 import com.apicatalog.jsonld.document.JsonDocument
-import java.io.StringReader
-import scala.io.Source
-import java.net.URL
-import java.net.URI
-import scala.io.Codec
 import io.circe.Json
 import io.circe.ParsingFailure
+import io.circe.parser.*
+
+import java.io.Reader
+import java.io.StringReader
+import java.net.URI
+import java.net.URL
+import scala.io.Codec
+import scala.io.Source
+import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 
 trait JsonLD:
   def expand(): Either[ParsingFailure, JsonLD]

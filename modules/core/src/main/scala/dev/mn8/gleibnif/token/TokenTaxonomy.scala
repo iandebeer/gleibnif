@@ -1,8 +1,9 @@
 package dev.mn8.gleibnif
 
 import scodec.bits._
-import scala.quoted.*
+
 import scala.math._
+import scala.quoted.*
 
 object TokenTaxonomy:
   enum Behaviour:

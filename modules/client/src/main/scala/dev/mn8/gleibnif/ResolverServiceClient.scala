@@ -1,13 +1,13 @@
 package dev.mn8.gleibnif
 
 import cats.effect.IO
+import dev.mn8.gleibnif.didcomm.DIDCodec
 import dev.mn8.gleibnif.didcomm.DIDCodec.decodeDIDDoc
 import dev.mn8.gleibnif.didcomm.DIDDoc
 import io.circe.*
 import io.circe.parser.*
 import sttp.client3.*
 import sttp.client3.circe.*
-import dev.mn8.gleibnif.didcomm.DIDCodec
 
 case class ResolverServiceClient(
     resolverURI: String,

@@ -1,13 +1,14 @@
 package dev.mn8.gleibnif.dawn
 
-import scala.concurrent.duration.FiniteDuration
 import cats.effect.*
-import dev.profunktor.redis4cats.RedisCommands
-import dev.mn8.gleibnif.didcomm.*
-import dev.mn8.gleibnif.didcomm.DIDTypes.*
-import dev.mn8.gleibnif.connection.RedisStorage
 import cats.effect.kernel.Resource
+import dev.mn8.gleibnif.connection.RedisStorage
+import dev.mn8.gleibnif.didcomm.DIDTypes.*
+import dev.mn8.gleibnif.didcomm.*
 import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.RedisCommands
+
+import scala.concurrent.duration.FiniteDuration
 
 object ConversationManager extends IOApp.Simple:
   val redis: Resource[cats.effect.IO, RedisStorage] =

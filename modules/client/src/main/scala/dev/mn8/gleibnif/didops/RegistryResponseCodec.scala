@@ -1,13 +1,15 @@
 package dev.mn8.gleibnif.didops
 
-import io.circe.*
-import io.circe.{Decoder, Json, Encoder}
-import io.circe.syntax.*
-import cats.syntax.all.*
 import cats.*
-import io.circe.syntax._
-import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
+import cats.syntax.all.*
 import dev.mn8.gleibnif.didcomm.DIDCodec
+import dev.mn8.gleibnif.didcomm.DIDCodec.encodeDIDDoc
+import io.circe.Decoder
+import io.circe.Encoder
+import io.circe.Json
+import io.circe.*
+import io.circe.syntax.*
+import io.circe.syntax._
 
 object RegistryResponseCodec:
   import io.circe.generic.auto.*

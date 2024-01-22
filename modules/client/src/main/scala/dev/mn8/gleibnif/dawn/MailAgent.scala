@@ -1,7 +1,8 @@
 package dev.mn8.gleibnif.dawn
-import cats.effect._
 import cats.data.NonEmptyList
-import emil._, emil.builder._
+import cats.effect._
+import emil._
+import emil.builder._
 import emil.javamail._
 
 object MailAgent extends IOApp.Simple:

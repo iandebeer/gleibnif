@@ -3,13 +3,15 @@ package dev.mn8.gleibnif.didcomm
 import cats.*
 import cats.implicits.catsSyntaxApplicativeId
 import cats.syntax.all.*
+import dev.mn8.gleibnif.didcomm.DIDCommAttachment
+import dev.mn8.gleibnif.didcomm.DIDCommData
+import dev.mn8.gleibnif.didcomm.DIDCommMessage
 import io.circe.Decoder.Result
+import io.circe.*
 import io.circe.parser.*
 import io.circe.syntax.*
-import io.circe.*
 
 import java.net.URI
-import dev.mn8.gleibnif.didcomm.{DIDCommMessage, DIDCommAttachment, DIDCommData}
 
 object DIDCommCodec:
   given encodeDIDCommMessage: Encoder[DIDCommMessage] =

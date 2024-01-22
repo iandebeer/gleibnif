@@ -1,22 +1,23 @@
 package dev.mn8.gleibnif
 
-import cats.effect.*
-import _root_.io.grpc.*
-
-import fs2.grpc.syntax.all._
-import fs2.grpc.syntax.all._
-import fs2.grpc.server.ServerOptions
 import _root_.io.grpc.ForwardingServerCall.SimpleForwardingServerCall
-import Constants._
-import dev.mn8.dwn.dwn_service.*
-import scala.concurrent.ExecutionContext
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
-import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
-import scala.concurrent.Await
+import _root_.io.grpc.*
+import cats.effect.*
 import com.google.api.http.Http
+import dev.mn8.dwn.dwn_service.RecordServiceGrpc.RecordServiceStub
+import dev.mn8.dwn.dwn_service.*
 import dev.mn8.gleibnif.hook.HookImpl
+import fs2.grpc.server.ServerOptions
+import fs2.grpc.syntax.all._
+import fs2.grpc.syntax.all._
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+
+import Constants._
 
 case class AuthInterceptor(msg: String = "hello") extends ServerInterceptor:
   override def interceptCall[Req, Res](

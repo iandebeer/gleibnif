@@ -1,16 +1,19 @@
 package dev.mn8.gleibnif.config
 
-import java.net.URL
-import java.net.URI
+import cats.data.EitherT
+import cats.effect.IO
+import dev.mn8.gleibnif.logging.LogWriter.err
+import dev.mn8.gleibnif.logging.LogWriter.info
+import dev.mn8.gleibnif.logging.LogWriter.logNonEmptyList
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.ConfigReader
 import pureconfig.ConfigSource
 import pureconfig.generic.derivation.default.*
-import cats.data.EitherT
-import cats.effect.IO
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sttp.client3.ResponseException
-import dev.mn8.gleibnif.logging.LogWriter.{err, info, logNonEmptyList}
+
+import java.net.URI
+import java.net.URL
 
 object ConfigReaders:
 

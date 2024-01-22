@@ -1,16 +1,16 @@
 package dev.mn8.gleibnif
 
+import cats.effect.IO
 import cats.effect.IOApp
+import cats.effect.std.Dispatcher
+import dev.mn8.gleibnif.ConversationPollingHandler
+import fs2.Stream
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import cats.effect.IO
-import cats.effect.std.Dispatcher
-import fs2.Stream
+import sttp.client3.SttpBackend
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 
 import scala.concurrent.duration.*
-import dev.mn8.gleibnif.ConversationPollingHandler
-import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import sttp.client3.SttpBackend
 
 object Main extends IOApp.Simple:
   // override protected def blockedThreadDetectionEnabled = true

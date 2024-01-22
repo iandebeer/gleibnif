@@ -5,8 +5,8 @@ import cats.data.OptionT
 import cats.syntax.all.*
 import dev.mn8.gleibnif.didcomm.DIDDoc
 import io.circe.Decoder.Result
-import io.circe.syntax.*
 import io.circe.*
+import io.circe.syntax.*
 
 /*
 {

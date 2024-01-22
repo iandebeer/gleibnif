@@ -2,15 +2,14 @@ package dev.mn8.gleibnif.didcomm
 
 //import org.didcommx.didcomm.common.VerificationMaterial
 //import org.didcommx.didcomm.common.VerificationMethodType
-import org.didcommx.didcomm.exceptions.DIDDocException
-import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
+import dev.mn8.gleibnif.didcomm.DIDCodec
+import dev.mn8.gleibnif.didcomm.VerificationMethodType
 import io.circe.*
 import io.circe.syntax._
+import org.didcommx.didcomm.exceptions.DIDDocException
+import org.didcommx.didcomm.exceptions.DIDUrlNotFoundException
 
-//import foundation.identity.did.VerificationRelationships
 import java.net.URI
-import dev.mn8.gleibnif.didcomm.VerificationMethodType
-import dev.mn8.gleibnif.didcomm.DIDCodec
 import scala.util.matching.Regex
 
 //import foundation.identity.did.VerificationMethod

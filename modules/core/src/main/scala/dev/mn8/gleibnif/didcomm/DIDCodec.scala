@@ -2,21 +2,19 @@ package dev.mn8.gleibnif.didcomm
 
 import cats.*
 import cats.syntax.all.*
+import dev.mn8.gleibnif.didcomm.DIDDoc
+import dev.mn8.gleibnif.didcomm.Service
+import dev.mn8.gleibnif.didcomm.ServiceEndpoint
+import dev.mn8.gleibnif.didcomm.ServiceEndpointDIDCommService
+import dev.mn8.gleibnif.didcomm.ServiceEndpointDIDURL
+import dev.mn8.gleibnif.didcomm.ServiceEndpointNodes
+import dev.mn8.gleibnif.didcomm.ServiceEndpointURI
+import dev.mn8.gleibnif.didcomm.VerificationMethod
+import dev.mn8.gleibnif.didcomm.VerificationMethodType
 import io.circe.Decoder.Result
 import io.circe.*
 
 import java.net.URI
-import dev.mn8.gleibnif.didcomm.{
-  ServiceEndpointURI,
-  ServiceEndpointDIDURL,
-  Service,
-  ServiceEndpoint,
-  ServiceEndpointDIDCommService,
-  ServiceEndpointNodes,
-  VerificationMethod,
-  DIDDoc
-}
-import dev.mn8.gleibnif.didcomm.VerificationMethodType
 
 //import summon.{Decoder => _, _}
 

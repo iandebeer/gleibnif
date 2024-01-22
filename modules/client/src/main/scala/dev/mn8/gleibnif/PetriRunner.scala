@@ -1,9 +1,10 @@
 package dev.mn8.gleibnif
 
 import cats.effect.*
-import scala.concurrent.ExecutionContext
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
+
+import scala.concurrent.ExecutionContext
 
 /** PetriRunner
   *

@@ -1,10 +1,13 @@
 package dev.mn8.gleibnif
 
-import io.circe.Decoder.Result
-import io.circe.*
-import io.circe.{Decoder, Json, Encoder}
 import cats.Applicative.ops.toAllApplicativeOps
 import cats.*
+import io.circe.Decoder
+import io.circe.Decoder.Result
+import io.circe.Encoder
+import io.circe.Json
+import io.circe.*
+
 import java.net.URI
 
 object DWNodeCodec:
